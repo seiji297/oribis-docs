@@ -1,0 +1,472 @@
+# 統一応答パイプライン + CLI Adapter 設計書
+
+**バージョン**: 2.0（spec-pipeline.md + spec-cli-adapter.md 統合）
+**最終更新**: 2026-04-28
+
+---
+
+## 1. 概要
+
+全応答（ユーザーメッセージ・Anima通知）を単一パイプラインで処理する統一設計。
+
+### 設計判断
+
+- メインチャットとAnimaを**完全分離しない**（統一パイプライン採用）
+- CLI Adapter抽象化でバックエンド差異を吸収
+- スクリプトファースト: LLM呼出は表現生成時のみ
+- **CLI非依存原則**: マーカー方式でCLI共通動作。CLI固有機能に依存しない
+
+---
+
+## 2. InputEvent 型
+
+```rust
+pub enum InputEvent {
+    UserMessage { text: String },
+    AnimaState {
+        category: AnimaCategory,
+        context: Option<String>,
+    },
+}
+```
+
+テキスト入力からの変換:
+
+```rust
+pub fn parse_input_event(text: &str) -> InputEvent {
+    if let Some(category) = parse_anima_notification(text) {
+        InputEvent::AnimaState { category, context: None }
+    } else {
+        InputEvent::UserMessage { text: text.to_string() }
+    }
+}
+```
+
+Anima通知書式: `[システム通知: {category}]`（スペース有無どちらでも可）
+
+### LLM入力への変換
+
+```rust
+pub fn event_to_llm_input(event: &InputEvent) -> String {
+    match event {
+        InputEvent::UserMessage { text } => text.clone(),
+        InputEvent::AnimaState { category, context } => {
+            let cat_str = category_to_string(category);
+            match context {
+                Some(ctx) => format!("[システム通知: {} ({})]", cat_str, ctx),
+                None => format!("[システム通知: {}]", cat_str),
+            }
+        }
+    }
+}
+```
+
+`execute_pipeline()` 内で `Prompt.user_input` として使用。
+
+---
+
+## 3. PipelineResponse 型
+
+```rust
+pub enum PipelineResponse {
+    Generated {
+        text: String,
+        affinity_delta: i8,
+        raw_text: String,
+        anima_control: Option<AnimaControl>,
+        session_id: Option<String>,
+        usage: Option<TokenUsage>,
+    },
+    CacheHit { text: String },
+    Suppressed,           // throttleによりスキップ
+    Error(String),
+}
+```
+
+---
+
+## 4. PipelineConfig
+
+```rust
+pub struct PipelineConfig {
+    pub base_dir: PathBuf,
+    pub project_id: String,
+    pub backend: String,      // "claude" | "codex" | "local" | ""
+    pub anima_mode: AnimaMode, // Cache / Ai / Hybrid
+}
+```
+
+`anima_mode` は `anima_mode.toml` から読込。詳細 → `spec-anima.md`
+
+---
+
+## 5. パイプライン処理フロー
+
+### 5.1 エントリポイント
+
+```
+execute_pipeline(config, event, adapter)
+  ├── InputEvent::AnimaState → execute_anima_pipeline()
+  └── InputEvent::UserMessage → execute_chat_pipeline()
+```
+
+### 5.2 Animaパイプライン
+
+```
+execute_anima_pipeline(config, category, adapter)
+  1. throttle::should_speak_at() → false → Suppressed
+  2. load_affinity_at() → tier取得
+  3. cache::cache_exists() → true → CacheHit
+  4. AnimaMode確認
+     - Cache  → キャッシュのみ（AI呼出なし）
+     - Ai     → AI生成（キャッシュ不使用）
+     - Hybrid → キャッシュあり→CacheHit、なし→AI生成
+  5. build_context_at() → Prompt構築
+  6. adapter.send_message() → LLM呼出
+  7. parse_response() → マーカー解析
+  8. affinity_delta処理（Animaは通常0）
+  9. → Generated
+```
+
+### 5.3 チャットパイプライン
+
+```
+execute_chat_pipeline(config, text, adapter)
+  1. counter::increment_counter_at("user_message")
+  2. load_affinity_at() → affinity_value
+  3. build_context_at() → Prompt構築（L2+L3）
+  4. history::append_message_at() → ユーザーメッセージ記録
+  5. adapter.send_message() → LLM呼出
+  6. parse_response() → マーカー解析
+  7. 後処理:
+     a. affinity apply_delta_at()
+     b. task::execute_task_operations()
+     c. memory::memory_save_with_category() ← MEMORY_SAVEマーカー
+     d. memory::push_pending_memory_results() ← MEMORY_QUERYマーカー（次ターンL3注入）
+  8. history::append_message_at() → Animaメッセージ記録
+  9. history::compress_at()
+  10. → Generated
+```
+
+---
+
+## 6. LLMコール構築（§18）
+
+```
+build_context_at(project_id, base_dir)
+  └── ContextOutput {
+        system: String,   // L1: CLAUDE.md全文
+        dynamic: String,  // L2+L3: Critical Prompt + 動的注入
+        history: Vec<Value>, // セッション開始時のみ30件
+      }
+```
+
+Prompt送信構造:
+
+```
+[system]  → ContextOutput.system
+[user]    → ContextOutput.dynamic + "\n\n" + user_input
+[history] → ContextOutput.history（CLI側セッション内は不要）
+```
+
+---
+
+## 7. スクリプト処理層の原則（§15）
+
+| 処理 | 実装場所 |
+|------|---------|
+| Anima通知の種別判定 | `parse_anima_notification()` |
+| throttle判定 | `throttle::should_speak_at()` |
+| キャッシュ検索 | `cache::extract_with_fallback()` |
+| マーカー解析 | `parser::parse_response()` |
+| 好感度更新 | `affinity::apply_delta_at()` |
+| タスク操作 | `task::execute_task_operations()` |
+| 記憶保存 | `memory::memory_save_with_category()` |
+| 履歴追記・圧縮 | `history::append_message_at()` / `compress_at()` |
+| カウンター更新 | `counter::increment_counter_at()` |
+
+LLMは**Anima表現生成のみ**に使用。
+
+### 7.1 LLM必須処理
+
+スクリプトで代替不可 → LLM呼出が必要な処理:
+
+- セリフ本文生成（文脈考慮・キャラ表現）
+- アバター制御パラメータ選択（[ANIMA:...]マーカー出力）
+- 記憶保存判断（重要情報の自律検知）
+- タスク管理判断（文脈からのadd/update/complete判定）
+- キャッシュ生成時のセリフ生成（オフライン）
+
+### 7.2 純関数優先設計
+
+副作用を持つ処理と副作用のない処理を明確に分離:
+
+- 判定・変換・パースは純関数として実装（テスト容易性）
+- 副作用（ファイルIO・LLM呼出）は明示的に上位層に集約
+- `_at(base_dir, ...)` パターン = ファイルパス構築を引数化してテスト可能に
+
+---
+
+## 8. CLI Adapter（§5）
+
+### 8.1 CliAdapter トレイト
+
+```rust
+#[async_trait]
+pub trait CliAdapter: Send + Sync {
+    fn name(&self) -> &str;
+
+    async fn send_message(
+        &self,
+        prompt: Prompt,
+    ) -> Result<RawResponse, anyhow::Error>;
+
+    async fn send_message_streaming(
+        &self,
+        prompt: Prompt,
+        tx: mpsc::Sender<StreamChunk>,
+    ) -> Result<RawResponse, anyhow::Error>;
+}
+```
+
+### 8.2 Prompt 型
+
+```rust
+pub struct Prompt {
+    pub system: String,            // L1: CLAUDE.md全文
+    pub dynamic: String,           // L2+L3: Critical Prompt + 動的注入
+    pub history: Vec<serde_json::Value>, // セッション開始時のみ30件、それ以外は空
+    pub user_input: String,        // ユーザー発話 or [システム通知:...]
+    pub session_id: Option<String>, // CLIセッション継続ID
+}
+```
+
+### 8.3 RawResponse 型
+
+```rust
+pub struct RawResponse {
+    pub text: String,              // LLM応答テキスト（マーカー含む）
+    pub completed: bool,           // ストリーミング完了フラグ
+    pub error: Option<String>,     // エラーメッセージ（Some = エラー）
+    pub session_id: Option<String>, // セッションID（次ターン継続用）
+    pub usage: Option<TokenUsage>, // トークン使用量
+}
+```
+
+### 8.4 TokenUsage 型
+
+```rust
+pub struct TokenUsage {
+    pub input_tokens: u64,
+    pub output_tokens: u64,
+    pub cache_read_input_tokens: u64,
+    pub cache_creation_input_tokens: u64,
+    pub total_cost_usd: Option<f64>,
+    pub duration_ms: Option<u64>,
+    pub num_turns: Option<u64>,
+}
+```
+
+### 8.5 Backend 列挙型 + Factory
+
+```rust
+pub enum Backend {
+    Claude,
+    Codex,
+    Local,
+}
+
+pub fn create_adapter(backend: Backend) -> Box<dyn CliAdapter> {
+    match backend {
+        Backend::Claude => Box::new(ClaudeCliAdapter::new()),
+        Backend::Codex => Box::new(CodexCliAdapter::new()),
+        Backend::Local => Box::new(LocalLlmAdapter::new()),
+    }
+}
+```
+
+文字列対応: `"claude"` → Claude, `"codex"` → Codex, `"local"` / `""` → Local
+
+### 8.6 ストリーミング
+
+`send_message_streaming()` は `mpsc::Sender<StreamChunk>` で差分テキストを送信。
+
+マーカー処理:
+- ストリーミング中は `[` 検知後バッファリング
+- `]` で閉じたらマーカー候補として評価
+- ストリーム終了後の `RawResponse.text` からまとめて解析する方が安全
+
+### 8.7 対応バックエンド
+
+| Backend | 実装クラス | 状態 |
+|---------|-----------|------|
+| Claude CLI（Claude Code） | `ClaudeCliAdapter` | stub（未実装） |
+| Codex CLI（GPT系） | `CodexCliAdapter` | stub（未実装） |
+| ローカルLLM | `LocalLlmAdapter` | stub（未実装） |
+
+### 8.8 projects.toml でのバックエンド設定
+
+```toml
+[project.default]
+backend = "claude"
+
+[project.my-project]
+backend = "codex"
+critical_prompt = "..."
+```
+
+### 8.9 session_id 設計判断
+
+- CLIコンテキスト継続に使用
+- セッション開始時は None、継続時は前ターンのIDを渡す
+- Adapter層でClaudeのTool Use形式 vs Codexのfunction calling形式差異を吸収
+
+---
+
+## 9. エラー処理（§21 詳細）
+
+### 9.1 LLM呼出失敗
+
+- タイムアウト → リトライ1回 → Cacheフォールバック
+- 接続不可 → Cacheフォールバック
+- レスポンス不正 → 警告ログ + Cacheフォールバック
+- `raw.error` が Some → `Error(raw.error)` 返却
+
+### 9.2 永続化失敗
+
+- 好感度書込失敗 → メモリ上の値で継続、警告ログ
+- 履歴書込失敗 → メモリ上の値で継続、警告ログ
+- 記憶書込失敗 → 警告ログ
+- カウンタ書込失敗 → 警告ログ
+- 起動時整合性失敗 → 初期値で再生成
+- affinity/history/memory のIO失敗 → `let _ =` で無視して処理続行
+
+### 9.3 マーカーパース失敗
+
+- AFFINITY マーカー不正 → delta=0
+- ANIMA マーカー不正 → 既存FALLBACKテーブルからフォールバック
+- TASK マーカー不正 → 操作スキップ、警告ログ
+- MEMORY_SAVE 不正 → 操作スキップ、警告ログ
+- 数値範囲外 → クランプ
+
+### 9.4 キャッシュ失敗
+
+- ファイル不在 → 既存FALLBACKテーブル使用
+- パース失敗 → 該当ファイル削除 + 既存FALLBACK使用
+- throttle/cache のIO失敗 → エラー扱いせずデフォルト動作継続
+
+### 9.5 CLI Adapter失敗
+
+- backend不在 → 起動失敗 or デフォルト切替
+- セッション切断 → 再接続試行 → 失敗時新規セッション
+
+---
+
+## 10. 拡張設計（§22）
+
+- バックエンド追加: `CliAdapter` trait 実装のみ
+- AnimaCategory追加: `AnimaCategory` enum + `to_cache_category()` マッピング追加
+- L3注入項目追加: `build_context_at()` の dynamic 構築部を拡張
+- 新マーカー追加: `parser::parse_response()` に解析規則追加 + 後処理追加
+
+---
+
+## 11. 実装場所
+
+- `src-tauri/src/character/pipeline.rs` — パイプライン本体
+- `src-tauri/src/character/cli_adapter.rs` — CliAdapter トレイト・型・factory・stub実装
+- `src-tauri/src/character/context.rs` — `build_context_at()`（L2/L3構築）
+- `src-tauri/src/character/parser.rs` — `parse_response()`（マーカー解析）
+- `src-tauri/src/character/throttle.rs` — `should_speak_at()`
+- `src-tauri/src/character/cache.rs` — キャッシュ管理
+
+---
+
+## 12. 関連ドキュメント
+
+- `spec-markers.md` — マーカー仕様
+- `spec-prompt-layers.md` — L1/L2/L3構造
+- `spec-anima.md` — AnimaMode・throttle・スマートキャッシュ
+- `architecture-diagrams.md` §3/§4/§12/§13/§14 — パイプライン・Adapterフロー図
+
+---
+
+## 13. 生成中断（cancel_current_generation）仕様
+
+### 目的
+
+ユーザーがストップボタン押下 or 新規メッセージ送信時に、進行中のAI生成を中断する。
+Claude CLI / Codex / OpenClaw 全バックエンドで共通動作すること。
+
+### Rust: `cancel_chat(project_id: String)` コマンド
+
+```rust
+// ProjectChatState に追加
+pub async fn cancel_current_generation(&self) {
+    // 1. running フラグが false なら即return
+    if !self.running.load(Ordering::SeqCst) { return; }
+
+    // 2. アクティブなバックエンドを検出してSIGINT送信
+    if let Ok(mut guard) = self.proc.try_lock() {
+        if let Some(proc) = guard.as_mut() {
+            proc.send_sigint().await;  // Claude CLI / OpenClaw
+        }
+    }
+    if let Ok(mut guard) = self.codex_proc.try_lock() {
+        if let Some(proc) = guard.as_mut() {
+            proc.send_sigint().await;  // Codex
+        }
+    }
+
+    // 3. running フラグリセット（RunGuardが落ちていない場合のフォールバック）
+    self.running.store(false, Ordering::SeqCst);
+}
+```
+
+`PersistentProc` / `CodexAppServerProc` どちらにも `send_sigint()` を追加:
+```rust
+async fn send_sigint(&mut self) {
+    // Unix: kill(pid, SIGINT). Windows: GenerateConsoleCtrlEvent
+    #[cfg(unix)]
+    if let Some(id) = self.child.id() {
+        let _ = nix::sys::signal::kill(
+            nix::unistd::Pid::from_raw(id as i32),
+            nix::sys::signal::Signal::SIGINT,
+        );
+    }
+    #[cfg(windows)]
+    let _ = self.child.kill().await;  // Windows: killで代替
+}
+```
+
+### Frontend: ストップボタン
+
+- 表示条件: `cliState === 'thinking' || cliState === 'responding'`
+- 位置: 入力欄右側（send ボタンと排他表示）
+- アイコン: ■（StopCircle）
+- 動作:
+  1. `invoke('cancel_chat', { projectId })` を呼ぶ
+  2. `markIdle()` でローカルstate即時更新（UX改善）
+
+### 新規メッセージ送信時の自動キャンセル
+
+```ts
+const sendMessage = async (text: string) => {
+    if (cliState !== 'idle') {
+        await invoke('cancel_chat', { projectId: activeProject.id });
+    }
+    // 通常送信処理へ
+    markRequestStart();
+    await invoke('character_chat', { ... });
+};
+```
+
+### バックエンド別動作
+
+| バックエンド | SIGINT後の動作 |
+|---|---|
+| Claude CLI | 生成中断、部分応答または空で終了 |
+| Codex | 生成中断 |
+| OpenClaw | 生成中断（実装時に確認） |
+
+*追記日: 2026-05-01*
