@@ -1,6 +1,6 @@
 # セッションデータ管理 設計書
 
-**バージョン**: 1.0（nagiko-spec.md §8/§11 + architecture-diagrams.md §10 より統合）
+**バージョン**: 1.0（anima-spec.md §8/§11 + architecture-diagrams.md §10 より統合）
 **最終更新**: 2026-04-28
 
 ---
@@ -26,8 +26,8 @@
 ```rust
 pub enum MessageSource {
     User,          // ユーザー発話
-    NagikoMain,    // メインチャット応答
-    NagikoAnima,   // Anima応答
+    AnimaMain,    // メインチャット応答
+    AnimaAutonomous,   // Anima応答
 }
 ```
 
@@ -40,7 +40,7 @@ pub struct UnifiedMessage {
     pub source: MessageSource,     // 発話源
     pub project_id: String,        // プロジェクトID
     pub text: String,              // 発話テキスト（マーカー除去済）
-    pub affinity_delta: i8,        // Nagiko応答時のみ使用（User時は0）
+    pub affinity_delta: i8,        // Anima応答時のみ使用（User時は0）
 }
 ```
 
@@ -60,7 +60,7 @@ UnifiedMessage::new_anima(text: &str, project_id: &str) -> Self
 
 ```jsonl
 {"id":"uuid1","ts":"2026-04-26T14:30:00Z","source":"User","project_id":"my-project","text":"ビルドして","affinity_delta":0}
-{"id":"uuid2","ts":"2026-04-26T14:30:01Z","source":"NagikoMain","project_id":"my-project","text":"ビルド成功です。テスト3件 PASS。","affinity_delta":0}
+{"id":"uuid2","ts":"2026-04-26T14:30:01Z","source":"AnimaMain","project_id":"my-project","text":"ビルド成功です。テスト3件 PASS。","affinity_delta":0}
 ```
 
 ### 2.5 API
@@ -93,7 +93,7 @@ pub fn history_search_at(base_dir: &Path, query: &str, days: u32) -> Result<Vec<
 ```
 [これまでの会話]
 2026-04-25 14:30 ユーザー: ビルドして
-2026-04-25 14:30 Nagiko: ビルド成功です。テスト3件 PASS。
+2026-04-25 14:30 Anima: ビルド成功です。テスト3件 PASS。
 ...（直近30件）
 ```
 
@@ -103,7 +103,44 @@ pub fn history_search_at(base_dir: &Path, query: &str, days: u32) -> Result<Vec<
 
 Phase 1: 単純な古いエントリ削除（5000 → 3000）
 
-Phase 2以降（予定）:
+Phase 2: サルベージスキャン付き圧縮
+
+圧縮前に削除対象エントリをスキャンし、memory_events に未記録の重要情報を救済する。
+
+```rust
+pub fn compress_at(base_dir: &Path, project_id: &str) -> Result<()> {
+    let entries = load_all(base_dir)?;
+    if entries.len() <= 5000 { return Ok(()); }
+
+    // 削除対象（古い側 = entries.len() - 3000 件）から重要エントリを救済
+    let to_remove = &entries[..entries.len() - 3000];
+    for entry in to_remove {
+        if looks_important(entry) && !already_in_memory_events(entry, base_dir) {
+            salvage_to_memory_events(entry, base_dir, project_id)?;
+        }
+    }
+
+    // 通常圧縮（3000件に切り詰め）
+    truncate_to(base_dir, 3000)?;
+    Ok(())
+}
+
+/// キーワード辞書によるヒューリスティクス重要度判定
+fn looks_important(entry: &UnifiedMessage) -> bool {
+    // 名前・日付・約束・感情語・将来参照のキーワードマッチ
+    // salience >= 0.2 相当の基準
+    // source == User のみ対象（Anima応答は memory_events 経由で既に記録済み）
+}
+
+/// memory_events に同一テキスト・同一タイムスタンプのイベントが存在するか
+fn already_in_memory_events(entry: &UnifiedMessage, base_dir: &Path) -> bool {
+    // raw_text の部分一致 + created_at の時刻近傍検索
+}
+```
+
+目的: oribis-meta が欠落した会話（LLMが未出力 or Rust fallback でも salience < 0.2 だった場合）を、圧縮時に最終救済する。
+
+Phase 3以降（予定）:
 - 重要エントリのマーキング・保護
 - セッション単位での圧縮
 - バッチ蒸留による記憶への昇格

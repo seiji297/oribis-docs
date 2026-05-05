@@ -1,6 +1,6 @@
 # データストレージ設計書
 
-**バージョン**: 1.0（architecture-diagrams.md §1/§5 + nagiko-spec.md §19/§20 より分割）
+**バージョン**: 1.0（architecture-diagrams.md §1/§5 + anima-spec.md §19/§20 より分割）
 **最終更新**: 2026-04-28
 
 ---
@@ -9,18 +9,17 @@
 
 ### ユーザー全体共通（ユーザーグローバル）
 
-`~/.config/oribis/nagiko/`
+`~/.config/oribis/anima/`
 
 | ファイル | 内容 | 担当モジュール |
 |---------|------|--------------|
 | `affinity.json` | 好感度・変動履歴 | `affinity.rs` |
-| `memories.json` | 永続記憶（500件上限） | `memory.rs` |
+| `memory.db` | 記憶システム（SQLite: events/memories/open_loops/relationship_model） | `memory_db.rs` |
+| `memories.json` | **レガシー**（マイグレーション後 `.bak` にリネーム） | `memory.rs` |
 | `event_counters.json` | イベントカウンタ（9カテゴリ） | `counter.rs` |
-| `session_journal.txt` | セッションジャーナル（rolling 50/7日・Anima専用・キャラ共通） | `journal.rs` |
 | `throttle_state.json` | throttle最終発火時刻 | `throttle.rs` |
 | `anima_mode.toml` | AnimaMode設定 | `cache.rs` |
 | `throttle.toml` | throttle設定 | `throttle.rs` |
-| `batch_state.json` | バッチ蒸留状態 | `distillation.rs` |
 | `cache/` | Animaキャッシュ（78ファイル） | `cache.rs` |
 
 ### プロジェクト別
@@ -43,7 +42,7 @@
 ## 2. キャッシュディレクトリ構造
 
 ```
-~/.config/oribis/nagiko/cache/
+~/.config/oribis/anima/cache/
   idle/
     warm.json
     close.json
@@ -75,7 +74,7 @@
 
 全ファイルパスは `base_dir` からの相対。
 
-本番: `base_dir = ~/.config/oribis/nagiko/`
+本番: `base_dir = ~/.config/oribis/anima/`
 テスト: `base_dir = /tmp/test-{uuid}/`（テスト毎に一時ディレクトリ）
 
 ---
@@ -84,11 +83,12 @@
 
 | 操作頻度 | ファイル |
 |---------|---------|
-| 毎ターン読込 | `affinity.json`, `event_counters.json` |
-| 毎ターン書込 | `history.jsonl`（追記） |
-| 応答後書込 | `affinity.json`（delta時のみ）, `memories.json`（MEMORY_SAVE時） |
-| Anima発火時 | `throttle_state.json`, `cache/*.json`, `session_journal.txt` |
-| セッション開始 | `history.jsonl`（30件読込） |
+| 毎ターン読込 | `affinity.json`, `event_counters.json`, `memory.db`（L3検索） |
+| 毎ターン書込 | `history.jsonl`（追記）, `memory.db`（イベント記録） |
+| 応答後書込 | `affinity.json`（delta時のみ）, `memory.db`（MEMORY_SAVE時） |
+| Anima発火時 | `throttle_state.json`, `cache/*.json` |
+| セッション開始 | `history.jsonl`（30件読込）, `memory.db`（未処理consolidation） |
+| アプリ終了時 | `memory.db`（Level 1 consolidation） |
 
 ---
 
@@ -121,8 +121,8 @@
 |------|---|
 | L1 サイズ | 〜2000トークン |
 | L2 サイズ | 〜100トークン |
-| L3 サイズ（通常時） | 〜100トークン |
-| L3 サイズ（カウンタ変動時） | 〜200トークン |
+| L3 サイズ（通常時） | 〜130トークン |
+| L3 サイズ（全チャネル活性時） | 〜170トークン（hard cap） |
 | 履歴注入（セッション開始時） | 〜1500トークン |
 | L1キャッシュ後の実コスト | 1/10程度 |
 
@@ -137,7 +137,7 @@
 
 ### ログ出力先
 
-`~/.config/oribis/nagiko/nagiko.log`（ローテーション: 10MB × 5世代）
+`~/.config/oribis/anima/anima.log`（ローテーション: 10MB × 5世代）
 
 ### ログレベル
 
@@ -206,7 +206,7 @@ ERROR レベル:
 ### 8.1 パス管理
 
 ```rust
-// ~/.config/oribis/nagiko/ 作成・取得
+// ~/.config/oribis/anima/ 作成・取得
 pub fn ensure_character_dir() -> Result<PathBuf>
 
 // ~/.config/oribis/projects/{project_id}/ 作成・取得
@@ -214,7 +214,7 @@ pub fn ensure_character_dir() -> Result<PathBuf>
 pub fn ensure_project_dir(project_id: &str) -> Result<PathBuf>
 ```
 
-テスト時は環境変数 `NAGIKO_TEST_CONFIG_DIR` でベースパス上書き可能。
+テスト時は環境変数 `ANIMA_TEST_CONFIG_DIR` でベースパス上書き可能。
 
 ### 8.2 JSON I/O
 
@@ -238,10 +238,57 @@ pub fn load_json_or_default<T: DeserializeOwned + Default>(path: &Path) -> Resul
 
 ---
 
-## 8. 関連ドキュメント
+## 9. Phase 3: JSON → SQLite 段階統合計画
+
+### 9.1 背景
+
+memory.db（SQLite）導入済みだが、affinity/counters/tasks/throttle は個別JSONファイルのまま。
+耐久性セマンティクスの不統一（JSON: atomic_write_json vs SQLite: トランザクション）と毎ターン多ファイルIOが課題。
+
+### 9.2 統合対象
+
+| 現行ファイル | → テーブル | 備考 |
+|------------|----------|------|
+| `affinity.json` | `affinity_state` + `affinity_history` | history は500件上限（affinity.md §6.1） |
+| `event_counters.json` | `event_counters` | recent_dates は JSON列 |
+| `throttle_state.json` | `throttle_state` | key-value（カテゴリ→最終発火時刻） |
+| `tasks.json` | `tasks` | project_id 列でプロジェクト分離 |
+
+### 9.3 メリット
+
+- 1 DB接続で全ホット状態を取得（毎ターン IO 削減）
+- トランザクション保証（partial write リスク解消）
+- リカバリ・デバッグ時に1ファイル（memory.db）で全状態確認可
+- VACUUM / WAL mode で統一的なパフォーマンス制御
+
+### 9.4 マイグレーション戦略
+
+```rust
+pub fn migrate_json_stores_to_db(base_dir: &Path) -> Result<()> {
+    // 各 JSON ファイルが存在する場合のみ実行
+    // 1. affinity.json → affinity_state + affinity_history テーブル
+    // 2. event_counters.json → event_counters テーブル
+    // 3. throttle_state.json → throttle_state テーブル
+    // 4. tasks.json → tasks テーブル（全プロジェクト統合）
+    // 完了後: 旧ファイルを .bak にリネーム（memories.json と同じパターン）
+}
+```
+
+### 9.5 統合しないもの
+
+| ファイル | 理由 |
+|---------|------|
+| `history.jsonl` | プロジェクト別・JSONL追記特化。SQLite化のメリットが薄い |
+| `cache/*.json` | 読み取り専用の静的ファイル。DB化不要 |
+| `anima_mode.toml` / `throttle.toml` | ユーザー編集可能な設定ファイル。DB化は不適切 |
+| `.last_session_id` / `.last_codex_thread_id` | 単一値ファイル。DB化のオーバーヘッドが大きい |
+
+---
+
+## 10. 関連ドキュメント
 
 - 各 `spec-*.md` — 個別ファイルの詳細仕様
 - `architecture-diagrams.md` §1 — 全体アーキテクチャ図
 - `architecture-diagrams.md` §5 — データ管理スコープ図
 
-*作成日: 2026-04-28*
+*作成日: 2026-04-28 / 改訂: 2026-05-06*

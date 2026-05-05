@@ -1,6 +1,6 @@
 # 好感度システム 設計書
 
-**バージョン**: 1.0（nagiko-spec.md §7 + architecture-diagrams.md §7 より分割）
+**バージョン**: 1.0（anima-spec.md §7 + architecture-diagrams.md §7 より分割）
 **最終更新**: 2026-04-28
 
 ---
@@ -65,7 +65,7 @@ Animaがプロデューサーに対して持つ長期的関係性パラメータ
 
 ## 6. データ構造
 
-`~/.config/oribis/nagiko/affinity.json`:
+`~/.config/oribis/anima/affinity.json`:
 
 ```json
 {
@@ -81,6 +81,22 @@ Animaがプロデューサーに対して持つ長期的関係性パラメータ
   ]
 }
 ```
+
+### 6.1 history 保持ポリシー
+
+| 項目 | 値 |
+|------|---|
+| 上限 | 500件 |
+| 超過時 | 古いものから削除（apply_delta_at() 内で実行） |
+
+```rust
+// apply_delta_at() 内、append後
+if state.history.len() > 500 {
+    state.history.drain(0..state.history.len() - 500);
+}
+```
+
+理由: affinity.json は毎ターン読み込み対象（data-storage.md §4）。無制限成長を許容すると読み書きコストが増加する。他ストア（history.jsonl: 5000件、event_counters.recent_dates: 100件、anima_utterance_log: 100行/7日）は全て上限ありのため、整合性を確保する。
 
 ---
 

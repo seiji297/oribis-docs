@@ -470,3 +470,213 @@ const sendMessage = async (text: string) => {
 | OpenClaw | 生成中断（実装時に確認） |
 
 *追記日: 2026-05-01*
+
+---
+
+## 14. CLI コンテキスト圧縮検知・再注入
+
+### 14.1 背景
+
+CLI（Claude Code / OpenCode / Codex）はコンテキスト窓が上限に達すると内部圧縮を実行する。圧縮後は過去の会話が要約に置き換わるため、L3で注入した記憶・タスク・好感度情報が失われる。
+
+このセクションでは各バックエンドの圧縮検知手段と、検知後の L3 再注入フローを定義する。
+
+### 14.2 アーキテクチャ
+
+バックエンド固有のフックを**統一イベント**にマッピングし、コアハンドラに委任する。
+
+```
+┌─────────────────────────────────────────────────┐
+│  CLI Backend Adapter（バックエンド固有）          │
+│  Claude Code / OpenCode / Codex                  │
+│  責務: バックエンド固有フック → 統一イベント変換   │
+└──────────────┬──────────────────┬────────────────┘
+               │                  │
+     CompactPhase::Pre    CompactPhase::Post
+               │                  │
+               ▼                  ▼
+     on_pre_compact()    on_post_compact()
+     （§14.5）            （§14.6）
+     コアハンドラ          コアハンドラ
+```
+
+### 14.3 バックエンド → 統一イベント マッピング
+
+| バックエンド | バックエンド固有フック | → CompactPhase | 備考 |
+|---|---|---|---|
+| Claude Code | `PreCompact` | `Pre` | Phase 1 |
+| Claude Code | `PostCompact` | `Post` | Phase 1・primary |
+| Claude Code | `SessionStart(source="compact")` | `Post` | **フォールバック専用**（PostCompact未受信時のみ発火） |
+| OpenCode | `experimental.session.compacting` | `Pre` | Phase 2 |
+| OpenCode | `session.compacted` | `Post` | Phase 2 |
+| Codex | なし（§14.4 参照） | degraded mode | フック不在・ベストエフォート |
+
+**SessionStart(source="compact") の二重発火防止**: PostCompact が正常に受信された場合、同一圧縮に対する SessionStart(compact) は無視する。`compaction_id` で同一圧縮を識別する。
+
+```rust
+/// 統一イベント型
+pub struct CompactEvent {
+    pub phase: CompactPhase,
+    pub compaction_id: Option<String>,  // 同一圧縮の二重発火防止用
+}
+
+pub enum CompactPhase {
+    Pre,   // 圧縮開始前 → on_pre_compact()
+    Post,  // 圧縮完了後 → on_post_compact()
+}
+
+/// CLI Adapter が実装するトレイト
+pub trait CompactAware {
+    /// バックエンド固有フックを統一イベントに変換して返す
+    fn detect_compact(&self) -> Option<CompactEvent>;
+}
+
+/// Post 二重発火防止（SessionStart(compact) fallback 専用）
+/// Pre/Post は同一 compaction_id でも独立して処理する
+fn should_handle_post(event: &CompactEvent, post_handled: &mut HashSet<String>) -> bool {
+    if event.phase != CompactPhase::Post {
+        return true;  // Pre は常に処理（Post dedupe の対象外）
+    }
+    match &event.compaction_id {
+        Some(id) => post_handled.insert(id.clone()),  // Post 既処理なら false
+        None => {
+            // ID 取得不能時（一部バックエンドの fallback event）:
+            // 直近の Post 処理から 5秒以内なら二重発火とみなし skip
+            !recently_handled_post_within(Duration::from_secs(5))
+        }
+    }
+}
+```
+
+### 14.4 Codex 代替策（degraded mode）
+
+2026-05 時点で Codex CLI には圧縮検知フックが存在しない。**Pre/Post と同等の保証は不可能**であり、ベストエフォートのチェックポイント方式で代替する。
+
+**Pre 代替（proactive checkpointing）**:
+- 一定ターン数（例: 50ターン）ごとに `on_pre_compact()` を定期実行
+- history.jsonl の件数監視で間接的に長セッションを検知
+- 圧縮直前のタイミングは保証されない（チェックポイント後〜実際の圧縮の間にデータが失われる可能性あり）
+
+**Post 代替（heuristic detection）**:
+- 応答に L3 情報の欠落兆候（好感度・タスク言及なし）がある場合に `on_post_compact()` を補完実行
+- 偽陽性（LLMが単にL3情報に言及しなかっただけ）のリスクあり → 再注入は冪等であるため害は小さい
+
+### 14.5 on_pre_compact() — 圧縮前フラッシュ
+
+`CompactPhase::Pre` のコアハンドラ。CLIコンテキスト窓が要約に置換される前に、永続ストレージの整合性を確保する。
+
+**全ステップはシリアライズ実行**（compaction mutex 下で排他的に実行し、並行書き込みによる torn snapshot を防止する）。
+
+```rust
+pub fn on_pre_compact(base_dir: &Path, project_id: &str) -> Result<()> {
+    let _lock = COMPACT_MUTEX.lock()?;  // 排他ロック
+
+    // 1. パイプライン受付停止 + 未処理フラッシュ
+    //    新規メッセージの受付を一時停止し、処理中の oribis-meta 抽出を完了させる
+    quiesce_and_flush_pipeline(base_dir, project_id)?;
+
+    // 2. 固定コンテキスト源の永続化
+    //    バッファ中の affinity delta / tasks 変更を確実にファイルに書き出す
+    flush_fixed_context_stores(base_dir, project_id)?;
+
+    // 3. Level 1 consolidation の前倒し実行
+    //    通常はセッション終了時のみ実行される memory_events → memories 昇格を
+    //    圧縮前に実施し、重要な記憶を memories テーブルに確定させる
+    consolidate_level1(base_dir)?;
+
+    // 4. open_loops の priority 再計算
+    //    圧縮後に注入される open_loops の優先度が正確であることを保証
+    refresh_open_loop_priorities(base_dir)?;
+
+    Ok(())
+}
+```
+
+| ステップ | 処理 | 理由 |
+|---------|------|------|
+| 1. パイプライン停止+フラッシュ | 受付停止 → 未処理 oribis-meta を memory_events に書き込み | 永続化漏れ防止 + 並行書き込み排除 |
+| 2. 固定コンテキスト永続化 | affinity.json / tasks.json のバッファ書き出し | on_post_compact() で最新値を再注入するため |
+| 3. Level 1 consolidation | memory_events → memories 昇格 | 通常セッション終了時のみの処理を前倒し |
+| 4. open_loops 再計算 | priority・staleness を更新 | 圧縮後の L3 注入精度を保証 |
+
+**レイテンシ目標**: < 500ms（圧縮自体にも時間がかかるため許容範囲）
+
+**quiesce 解除**: `COMPACT_MUTEX` のスコープ終了（`_lock` drop）で自動解除される。`on_pre_compact()` 復帰後、通常のパイプライン処理が再開する。CLI側の圧縮処理中はそもそも新規メッセージが発生しないため、実質的にはロック期間 ≒ フラッシュ処理時間のみ。
+
+### 14.6 on_post_compact() — 圧縮後 L3 再注入
+
+`CompactPhase::Post` のコアハンドラ。圧縮でLLMが失った動的状態を永続ストレージから再構築して注入する。
+
+**read-side 競合への対処**: `on_post_compact()` は圧縮完了直後に実行されるため、通常のパイプライン処理が再開する前に呼ばれる。万一並行書き込みと競合した場合でも、再注入は「最善努力のスナップショット」であり、次ターンの通常 L3 注入で最新値に上書きされるため、一時的な不整合は許容する。
+
+```rust
+pub fn on_post_compact(base_dir: &Path, project_id: &str) -> Result<String> {
+    // 1. 直近30件の履歴を history.jsonl から再読込（フィルタリング付き）
+    let history = recent_messages_at(base_dir, 30)?;
+    let filtered = filter_for_reinjection(&history);
+
+    // 2. 4チャネル記憶注入を再構築（prompt-layers.md §4 参照）
+    //    - profile / open_loops / episodes: memory.db から取得
+    //    - counters: event_counters.json から取得（SQLite統合前）
+    let memory_context = build_memory_channels(base_dir)?;
+
+    // 3. 好感度・タスク・時刻の固定注入を再生成
+    let fixed_context = build_fixed_context(base_dir, project_id)?;
+
+    // 4. 結合してユーザーメッセージプレフィックスとして返却
+    Ok(format_reinject_context(&filtered, &memory_context, &fixed_context))
+}
+```
+
+| ステップ | 処理 | データソース |
+|---------|------|------------|
+| 1. 履歴再読込 | 直近30件取得 + フィルタリング | `history.jsonl` |
+| 2-a. 記憶3チャネル | profile / open_loops / episodes 再構築 | `memory.db` |
+| 2-b. counters チャネル | 直近7日のカウンタ取得 | `event_counters.json`（SQLite統合後は `memory.db`） |
+| 3. 固定注入 | 好感度・進行中タスク・現在時刻 | `affinity.json` / `tasks.json` |
+| 4. フォーマット | セッション開始時注入と同一形式に結合 | — |
+
+**履歴フィルタリングルール**（`filter_for_reinjection`）:
+- source が `User` / `AnimaMain` / `AnimaAutonomous` のメッセージのみ対象
+- text が空 or ホワイトスペースのみのエントリは除外
+- 1エントリあたり最大200文字に切り詰め（トークン上限超過防止）
+- フィルタリング後も30件に満たない場合は追加読込しない（圧縮後は最小限で十分）
+
+**注入フォーマット**: セッション開始時（prompt-layers.md §4）と同等。
+
+```
+[これまでの会話]
+（直近30件の履歴）
+
+[好感度: +63（良好）]
+[現在時刻: 2026-04-26 23:45 月曜]
+
+[進行中タスク]
+- [in_progress] AFDバグ修正
+
+[あなたが覚えていること]
+- 緑茶好き（食べ物）
+- 夜型だが早朝作業を好む（習慣）
+
+[気にかけていること]
+- 明日14時に面接がある
+
+[最近の出来事]
+- 昨日: プロジェクト開始を報告
+
+[行動カウンタ]
+- lewd: 12回（30日: 8、7日: 3）
+```
+
+**サイズ目標**: 〜1500トークン（セッション開始時と同等）
+
+### 14.7 実装場所
+
+| モジュール | 責務 |
+|-----------|------|
+| CLI Adapter（バックエンド別） | `CompactAware` トレイト実装、フック→統一イベント変換 |
+| `src-tauri/src/anima/compact.rs` | `on_pre_compact()` / `on_post_compact()` コアハンドラ |
+| `src-tauri/src/anima/context.rs` | `build_memory_channels()` / `build_fixed_context()` |
+| `src-tauri/src/anima/memory_db.rs` | `consolidate_level1()` / `refresh_open_loop_priorities()` |
+
+*追記日: 2026-05-06*
