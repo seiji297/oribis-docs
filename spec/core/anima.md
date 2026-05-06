@@ -1,7 +1,7 @@
 # Anima統合システム 設計書
 
 **バージョン**: 2.0（spec-anima.md + spec-anima-mode.md + spec-throttle.md + spec-smart-cache.md 統合）
-**最終更新**: 2026-04-28
+**最終更新**: 2026-05-07
 
 ---
 
@@ -25,9 +25,9 @@
 ### 実装優先順序（MemoryFix §1.3）
 
 1. **AnimaMode::Ai 移行**（最優先・これがなければ何も意味ない）
-2. カウンタ処理 + セッションジャーナル
+2. カウンタ処理 + memory_events エピソード記録
 3. システムプロンプト改善（パターン言及指示）
-4. Animaパイプライン記憶連携
+4. Animaパイプライン記憶連携（consolidation接続）
 
 ---
 
@@ -118,6 +118,22 @@ parse_response()
 | Ai | AI生成のみ。キャッシュ不使用 | 高品質・自然な応答 |
 | Hybrid | キャッシュあり→CacheHit、なし→AI生成 | バランス（デフォルト） |
 
+### 6.1.1 フロントエンド AnimaMode マッピング
+
+| バックエンド (Rust) | フロントエンド (TypeScript) | 説明 |
+|---|---|---|
+| Cache | `"cache"` | キャッシュのみ |
+| Ai | `"ai"` | AI生成のみ |
+| Hybrid | `"hybrid"` | バランス |
+| — | `"off"` | UI専用。Anima無効（バックエンドに送信されない） |
+
+- フロントエンド型: `type AnimaMode = "off" | "cache" | "hybrid" | "ai"`
+- UIトグル: `off → cache → hybrid → off` の3段サイクル
+- `"off"` 時は `invoke()` を呼ばず即 return（バックエンド到達不可）
+- `"ai"` は現在UIから直接選択不可（将来の設定画面/TOML経由で選択予定）
+- Tauri コマンド `anima_state` は `anima_mode: Option<String>` を受け取り、`FromStr` でパース。不正値はエラー返却
+- MCP経由は常に `AnimaMode::Ai`（AI生成が主目的）
+
 ### 6.2 AnimaMode 列挙型
 
 ```rust
@@ -132,7 +148,7 @@ pub enum AnimaMode {
 
 ### 6.3 設定ファイル
 
-**保存先**: `~/.config/oribis/nagiko/anima_mode.toml`
+**保存先**: `~/.config/oribis/anima/anima_mode.toml`
 
 ```toml
 # グローバルデフォルト
@@ -152,7 +168,7 @@ error = "Hybrid"
 
 13カテゴリ × 6Tier = **78ファイル**
 
-**保存先**: `~/.config/oribis/nagiko/cache/{category}/{tier}.json`
+**保存先**: `~/.config/oribis/anima/cache/{category}/{tier}.json`
 
 例: `cache/idle/warm.json`, `cache/error/hostile.json`
 
@@ -212,6 +228,44 @@ pub fn cache_exists(category: AnimaCategory, tier: AffinityTier) -> bool
 
 初期キャッシュは LLM で生成。生成プロンプト → `cache-generation-prompts.md`
 
+### 6.9 AnimaMode × 記憶システム連携（A1）
+
+各モードで記憶システムとの連携範囲が異なる。
+
+#### モード別記憶連携マトリクス
+
+| 操作 | Cache | Ai | Hybrid (cache hit) | Hybrid (AI fallback) |
+|------|-------|----|--------------------|---------------------|
+| L3注入（記憶読み出し） | × | ○ build_context_at() | × | ○ build_context_at() |
+| memory_events 書き込み | × | ○ source="anima" | × | ○ source="anima" |
+| open_loop 更新 | △ 既存loopの再提起のみ | ○ oribis-meta経由 | △ | ○ |
+| memories 直接保存 | × | ○ memory_saves経由 | × | ○ |
+| 統合履歴記録 | ○ AnimaAutonomous | ○ AnimaAutonomous | ○ AnimaAutonomous | ○ AnimaAutonomous |
+
+#### 記憶読み出しタイミング
+
+```
+[Ai/Hybrid AIフォールバック時]
+AnimaState受信 → throttle判定 → affinity取得
+  ↓
+build_context_at(..., StatelessRequest, NormalTurn)
+  ← ContextMode::StatelessRequest: 毎ターン全4チャネル注入
+  ↓ profile, open_loops, relevant_episodes（SQLite取得、DB不在時は空）
+adapter.send_message()
+  ↓
+parse_oribis_meta() → persist_oribis_meta_event(source="anima")
+```
+
+- Anima自動応答は常に `StatelessRequest` + `NormalTurn`（`generate_ai_response()` 内にハードコード）
+- 記憶読み出しは AI 生成**前**に完了する（build_context_at 内）
+- 書き込みは AI 応答**後**に同期実行（persist_oribis_meta_event）
+- open_loop 処理は同期（応答返却前に完了）
+
+#### Cache mode の記憶免除理由
+
+Cache mode は静的フレーズ返却のため、ユーザー記憶の主ソースにはならない。
+ただし、返却フレーズが既存 open_loop に関連する場合のみ `last_recalled_at` を更新する（Rust処理）。
+
 ---
 
 ## 7. Throttle（発火制御）
@@ -259,7 +313,7 @@ pub struct CategoryThrottle {
 
 ### 7.4 設定ファイル + 状態ファイル
 
-**設定**: `~/.config/oribis/nagiko/throttle.toml`
+**設定**: `~/.config/oribis/anima/throttle.toml`
 
 ```toml
 min_interval_secs = 60
@@ -269,7 +323,7 @@ cooldown_secs = 300
 probability = 0.3
 ```
 
-**状態**: `~/.config/oribis/nagiko/throttle_state.json`
+**状態**: `~/.config/oribis/anima/throttle_state.json`
 
 ```json
 {
@@ -399,27 +453,76 @@ pub fn pick_with_context(
 4. なし → `phrases` からランダム選択
 5. どちらもなし → フォールバック文字列
 
+### 8.6 記憶活用型 sub_context 拡張（A3・Phase 3）
+
+**現状**: sub_context はカウンター・時刻・セッション間隔のみで決定（静的ヒューリスティクス）。
+
+**拡張方針**: Phase 3 以降で open_loops（Layer 3）を参照し、状況依存のフレーズ選択を可能にする。
+
+#### 拡張後の compute_sub_context シグネチャ
+
+```rust
+pub fn compute_sub_context(
+    category: AnimaCategory,
+    base_dir: &Path,
+    memory_db: Option<&Connection>,  // Phase 3 追加
+) -> Option<String>
+```
+
+- `memory_db` が `Some` の場合のみ記憶参照を試行
+- `None` または DB アクセス失敗時は既存ヒューリスティクスにフォールバック
+
+#### 記憶参照ルール
+
+| カテゴリ | 参照対象 | sub_context キー例 | 条件 |
+|---------|---------|-------------------|------|
+| Greeting | open_loops（priority >= 0.7） | `greeting_contextual` | 高優先度の未解決事項がある |
+| Resume | open_loops（Promise 型） | `resume_promise` | 前回の約束に関連する loop が存在 |
+| Done | open_loops（Reminder 型） | `done_reminder` | タスク完了後に伝えるべきリマインダー |
+
+#### フォールバック保証
+
+```
+memory_db == None → 既存ロジック（変更なし）
+memory_db == Some → open_loops クエリ（SQLite 読取のみ・< 5ms）
+  ↓ 該当 loop あり → contextual sub_context キー
+  ↓ 該当 loop なし → 既存ロジック
+  ↓ DB エラー → 既存ロジック（log::warn のみ）
+```
+
+- 記憶参照は **読み取り専用** で Cache mode のレイテンシを劣化させない
+- キャッシュファイルに contextual キーがなければ phrases フォールバック（安全）
+
+#### 実装時の注意（Phase 3）
+
+- `pick_with_context` のシグネチャも `memory_db: Option<&Connection>` を追加し、`compute_sub_context` に透過的に渡す
+- DB 接続の取得元: `PipelineConfig` が保持する既存の `memory_db` ハンドルを流用（新規接続不要）
+- Hybrid cache-hit パスでは pipeline が既に DB ハンドルを持つため、追加の層跨ぎは不要
+
 ---
 
-## 9. Anima応答の履歴・ジャーナル記録
+## 9. Anima応答の履歴・エピソード記録
 
-- Animaが生成したフレーズは `MessageSource::NagikoAnima` として統合履歴に記録
-- Animaフレーズはセッションジャーナルにも記録（チャット↔Anima橋渡し、B-plan）
+- Animaが生成したフレーズは `MessageSource::AnimaAutonomous` として統合履歴に記録
+- AI生成 Anima フレーズは memory_events にもエピソードとして記録（4レイヤー記憶システムの Layer 1）
+- 全 Anima 発話（Cache/AI 両方）は `anima_utterance_log` にも記録（自己発話想起用）
 
-詳細 → `spec-session-data.md`（履歴）、`spec-memory.md` §9（ジャーナル）
+詳細 → `session-data.md`（履歴）、`memory.md` §3（memory_events）、§11.8（anima_utterance_log）
 
 ---
 
 ## 10. 実装場所
 
+- `src/hooks/useAnima.ts` — フロントエンドAnimaMode型・invoke配線
+- `src/App.tsx` — UIトグル状態管理
 - `src-tauri/src/character/anima.rs` — `AnimaCategory`・`parse_anima_notification()`
 - `src-tauri/src/character/pipeline.rs` — `execute_anima_pipeline()`・AnimaMode分岐
 - `src-tauri/src/character/cache.rs` — キャッシュ読込・選択・`compute_sub_context()`・`pick_with_context()`
 - `src-tauri/src/character/throttle.rs` — `should_speak_at()` + 設定読込
 - `src-tauri/src/character/parser.rs` — `AnimaControl`・ANIMAマーカー解析
-- `~/.config/oribis/nagiko/anima_mode.toml` — モード設定
-- `~/.config/oribis/nagiko/throttle.toml` — throttle設定
-- `~/.config/oribis/nagiko/cache/` — キャッシュファイル群
+- `~/.config/oribis/anima/anima_mode.toml` — モード設定
+- `~/.config/oribis/anima/throttle.toml` — throttle設定
+- `~/.config/oribis/anima/cache/` — キャッシュファイル群
 
 ---
 
@@ -428,7 +531,7 @@ pub fn pick_with_context(
 - `spec-pipeline.md` — 統一パイプライン設計
 - `spec-event-counter.md` — lewd/error_burst カウンター定義
 - `spec-markers.md` — ANIMAマーカー仕様
-- `spec-memory.md` — セッションジャーナル（§9）
+- `memory.md` — 4レイヤー記憶システム（events/memories/open_loops/relationship_model）
 - `cache-generation-prompts.md` — キャッシュ生成プロンプト
 - `architecture-diagrams.md` §11/§13 — AnimaMode切替図・Anima応答シーケンス図
 

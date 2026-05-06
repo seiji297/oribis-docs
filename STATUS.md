@@ -1,6 +1,6 @@
 # Oribis 進捗管理
 
-**最終更新**: 2026-05-05
+**最終更新**: 2026-05-07
 
 ---
 
@@ -16,31 +16,123 @@
 ## 全体フロー
 
 ### 現在地
-- **Phase 1（コア機能）**: 大部分実装済。残GAP: G1(journal), G3(AnimaMode runtime配線), G5(sub_context) の3件
-- **Phase 0（表情）**: 完了（純関数化 + AvatarViewer統合）
-- **UI機能**: 主要機能は実装済。未着手は output-viewer, web-remote, windows-installer
+- **アクティブトラック**: 記憶システム（G1）、MCP Server（G9）、オーケストレーター の3トラック
+- **Phase 0（表情）**: 完了
+- **Phase 1（記憶基盤）**: 完了
+- **その他**: pending-tasks.md に移動済み。Producer指示があれば復帰
+
+### 実装フロー（codex-adviser レビュー済 2026-05-07）
+
+```
+Track 1: 記憶システム（G1） — memory.md v3.5
+┌─────────────────────────────────────────────────────────────┐
+│ Phase 1: 基盤 ✅ 完了                                        │
+│   G1-a: SQLite基盤 + oribis-meta パーサー + migration       │
+│   G1-b: CLAUDE.md oribis-meta出力指示反映                   │
+│   G1-c: Level 1/2 trigger + scheduler配線                   │
+│   G1-d: telemetry（meta欠落率監視）                         │
+│                                                              │
+│ Phase 2: 統合 + 想起                                         │
+│   G1-e: L3 4ch検索 + ContextMode ✅ 完了                     │
+│   G1-f: 忘却曲線 + recency decay ✅ 完了                     │
+│     ※ G1-e直後に配置（ranking基準線確立のため）             │
+│                                                              │
+│ Phase 3: 深化 + 進化 + 意味検索                              │
+│   G1-EL: 軽量エンティティリンク（§8.6） ✅ 完了             │
+│     oribis-meta topics/entities → SQLiteエンコード           │
+│   G1-g: Level 2 consolidation（LLM非同期・stub→実装）✅ 完了│
+│   G1-h: relationship_model ✅ 完了                           │
+│     L3注入 + 即時Boundary/Correction更新                    │
+│   G1-SM: self_model（§6.5）✅ 完了                           │
+│     evidence蓄積+L3注入+L1 decay/promotion                 │
+│   G1-i: 記憶進化（A-MEM軽量版）✅ 完了                     │
+│     L1でstrengthen/supersede/promote/no-op 4操作            │
+│   G1-j: Operational Memory（worker_patterns）✅ 完了        │
+│   G1-k: ハイブリッドベクトル検索 ✅ 完了                     │
+│     fastembed(e5-small)+cosine+Phase3ランキング             │
+└─────────────────────────────────────────────────────────────┘
+
+Track 2: AnimaMode（G3） — anima.md §6  ✅ 完了
+┌─────────────────────────────────────────────────────────────┐
+│ バックエンド: 3分岐（Cache/Ai/Hybrid）✅                    │
+│ UI↔backend モード名統一 ✅ cb9db93                          │
+│   フロント: off/cache/hybrid/ai（Rust AnimaMode と一致）     │
+│   Tauriコマンド: anima_mode パラメータ追加・不正値エラー返却 │
+│   UIトグル: off→cache→hybrid 3段切替                        │
+└─────────────────────────────────────────────────────────────┘
+
+Track 3: オーケストレーター — anima-orchestrator-architecture.md
+┌─────────────────────────────────────────────────────────────┐
+│ 設計確定・未実装（中期ロードマップ）                        │
+│ Anima常駐 + Worker PTY + Department管理                      │
+│ 前提: Phase 3（最低G1-g + G1-h）完了後                      │
+└─────────────────────────────────────────────────────────────┘
+
+Track 4: MCP Server（G9） — mcp-server.md v3.1
+┌─────────────────────────────────────────────────────────────┐
+│ Phase 1-9: ✅ 完了（3c6e86b on sysdev-1/mcp-server）       │
+│   Broker(Unix Socket) + Token管理 + 状態機械               │
+│   Tools: memory_search/save, speak/set_expression/notify    │
+│   Tools: set/get_anima_state, suppress/resume_narration     │
+│   Resources: 6 URI（memories/RM/open_loops/affinity/state） │
+│   Auth + Audit + Rate Limiting + DENIED_TOOLS enforcement   │
+│   111テスト PASS（107 unit + 4 integration）                │
+│                                                              │
+│ Phase 10: GUI統合（未着手）                                  │
+│   フロントエンド Tauri event subscription                    │
+│   Worker MCP自動注入（Orchestrator連携）                     │
+│   プロセスライフサイクル E2E                                 │
+│   GUI トークン発行 UI                                        │
+│   前提: Track 3（オーケストレーター）の Worker PTY 実装      │
+└─────────────────────────────────────────────────────────────┘
+
+推奨実行順:
+  ① G1-e ✅ + G3(UI) ✅ 並列
+  ② G1-f
+  ③ G1-EL
+  ④ G1-g ✅
+  ⑤ G1-h ✅
+  ⑥ G1-SM ✅
+  ⑦ G1-i / G1-j ✅
+  ⑧ G1-k ✅
+  ⑨ Track 3 + Track 4 Phase 10
+```
+
+**並行作業**: バグ修正（TASK-G等）・FBXリターゲット（Producer実施中）はトラックと独立して進行可。
+
+---
 
 ### 機能追加
 
 | 優先度 | ID | 内容 | 関連spec | 状態 | 備考 |
 |--------|-----|------|----------|------|------|
-| HIGH | G1 | journal.rs 新規作成 | memory.md | 未着手 | 蒸留の前提 |
-| HIGH | G3 | AnimaMode runtime配線 | anima.md | 一部実装済 | 定義+3分岐ロジック済、anima_chatからwith_anima_mode未呼出 |
-| MEDIUM | G5 | compute_sub_context 接続 | prompt-layers.md | 未着手 | L3注入準備 |
-| MEDIUM | — | motion-anim-assign ランタイムマウント | motion-anim-assign.md | 一部実装済 | パネル実装済・組込み未 |
-| LOW | — | output-viewer 実装 | output-viewer.md | 未着手 | |
-| LOW | — | web-remote 実装（axum + browser UI） | web-remote.md | 未実装 | 設計確定済 |
-| LOW | — | windows-installer | windows-installer.md | 未実装 | 設計案段階 |
-| LOW | TASK-A | マルチタブ・マルチプロジェクト機能 | — | 未着手 | |
-| LOW | TASK-I | セッション管理再設計 | — | 未着手 | セッションID表示・STARTボタン・孤立CLI検出 |
-| LOW | TASK-L | OpenCode CLI 対応 | pipeline.md | 方針未確定 | 調査pending |
+| HIGH | G5 | compute_sub_context スマートキャッシュ選択 | anima.md §8 | 実装済 | cache.rs + pipeline.rs 接続完了 |
+| HIGH | G1 | 4レイヤー記憶システム + 自己進化 | memory.md v3.5 | 実装済 | Phase 1-3完了。G1-a〜G1-k 全タスク完了 |
+| HIGH | G1-a | └ SQLite基盤 + oribis-meta パーサー + migration | memory.md §9/§13 | 実装済 | e110c74 (2026-05-05) |
+| HIGH | G1-b | └ CLAUDE.md oribis-meta出力指示反映 | memory.md §9.7 | 実装済 | L1(ANIMA.md)+L2(l2.md)に指示追加済 (2026-05-05) |
+| HIGH | G1-c | └ Level 1/2 trigger + scheduler配線 | memory.md §7.3 | 実装済 | 8a3c264 (2026-05-06) consolidation.rs+pipeline+scheduler+exit flush |
+| MEDIUM | G1-d | └ telemetry（meta欠落率監視）+ テスト | memory.md §9.6 | 実装済 | 0096799 (2026-05-06) MetaStats+3状態パース+22テストPASS |
+| HIGH | G1-e | └ L3 4チャネル検索 + ContextMode（context.rs 改修） | memory.md §8 / prompt-layers.md §4 | 実装済 | ContextMode(StatefulSession/StatelessRequest) + SQLite L3 retrieval。codex-adviser PASS (2026-05-07) |
+| HIGH | G1-f | └ 忘却曲線 + recency decay | memory.md §4.3/§8.2 | 実装済 | compute_current_strength + on_memory_recalled + recall reinforcement。codex-adviser PASS (2026-05-07) |
+| MEDIUM | G1-EL | └ 軽量エンティティリンク | memory.md §8.6 | 実装済 | entity_link.rs + pipeline/consolidation接続。codex-adviser PASS (2026-05-07) |
+| HIGH | G1-g | └ Level 2 consolidation | memory.md §7.2 | 実装済 | LLM-based companion + rule-based worker_ops。codex-adviser PASS (2026-05-07) |
+| MEDIUM | G1-h | └ relationship_model L3注入 | memory.md §6.2-§6.4 | 実装済 | RM→ProfileItem変換+統合ランキング+即時Boundary/Correction。codex-adviser PASS (2026-05-07) |
+| MEDIUM | G1-SM | └ self_model | memory.md §6.5 | 実装済 | b9aaf6d (2026-05-07) evidence蓄積+L3注入+L1 decay/promotion。codex-adviser PASS |
+| HIGH | G1-i | └ A-MEM 軽量記憶進化 | memory.md §7.1 | 実装済 | L1でstrengthen/supersede/promote/no-op。codex-adviser PASS (2026-05-07) |
+| HIGH | G1-j | └ Operational Memory | memory.md §11 | 実装済 | worker_patterns L1/L2。codex-adviser PASS (2026-05-07) |
+| HIGH | G1-k | └ ハイブリッドベクトル検索 | memory.md §10.3 | 実装済 | fastembed e5-small 384d + cosine + Phase3ランキング。codex-adviser PASS (2026-05-07) |
+| MEDIUM | G3 | AnimaMode UI↔backend統一 | anima.md §6 | 実装済 | cb9db93 (2026-05-07) フロント off/cache/hybrid/ai → Rust Cache/Ai/Hybrid。codex-reviewer 3回PASS |
+| HIGH | G9 | MCP Server（外部Worker/Client接続基盤） | mcp-server.md v3.1 | 一部実装済 | Phase 1-9完了（3c6e86b）。111テストPASS。Phase 10（GUI統合）未着手 |
+| LOW | G8 | AI応答の軽重モード（一言/詳細 切替） | anima.md | 未着手 | 現状はモデル選択で軽量化のみ。応答自体の簡潔さ制御なし。Producer判断で優先度変更 |
+
+| MEDIUM | — | motion-anim-assign ランタイムマウント | motion-anim-assign.md | 不要 | Animation Editorプラグインで実現済・revert 2b727d4 |
 
 ### バグ修正・技術的負債
 
 | 優先度 | ID | 内容 | 関連 | 状態 | 備考 |
 |--------|-----|------|------|------|------|
 | HIGH | TASK-G | 音声入力 Codex R3 指摘対応 | voice-input.md | 一時停止中 | HIGH×2, MEDIUM×3, LOW×1 |
-| MEDIUM | — | ARP→VRM FBXリターゲット修正 | issues/fbx/ | 一部対応済 | 腕完了、脊椎動作中 |
+| MEDIUM | — | ARP→VRM FBXアニメーションリターゲット | issues/fbx/ | 実施中 | 腕完了、脊椎動作中、Producer作業中 |
 | MEDIUM | TASK-K | 入力欄に謎テキスト挿入バグ | — | 調査中 | 再現手順の特定待ち |
 | LOW | TASK-B | useVoiceInput/useTTS テストTSエラー | voice-input.md | 要確認 | エラー未検出・タスク自体が古い可能性 |
 | LOW | TASK-C | PoseDebugUI.tsx リファクタ検討 | — | 要確認 | App.tsxでimport使用中・削除不可 |
@@ -62,12 +154,25 @@
 
 | ID | 内容 | 完了日 |
 |----|------|--------|
+| G1-a | SQLite記憶基盤 + oribis-meta���ーサー + migration（memory_db.rs, events.rs, parser.rs, pipeline.rs） | 2026-05-05 |
+| G5 | compute_sub_context スマートキャッシュ選択（cache.rs + pipeline接続） | 2026-05-05 |
 | G0 | CLI adapter 実装（cli_adapters.rs） | 2026-05 |
 | G7 | Tauri コマンド公開（anima_chat/anima_state + useAnima接続） | 2026-05 |
 | G6 | イベントカウンタ トリガー接続（pipeline increment + context注入） | 2026-05 |
 | G2 | ThrottleConfig toml ロード | 2026-05 |
 | G4 | Anima pipeline memory_saves 処理 | 2026-05 |
 | TASK-H | 会話ログ保存 + タスクペンディング | a67e021〜c8412c5 |
+| G1-e | L3 4ch検索 + ContextMode（retrieval/context/pipeline/lib） | 2026-05-07 |
+| G1-f | 忘却曲線 + recency decay（compute_current_strength + on_memory_recalled） | 2026-05-07 |
+| G1-EL | 軽量エンティティリンク（entity_link.rs + pipeline/consolidation接続） | 2026-05-07 |
+| G1-g | Level 2 consolidation（LLM companion + rule-based worker_ops） | 2026-05-07 |
+| G1-h | relationship_model L3注入 + 即時Boundary/Correction更新 | 2026-05-07 |
+| G1-SM | self_model — AI自己理解 (evidence蓄積+L3 Ch4注入+L1 decay/promotion) | 2026-05-07 |
+| G1-i | A-MEM 軽量記憶進化（L1: strengthen/supersede/promote/no-op） | 2026-05-07 |
+| G1-j | Operational Memory（worker_patterns L1/L2） | 2026-05-07 |
+| G1-k | ハイブリッドベクトル検索（fastembed e5-small + cosine + Phase 3ランキング） | 2026-05-07 |
+| G9 | MCP Server Phase 1-9（Broker+Tools+Resources+Auth+Audit+StateMachine。111テストPASS） | 2026-05-07 |
+| G3 | AnimaMode UI↔backend統一（FromStr impl + Tauriコマンド anima_mode配線 + UIトグル3段切替） | 2026-05-07 |
 
 ---
 
@@ -84,7 +189,7 @@
 | anima-state.md | AnimaState一覧・カテゴリ | 実装済 |
 | anima-orchestrator-architecture.md | オーケストレーター + Worker PTY | 未実装 |
 | affinity.md | 好感度システム | 実装済 |
-| memory.md | 永続記憶 + ジャーナル + 蒸留 | 一部実装済 |
+| memory.md | 4レイヤー記憶 + 自己進化 + entity linking + self_model | 実装済（Phase 1-3完了、v3.5） |
 | event-counter.md | イベントカウンタ | 実装済 |
 | session-data.md | 統合履歴 + タスク管理 | 実装済 |
 | data-storage.md | データストレージ（db.rs） | 実装済 |
@@ -92,6 +197,7 @@
 | prompt-layers.md | プロンプト三層構造（L1/L2/L3） | 一部実装済 |
 | expression-system.md | 表情反映システム | 実装済 |
 | cache-generation-prompts.md | キャッシュ生成プロンプト集 | 設計確定 |
+| mcp-server.md | MCP Server（外部Worker/Client接続） | 一部実装済（Phase 1-9完了、Phase 10 GUI統合未着手） |
 | architecture-diagrams.md | アーキテクチャ図集 | — |
 | test-requirements.md | テスト要件 | — |
 
