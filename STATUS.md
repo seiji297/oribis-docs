@@ -1,6 +1,6 @@
 # Oribis 進捗管理
 
-**最終更新**: 2026-05-07
+**最終更新**: 2026-05-08
 
 ---
 
@@ -63,9 +63,37 @@ Track 2: AnimaMode（G3） — anima.md §6  ✅ 完了
 
 Track 3: オーケストレーター — anima-orchestrator-architecture.md
 ┌─────────────────────────────────────────────────────────────┐
-│ 設計確定・未実装（中期ロードマップ）                        │
-│ Anima常駐 + Worker PTY + Department管理                      │
-│ 前提: Phase 3（最低G1-g + G1-h）完了後                      │
+│ P1 ✅ 完了（Epic: epic-oribis-orchestrator-p1-20260508）    │
+│   types.ts 5型定義 + Rust Worker基盤(events/dept/worker_mgr)│
+│   narration.rs + MCP tools/event_feed + Speech Queue        │
+│   lib.rs 8 Tauriコマンド登録                                │
+│   フロントエンド5コンポーネント(WorkerPanel/DrawerAnima/     │
+│     DrawerDepartment/DrawerEventFeed/XtermTerminal拡張)     │
+│   App.tsx 二重タブ再編 + PTYパネル統合                       │
+│   テスト20件(前端) + 796件(Rust)中新規追加分全PASS          │
+│   Onboarding Step3 Department改編                           │
+│                                                              │
+│ P1品質修正 ✅ 完了（2026-05-08）                             │
+│   タスク1: Worker kill統合(Rust) — set_worker_pid/          │
+│     get_worker_pid/pty_kill統合 + 15テストPASS              │
+│   タスク2: WorkerPanel kill順序(TS) — forwardRef/           │
+│     useImperativeHandle kill() + xtermRefs Map管理          │
+│   タスク3: narration per-worker cursor —                    │
+│     get_batch_for_worker/list_event_workers追加             │
+│     fetch_and_process_batch_inをper-worker独立取得に変更    │
+│   タスク4: MCP session identity —                           │
+│     ClientInfoにworker_id/worker_session_id追加             │
+│     handle_write_event_inで実worker_id→token_prefix fallback│
+│   テスト: 812PASS/1FAIL(既存・無関係)                        │
+│   ブランチ: sysdev-1/oribis-orch-p1-fix (4e5d6c8)           │
+│   成果物: docs/deliverables/p1-fix-20260508/                │
+│                                                              │
+│ P2: 未着手（Tauri invoke接続・EventFeed自動購読・TTS完了CB）│
+│   codex-adviser指摘6件バックログ:                            │
+│     ~~HIGH: cursor重複/kill論理のみ/session仮値~~ → 解消済  │
+│     MED: TTS推定/JSONL全走査/spawn未検証                    │
+│   詳細: knowledge/patterns.md §Orchestrator P1               │
+│ P3: 未着手（Department CRUD永続化・Worker自動スケール）      │
 └─────────────────────────────────────────────────────────────┘
 
 Track 4: MCP Server（G9） — mcp-server.md v3.1
@@ -120,9 +148,10 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | MEDIUM | G1-SM | └ self_model | memory.md §6.5 | 実装済 | b9aaf6d (2026-05-07) evidence蓄積+L3注入+L1 decay/promotion。codex-adviser PASS |
 | HIGH | G1-i | └ A-MEM 軽量記憶進化 | memory.md §7.1 | 実装済 | L1でstrengthen/supersede/promote/no-op。codex-adviser PASS (2026-05-07) |
 | HIGH | G1-j | └ Operational Memory | memory.md §11 | 実装済 | worker_patterns L1/L2。codex-adviser PASS (2026-05-07) |
-| HIGH | G1-k | └ ハイブリッドベクトル検索 | memory.md §10.3 | 実装済 | fastembed e5-small 384d + cosine + Phase3ランキング。codex-adviser PASS (2026-05-07) |
+| HIGH | G1-k | └ ハイブリッドベクトル検索 | memory.md §10.3 | 実装済 | 423a668。fastembed e5-small 384d + cosine + Phase3ランキング。113テストPASS。codex-adviser PASS (2026-05-07) |
 | MEDIUM | G3 | AnimaMode UI↔backend統一 | anima.md §6 | 実装済 | cb9db93 (2026-05-07) フロント off/cache/hybrid/ai → Rust Cache/Ai/Hybrid。codex-reviewer 3回PASS |
-| HIGH | G9 | MCP Server（外部Worker/Client接続基盤） | mcp-server.md v3.1 | 一部実装済 | Phase 1-9完了（3c6e86b）。111テストPASS。Phase 10（GUI統合）未着手 |
+| HIGH | G9 | MCP Server（外部Worker/Client接続基盤） | mcp-server.md v3.1 | 一部実装済 | Phase 1-9完了（3c6e86b）。111テストPASS。Phase 10（GUI統合）一部実装（P1 write_event+events/feed） |
+| HIGH | ORCH-P1 | オーケストレーター P1 | anima-orchestrator-architecture.md | 実装済 | 9タスク完了。types.ts/Rust基盤/narration/MCP統合/Tauriコマンド/フロントエンド5コンポ/App.tsx統合/テスト/Onboarding |
 | LOW | G8 | AI応答の軽重モード（一言/詳細 切替） | anima.md | 未着手 | 現状はモデル選択で軽量化のみ。応答自体の簡潔さ制御なし。Producer判断で優先度変更 |
 
 | MEDIUM | — | motion-anim-assign ランタイムマウント | motion-anim-assign.md | 不要 | Animation Editorプラグインで実現済・revert 2b727d4 |
@@ -139,6 +168,8 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | LOW | TASK-E | VrmViewer expression detection 堅牢化 | vrm.md | 未着手 | |
 | LOW | TASK-F | カメラ spherical↔OrbitControls 同期 | — | 未着手 | |
 | LOW | TASK-J | 左ドロワー push レイアウト | — | 休止中 | R3F ResizeObserver問題 |
+| HIGH | — | Force-close後チャット入力スタック | lib.rs, App.tsx | 修正済 | bbd0ec2。session IDクリア+orphan検知+state reset |
+| MEDIUM | — | L1/L2プロンプトパス不一致 | context.rs, lib.rs | 修正済 | 786fd8b。_common→orchestrator統一 |
 
 ### テスト・品質
 
@@ -170,9 +201,15 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | G1-SM | self_model — AI自己理解 (evidence蓄積+L3 Ch4注入+L1 decay/promotion) | 2026-05-07 |
 | G1-i | A-MEM 軽量記憶進化（L1: strengthen/supersede/promote/no-op） | 2026-05-07 |
 | G1-j | Operational Memory（worker_patterns L1/L2） | 2026-05-07 |
-| G1-k | ハイブリッドベクトル検索（fastembed e5-small + cosine + Phase 3ランキング） | 2026-05-07 |
+| G1-k | ハイブリッドベクトル検索（fastembed e5-small + cosine + Phase 3ランキング）423a668 | 2026-05-07 |
 | G9 | MCP Server Phase 1-9（Broker+Tools+Resources+Auth+Audit+StateMachine。111テストPASS） | 2026-05-07 |
 | G3 | AnimaMode UI↔backend統一（FromStr impl + Tauriコマンド anima_mode配線 + UIトグル3段切替） | 2026-05-07 |
+| — | L1/L2プロンプトパス統一（_common→orchestrator + oribis_prompts_dir + テストbase_dir対応）786fd8b | 2026-05-07 |
+| — | Force-close後チャット入力スタック修正（session IDクリア + orphan検知 + state reset）bbd0ec2 | 2026-05-07 |
+| — | コンテキストテストhome fallback修正（setup_prompts_dir追加）11cf7dc | 2026-05-07 |
+| — | GUIテスト全項目PASS（AnimaMode, Prompt編集, Memory E2E, ベクトル検索）393テスト+スクショ確認 | 2026-05-07 |
+| ORCH-P1 | オーケストレーターP1 Epic全9タスク完了（types/Rust基盤/narration/MCP統合/Tauri cmd/フロントエンド/App.tsx統合/テスト/Onboarding） | 2026-05-08 |
+| E2E-FW | シナリオ駆動型E2Eテストフレームワーク（engine 22ファイル + scenarios 6 JSON + bone regression） | 2026-05-08 |
 
 ---
 
@@ -187,14 +224,14 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | anima.md | Anima + AnimaMode + throttle + キャッシュ | 一部実装済 |
 | anima-plan.md | 開発計画（GAP管理） | — |
 | anima-state.md | AnimaState一覧・カテゴリ | 実装済 |
-| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY | 未実装 |
+| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY | 一部実装済（P1完了、P2/P3未着手） |
 | affinity.md | 好感度システム | 実装済 |
 | memory.md | 4レイヤー記憶 + 自己進化 + entity linking + self_model | 実装済（Phase 1-3完了、v3.5） |
 | event-counter.md | イベントカウンタ | 実装済 |
 | session-data.md | 統合履歴 + タスク管理 | 実装済 |
 | data-storage.md | データストレージ（db.rs） | 実装済 |
 | markers.md | マーカー方式統一仕様 | 実装済 |
-| prompt-layers.md | プロンプト三層構造（L1/L2/L3） | 一部実装済 |
+| prompt-layers.md | プロンプト三層構造（L1/L2/L3） | 実装済（v1.4: L1/L2正規パス統一） |
 | expression-system.md | 表情反映システム | 実装済 |
 | cache-generation-prompts.md | キャッシュ生成プロンプト集 | 設計確定 |
 | mcp-server.md | MCP Server（外部Worker/Client接続） | 一部実装済（Phase 1-9完了、Phase 10 GUI統合未着手） |
