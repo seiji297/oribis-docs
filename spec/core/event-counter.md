@@ -1,6 +1,6 @@
 # イベントカウンタ 設計書
 
-**バージョン**: 1.0（nagiko-spec.md §10 + MemoryFix §2/§7 + architecture-diagrams.md §9 より分割）
+**バージョン**: 1.0（anima-spec.md §10 + MemoryFix §2/§7 + architecture-diagrams.md §9 より分割）
 **最終更新**: 2026-04-28
 
 ---
@@ -46,7 +46,7 @@ pub struct EventCounter {
 
 ## 4. ストレージ
 
-**保存先**: `~/.config/oribis/nagiko/event_counters.json`
+**保存先**: `~/.config/oribis/anima/event_counters.json`
 
 ```json
 {
@@ -124,7 +124,7 @@ increment 時に自動更新。
 | 3〜5 | stage2 | stage2 |
 | 6+ | stage3 | stage3 |
 
-→ `spec-smart-cache.md` の `compute_sub_context()` で使用
+→ `anima.md` §8 の `compute_sub_context()` で使用
 
 ---
 
@@ -154,9 +154,9 @@ increment 時に自動更新。
 
 ## 11. 関連ドキュメント
 
-- `spec-smart-cache.md` — lewd/error_burst のstage別フレーズ
-- `spec-prompt-layers.md` — L3条件付き注入仕様
-- `spec-batch-distillation.md` — カウンターデータの記憶蒸留
+- `anima.md` §8 — lewd/error_burst のstage別フレーズ（compute_sub_context）
+- `prompt-layers.md` — L3条件付き注入仕様
+- `memory.md` §7 — consolidation（カウンターデータの統合処理）
 - `architecture-diagrams.md` §9 — イベントカウンターフロー図
 
 *作成日: 2026-04-28*

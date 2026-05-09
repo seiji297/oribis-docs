@@ -1,6 +1,6 @@
 # マーカー方式 設計書
 
-**バージョン**: 1.0（nagiko-spec.md §6 + architecture-diagrams.md §6 より分割）
+**バージョン**: 1.0（anima-spec.md §6 + architecture-diagrams.md §6 より分割）
 **最終更新**: 2026-04-28
 
 ---

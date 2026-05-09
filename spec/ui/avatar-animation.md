@@ -147,7 +147,7 @@ assets/morph-maps/
 ```
 
 ```json
-// nagiko.morph.json の例
+// anima.morph.json の例
 {
   "happy": ["笑い", "にこり"],
   "sad": ["悲しい"],

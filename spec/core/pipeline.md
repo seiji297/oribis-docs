@@ -91,12 +91,22 @@ pub enum PipelineResponse {
 pub struct PipelineConfig {
     pub base_dir: PathBuf,
     pub project_id: String,
-    pub backend: String,      // "claude" | "codex" | "local" | ""
-    pub anima_mode: AnimaMode, // Cache / Ai / Hybrid
+    pub backend: String,          // "claude" | "codex" | "local" | ""
+    pub anima_mode: AnimaMode,    // Cache / Ai / Hybrid
+    pub context_mode: ContextMode, // StatefulSession | StatelessRequest
 }
 ```
 
 `anima_mode` は `anima_mode.toml` から読込。詳細 → `spec-anima.md`
+
+`context_mode` はL3注入戦略を制御:
+- `StatefulSession` — CLI/GUIチャット。コンテキストがターン間で保持される。`NormalTurn` では episodes のみ注入、`SessionStart` / `AfterCompaction` で全チャネル + 履歴を注入。
+- `StatelessRequest` — API/Anima自動応答。各リクエストが独立。毎ターン全チャネル + 履歴を注入。
+
+呼出元ごとのデフォルト設定:
+- `anima_chat()` → `StatefulSession`（ユーザーとのGUIチャット）
+- `anima_state()` → `StatelessRequest`（Anima自動応答）
+- `generate_ai_response()` 内部 → `StatelessRequest` ハードコード（Anima通知フロー）
 
 ---
 

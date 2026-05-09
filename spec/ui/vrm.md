@@ -5,10 +5,10 @@
 # oribis/vrm — spec
 
 ## 概要
-OribisにVRMアバター表示機能を追加。チャット画面にNagiko.vrmを初期モデルとして表示する。
+OribisにVRMアバター表示機能を追加。チャット画面にAnima.vrmを初期モデルとして表示する。
 
 ## AC一覧（ORIBIS-VRM-AVATAR）
-- AC-1: 起動時にNagiko.vrmが画面に表示される
+- AC-1: 起動時にAnima.vrmが画面に表示される
 - AC-2: チャットUIと共存するレイアウト（左VRM + 右チャット or VRM背景+オーバーレイ）
 - AC-3: VRMファイル不在時にフォールバック表示（エラー表示or代替）
 - AC-4: cargo test + frontend unit test PASS
@@ -18,7 +18,7 @@ OribisにVRMアバター表示機能を追加。チャット画面にNagiko.vrm�
 ## アーキテクチャ
 - Frontend: React/Vite + @pixiv/three-vrm + Three.js
 - Backend: Tauri fs::read（VRMバイナリ読み込み）またはURL経由
-- VRMパス: C:\Users\admin\Documents\VRoidStudio\Nagiko.vrm
+- VRMパス: C:\Users\admin\Documents\VRoidStudio\Anima.vrm
 
 ## 制約
 - 初期実装はVRM表示のみ（アニメーション・リップシンク等は将来フェーズ）
@@ -44,7 +44,7 @@ OribisにVRMアバター表示機能を追加。チャット画面にNagiko.vrm�
 
 ### 最終コミット
 
-- `24a8da6`: feat(vrm): add VRM avatar display with Nagiko.vrm
+- `24a8da6`: feat(vrm): add VRM avatar display with Anima.vrm
 - `bdfa29b`: fix(vrm): return VRM path from backend to eliminate frontend hardcode (SSOT)
 
 ### 実装概要

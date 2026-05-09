@@ -1,7 +1,7 @@
 # プロンプト三層構造 設計書
 
-**バージョン**: 1.1（L3 4チャネル記憶注入対応）
-**最終更新**: 2026-05-06
+**バージョン**: 1.4（L1/L2正規パス統一）
+**最終更新**: 2026-05-07
 
 ---
 
@@ -22,7 +22,7 @@
 - 共通ベース + プロジェクト固有上書き対応
 
 **保存先**:
-- `~/.config/oribis/anima/CLAUDE.md`（共通ベース）
+- `~/.oribis/roles/orchestrator/prompts/ANIMA.md`（正規パス）
 - `{project_path}/.claude/CLAUDE.md`（プロジェクト固有上書き）
 
 **サイズ目標**: 〜2000トークン
@@ -44,7 +44,7 @@
 - 長会話でL1の影響が薄まる対策
 - 内容固定（毎ターン同一文字列）
 
-**保存先**: `projects.toml` 内 + 共通テンプレート
+**保存先**: `~/.oribis/roles/orchestrator/prompts/l2.md`
 
 **サイズ目標**: 〜100〜130トークン
 
@@ -63,55 +63,69 @@
 - 好感度値
 - 現在時刻・曜日
 - 進行中タスク一覧
+- `[行動カウンタ]` — 直近7日に変動があったカテゴリ（L2注入として毎ターン注入、L3チャネルから分離）
 
-**4チャネル記憶注入（毎ターン・budget制）**:
+**4チャネル記憶注入（ContextMode依存・budget制）**:
+
+注入量は `ContextMode` と `ReinjectionReason` の組み合わせで決まる:
+
+| ContextMode | ReinjectionReason | 注入内容 |
+|-------------|-------------------|---------|
+| StatefulSession | NormalTurn | episodes のみ（他チャネルは既にコンテキスト窓内） |
+| StatefulSession | SessionStart / AfterCompaction | 全4チャネル + 履歴30件 |
+| StatelessRequest | NormalTurn / SessionStart | 全4チャネル + 履歴30件（毎ターン） |
+
+全4チャネル注入時の内容:
 - `[あなたが覚えていること]` — profile memories（CoreIdentity/Preference/Boundary）上位5件
 - `[気にかけていること]` — open_loops 未解決・priority上位3件
 - `[最近の出来事]` — relevant_episodes（topic/entity重複）上位3件
-- `[行動カウンタ]` — 直近7日に変動があったカテゴリ＋現在会話に関連するもののみ
+- `[あなた自身のこと]` — self_model の高confidence trait（現在トピックに関連する場合のみ・2〜4件）
 
 **token budget制（動的配分方式）**:
 
 | チャネル | 基本 budget | 1項目あたり |
 |---------|------------|-----------|
-| profile | 50トークン | 1行短文（10トークン以内） |
+| profile | 45トークン | 1行短文（10トークン以内） |
 | open_loops | 30トークン | 1行短文 |
-| episodes | 30トークン | 1行短文 |
-| counters | 20トークン | カテゴリ: 数値のみ |
-| 固定（affinity/time/tasks） | 40トークン | — |
-| **合計hard cap** | **170トークン** | — |
+| episodes | 25トークン | 1行短文 |
+| self_context | 20トークン | 1行短文（関連時のみ。無関連時は0） |
+| 固定（affinity/time/tasks/counters） | 60トークン | — |
+| **合計hard cap** | **180トークン** | — |
+
+※ counters は L2 注入（毎ターン固定）に移動。L3 budget から除外。
 
 **動的再配分ルール**: 空チャネルの余剰 budget を他チャネルに再配分する。
 
 ```
-例1: open_loops が 0件の場合
-  → loops の 30tok を profile(+15) と episodes(+15) に分配
-  → profile=65, loops=0, episodes=45, counters=20, 固定=40 = 170
+例1: open_loops が 0件、self_context も無関連で 0件の場合
+  → 余剰 50tok を profile(+25) と episodes(+25) に分配
+  → profile=70, loops=0, episodes=50, self=0, 固定=60 = 180
 
-例2: counters も episodes も 0件の場合
-  → 余剰 50tok を profile(+30) と loops(+20) に分配
-  → profile=80, loops=50, episodes=0, counters=0, 固定=40 = 170
+例2: episodes も 0件の場合
+  → 余剰 45tok を profile(+20) と loops(+15) と self(+10) に分配
+  → profile=65, loops=45, episodes=0, self=30, 固定=60 = 180
 ```
 
-再配分優先順位: profile > episodes > open_loops > counters
-合計 hard cap（170tok）は変更しない。
+再配分優先順位: profile > episodes > open_loops > self_context
+合計 hard cap（180tok）は変更しない。
 
 budget超過時: priority trim（低priorityアイテムから削除）
 
 **条件付き注入**:
 - `[記憶検索結果]` — 前ターンに MEMORY_QUERY が発行された場合（既存互換・追加30トークン）
 
-**セッション開始時のみ追加注入**:
+**履歴注入**（`inject_all` = true の場合のみ）:
 - `[これまでの会話]`（直近30件の履歴）
-- セッション継続中は注入しない（CLI側のコンテキスト窓が保持）
+- StatefulSession + NormalTurn は注入しない（CLI側のコンテキスト窓が保持）
+- StatefulSession + SessionStart/AfterCompaction、または StatelessRequest では毎回注入
 
 **CLI圧縮後の再注入**（→ pipeline.md §14 参照）:
-- CLI が内部コンテキスト圧縮を実行した場合、PostCompact hook 検知後に履歴（直近30件）を再注入する
-- セッション開始時注入と同等の内容だが、既存会話が要約に置き換わっている前提で注入
+- CLI が内部コンテキスト圧縮を実行した場合、PostCompact hook 検知後に履歴（直近30件）と全4チャネルを再注入する
+- `ReinjectionReason::AfterCompaction` + `StatefulSession` で呼ばれ、全チャネル注入が行われる
 
 **サイズ目標**:
 - 通常時: 〜130トークン（全チャネルがsparseな場合）
-- 全チャネル活性時: 〜170トークン（hard cap）
+- 全チャネル活性時: 〜180トークン（hard cap）
 - セッション開始時（履歴込み）: 〜1500トークン
 - CLI圧縮後再注入時: 〜1500トークン（セッション開始時と同等）
 
@@ -141,7 +155,13 @@ budget超過時: priority trim（低priorityアイテムから削除）
 
 [行動カウンタ]
 - lewd: 12回（30日: 8、7日: 3）
+
+[あなた自身のこと]
+- 整理されたコードが好き（確信度: 0.9）
+- テスト設計の議論に関心がある（確信度: 0.6）
 ```
+
+`[あなた自身のこと]` は self_model（memory.md §6.5）から現在トピックに関連する trait のみ注入。関連なしの場合はチャネルごと省略する。self_model に注入された内容は次ターンの self_reactions の evidence source にしてはならない（循環強化防止）。
 
 ---
 
@@ -173,6 +193,9 @@ budget超過時: priority trim（低priorityアイテムから削除）
 [行動カウンタ]
 - lewd: 12回（30日: 8、7日: 3）
 
+[あなた自身のこと]
+- 整理されたコードが好き（確信度: 0.9）
+
 （セッション開始時のみ）
 [これまでの会話]
 2026-04-25 14:30 ユーザー: ビルドして
@@ -195,8 +218,9 @@ budget超過時: priority trim（低priorityアイテムから削除）
 
 ## 8. 実装場所
 
-- `src-tauri/src/character/context.rs` — `build_context_at()` でL2/L3を組み立て
+- `src-tauri/src/anima/context.rs` — `build_context_at()` でL2/L3を組み立て。`ContextMode` / `ReinjectionReason` によって注入チャネルを制御
+- `src-tauri/src/anima/retrieval.rs` — SQLite経由のL3チャネル取得（`build_l3_channels()` / `build_episodes_only()`）。DB不在時は空L3にグレースフルデグレード
 - `src-tauri/.claude/CLAUDE.md` — L1 本体
-- `projects.toml` — Critical Prompt テンプレートと per-project 設定
+- `projects.json` — per-project 設定（Critical Prompt は roles/_common/prompts/l2.md）
 
 *作成日: 2026-04-28*

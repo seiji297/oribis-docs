@@ -1,6 +1,6 @@
 # Anima — 概要・設計原則・フェーズ計画
 
-**バージョン**: 1.1（nagiko-spec.md §1/§2/§23/§25 より分割。2026-04-30: history per-project化・session_id永続化・db.rs追加・ギャップ補完）
+**バージョン**: 1.1（anima-spec.md §1/§2/§23/§25 より分割。2026-04-30: history per-project化・session_id永続化・db.rs追加・ギャップ補完）
 **最終更新**: 2026-04-30
 
 ---
@@ -76,6 +76,21 @@ Animaは1つの人格。応答系統は分けるが、**人格の源泉は共有
 
 → 詳細設計: `pipeline.md §CLI Adapter` / `docs/features/oribis/knowledge.md`
 
+### 2.7 ★ キャラクター個人名の使用禁止（全ドキュメント・コード共通）
+
+**設計書・コード・コメント・変数名・パス名に特定キャラクターの個人名（例: Nagiko）を使用することを禁止する。**
+
+- システム内部では汎用名 `Anima` を使用すること
+- ファイルパス: `~/.config/oribis/anima/`（`nagiko/` 不可）
+- コード識別子: `AnimaMain`, `AnimaAutonomous`（`NagikoMain` 不可）
+- enum値・型名: `MessageSource::AnimaMain`（`NagikoMain` 不可）
+- 環境変数: `ANIMA_TEST_CONFIG_DIR`（`NAGIKO_*` 不可）
+- **例外**: プロンプトファイル（`prompt/character/nagiko.md` 等のキャラクター定義）のみ個人名使用可
+- **例外**: L2プロンプト内のキャラクター言及
+- **例外**: `cache-generation-prompts.md` 内のプロンプトテンプレート（キャラクター口調定義）
+
+理由: キャラクター名はプロンプト層で定義される設定値であり、システム層にハードコードすべきではない。
+
 ---
 
 ## 3. 不採用要素（§23）
@@ -121,8 +136,8 @@ Animaは1つの人格。応答系統は分けるが、**人格の源泉は共有
 
 - アバター制御連動強化
 - 自発発話機構
-- エピソード記憶
-- バッチ記憶蒸留（→ `spec-memory.md §10`）
+- 4レイヤー記憶システム（memory_events/memories/open_loops/relationship_model）
+- Consolidation Level 2（LLM統合）（→ `memory.md §7`）
 - AnimaパイプラインのClaudeセッション持続（→ `spec-anima.md §6`）
 
 ### Phase 4（将来）

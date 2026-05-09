@@ -6,22 +6,22 @@
 
 ## 参照 spec
 - `projects/oribis-track-b/docs/spec/files/oribis-phase1-integrated.md`
-- `projects/oribis-track-b/docs/spec/files/nagiko-spec.md`
+- `projects/oribis-track-b/docs/spec/files/anima-spec.md`
 
 ## モジュール構成
 
 | モジュール | ファイル |
 |-----------|---------|
-| parser | nagiko/parser.rs |
-| cli_adapter | nagiko/cli_adapter.rs |
-| cache | nagiko/cache.rs |
-| db | nagiko/db.rs |
-| memory | nagiko/memory.rs |
-| task | nagiko/task.rs |
-| throttle | nagiko/throttle.rs |
-| counter | nagiko/counter.rs |
-| context | nagiko/context.rs |
-| pipeline | nagiko/pipeline.rs |
+| parser | anima/parser.rs |
+| cli_adapter | anima/cli_adapter.rs |
+| cache | anima/cache.rs |
+| db | anima/db.rs |
+| memory | anima/memory.rs |
+| task | anima/task.rs |
+| throttle | anima/throttle.rs |
+| counter | anima/counter.rs |
+| context | anima/context.rs |
+| pipeline | anima/pipeline.rs |
 
 ## マーカー仕様
 - `[AFFINITY:N]`: last-occurrence 有効、±5 clamp
@@ -30,7 +30,7 @@
 - `[MEMORY_SAVE:...]` / `[MEMORY_QUERY:...]`: 複数対応
 
 ## キャッシュパス
-`~/.config/oribis/nagiko/anima_cache/{category}_{tier}.json`
+`~/.config/oribis/anima/anima_cache/{category}_{tier}.json`
 
 ## Implementation Notes
 
@@ -39,9 +39,9 @@
 ## 2026-04-26 — Phase 1 (Prep) + Phase 2 (Track B) 完了
 
 ### Phase 1: Git Worktree Prep
-- `feat/nagiko-track-a` / `feat/nagiko-track-b` ブランチ作成
+- `feat/anima-track-a` / `feat/anima-track-b` ブランチ作成
 - oribis-track-a / oribis-track-b worktree 作成
-- scaffold (nagiko/mod.rs + 空ファイル群) commit 4322485
+- scaffold (anima/mod.rs + 空ファイル群) commit 4322485
 - 両ブランチ push 完了
 
 ### Phase 2: Track B 実装（ECC: tdd-guide → codex-reviewer → DA）
@@ -66,22 +66,22 @@
 
 ### Phase 3: Integration 実装
 
-#### context.rs 取込 + STUB 置換 (commits f93272f + cb1c3d2, branch: feat/nagiko-integration)
-- feat/nagiko-track-a の context.rs を cherry-pick（f93272f）
+#### context.rs 取込 + STUB 置換 (commits f93272f + cb1c3d2, branch: feat/anima-integration)
+- feat/anima-track-a の context.rs を cherry-pick（f93272f）
 - pipeline.rs の STUB build_context → context::build_context_at 置換（cb1c3d2）
 - 型変換: context.LLMContext.history: Vec<serde_json::Value> → Prompt.history: Vec<String>（v.to_string()）
 - format_active_tasks_for_prompt_at / format_counters_for_prompt_at: context.rs L76/L81 に存在確認
 - テスト: 92件 PASS（従来73→増加）
 
-#### Step 5: pipeline.rs (commit f568ccc, branch: feat/nagiko-integration)
+#### Step 5: pipeline.rs (commit f568ccc, branch: feat/anima-integration)
 - 13 tests PASS（全体: 73件 PASS）
-- InputEvent/NagikoResponse enums, execute_pipeline, execute_ai, apply_response
+- InputEvent/AnimaResponse enums, execute_pipeline, execute_ai, apply_response
 - adapter injection パターン（MockCliAdapter でテスト）
 - 6 stubs: build_context/determine_mode/apply_delta/append_to_history/execute_cache/get_project_backend
 - Codex R1 FAIL（MEDIUM: env var並列汚染）→ serial_test 追加→R2 PASS（LOW: execute_pipeline直接テスト → BL-4）
 - DA: GO
 
-#### ClaudeCliAdapter send_message 本実装 (commits a11b0e7→a7a3f9a, branch: feat/nagiko-integration)
+#### ClaudeCliAdapter send_message 本実装 (commits a11b0e7→a7a3f9a, branch: feat/anima-integration)
 - 14 tests PASS（全体: 14 cli_adapter + 92 total）
 - format_prompt_to_jsonl, extract_text_from_result, send_message with stream-json
 - fake_claude バイナリ（ok/fail/malformed_json/multi_line 4モード）でテスト

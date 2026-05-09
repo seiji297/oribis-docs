@@ -46,12 +46,12 @@ Phase 1 統合実装の全体像。
 ┌─────────────────────────────────────────────────────────────┐
 │              ストレージ                                      │
 │                                                             │
-│  ~/.config/oribis/nagiko/   （ユーザー全体）                 │
+│  ~/.config/oribis/anima/   （ユーザー全体）                 │
 │    CLAUDE.md                                                │
 │    critical_prompt.txt                                      │
 │    affinity.json                                            │
 │    history.jsonl                                            │
-│    memories.json                                            │
+│    memory.db (SQLite)                                       │
 │    event_counters.json                                      │
 │    throttle_state.json                                      │
 │    anima_cache/{category}_{tier}.json                       │
@@ -240,7 +240,7 @@ process   process   request
 ユーザー全体管理
 ├── 好感度（affinity.json）
 ├── 履歴（history.jsonl）
-├── 永続記憶（memories.json）
+├── 記憶システム（memory.db — SQLite: events/memories/open_loops/relationship_model）
 ├── イベントカウンタ（event_counters.json）
 ├── 発火制御状態（throttle_state.json）
 ├── キャラ定義（CLAUDE.md）
@@ -314,36 +314,55 @@ apply_delta(delta, reason)
 
 ---
 
-## 8. 記憶システムフロー
+## 8. 記憶システムフロー（v3.1 — 4レイヤー + Operational Memory）
 
 ```
-[保存]
-LLM応答に [MEMORY_SAVE:content]
+[エンコーディング（毎ターン — companion domain）]
+LLM応答完了
    ↓
-スクリプト検知
+parse_oribis_meta() — 末尾 <oribis-meta> ブロック解析
+   ↓ (存在時: LLM主導)         ↓ (欠落時: Rust fallback)
+event_type/salience取得        classify_event_heuristic()
+   ↓                            ↓
+merge_salience(llm, rust) → final_salience
+   ↓ (>= 0.2)
+memory_events に append（SQLite, domain='companion'）
    ↓
-新規Memory作成
+open_loops 処理（create/update/resolve — id or topic/entity Jaccard マッチ）
    ↓
-memories.json に追加
-   ↓
-上限チェック（500件）
-   ↓
-超過時: AI判定記憶を access_count順 削除
+memory_saves → memories テーブル直接保存
 
-[検索]
-LLM応答に [MEMORY_QUERY:query]
+[Worker完了時 — worker_ops domain]
+Worker品質パイプライン完了（DA PASS/FAIL）
    ↓
-スクリプト検知
+memory_events に append（domain='worker_ops', event_type='worker_outcome'）
+   metadata: {department, role, task_type, verdict, failure_reason, ...}
+
+[Consolidation]
+companion:
+  Level 1（Rust・ルールベース）: 5件蓄積/20件/30分/app終了/起動時
+     → 重複マージ、strength更新、open_loop生成
+     → micro-evolution: 矛盾検出、confidence調整、reinforcement
+  Level 2（LLM・非同期）: 6h/IdleLong/起動時backlog
+     → 意味的記憶生成、relationship_model更新
+     → semantic-evolution: memory merge、pattern promote、A-MEM軽量版
+
+worker_ops:
+  Level 2（evidence-based）: 同dept 5件蓄積 / 同failure 3回 / 24hバックアップ
+     → worker_patterns テーブルへ抽出
+     → evidence_count >= 3 で evolution proposal 生成（Producer承認制）
+
+[検索・L3注入（毎ターン — companion のみ）]
+build_context_at() 実行
    ↓
-memories.json をキーワード検索
+4チャネル検索:
+  - profile: memories (CoreIdentity/Preference/Boundary/Skill) + relationship_model 上位5件
+  - open_loops: 未解決・priority上位3件
+  - episodes: memory_events (topic/entity重複) 上位3件
+  - counters: 変動カテゴリのみ
    ↓
-ヒット件のaccess_count++
-   ↓
-結果を「次ターン用」に保持
-   ↓
-次ターン: L3に [記憶検索結果] として注入
-   ↓
-LLMが応答に自然に織り込む
+L3に注入（token budget制: hard cap 170トークン）
+※ worker_ops はL3に注入しない（Animaルーティング判断時のみ内部参照）
 ```
 
 ---
@@ -474,7 +493,7 @@ Backend (pipeline実行)
    │   - 好感度更新
    │   - タスク操作実行
    │   - 記憶保存（あれば）
-   │   - 履歴追加（NagikoMain）
+   │   - 履歴追加（AnimaMain）
    │
    └─ 6. chat-stream-end-{pid} 発行
         ペイロード: {
@@ -522,7 +541,7 @@ Backend (pipeline実行)
    │   - AFFINITY → delta=-1
    │   - text → 「品がないですよ」
    │
-   ├─ 7. 履歴追加（NagikoAnima(Lewd)）
+   ├─ 7. 履歴追加（AnimaAutonomous(Lewd)）
    ├─ 8. イベントカウンタ更新（lewd: +1）
    │
    └─ 9. Tauriイベント発行
@@ -541,7 +560,7 @@ Frontend
 
 ```
 [Project Settings]               [Runtime State]
-projects.toml                    ~/.config/oribis/nagiko/
+projects.toml                    ~/.config/oribis/anima/
   - critical_prompt              ~/.config/oribis/projects/
   - persona/avatar/tts           ~/.config/oribis/anima_*
 

@@ -14,7 +14,7 @@
 | ファイル | 内容 | 担当モジュール |
 |---------|------|--------------|
 | `affinity.json` | 好感度・変動履歴 | `affinity.rs` |
-| `memory.db` | 記憶システム（SQLite: events/memories/open_loops/relationship_model） | `memory_db.rs` |
+| `memory.db` | 記憶システム（SQLite: events/memories/open_loops/relationship_model/self_model） | `memory_db.rs` |
 | `memories.json` | **レガシー**（マイグレーション後 `.bak` にリネーム） | `memory.rs` |
 | `event_counters.json` | イベントカウンタ（9カテゴリ） | `counter.rs` |
 | `throttle_state.json` | throttle最終発火時刻 | `throttle.rs` |

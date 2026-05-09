@@ -137,6 +137,25 @@ docs/projects/oribis/
 | pty_commands.rs | spec/core/anima-orchestrator-architecture.md |
 | cli_adapters.rs | spec/core/pipeline.md（実アダプタ実装） |
 | lib.rs | spec/core/pipeline.md（Tauriコマンドハブ） |
+| mcp/mod.rs | spec/core/mcp-server.md |
+| mcp/server.rs | spec/core/mcp-server.md（§4 Broker + tool dispatch） |
+| mcp/broker.rs | spec/core/mcp-server.md（§4.2 BrokerState） |
+| mcp/types.rs | spec/core/mcp-server.md（§6 ツール型定義） |
+| mcp/protocol.rs | spec/core/mcp-server.md（§4.1 MCP JSON-RPC） |
+| mcp/state_machine.rs | spec/core/mcp-server.md（§7.5 AnimaCategory 状態遷移表） |
+| mcp/audit.rs | spec/core/mcp-server.md（§5.3 監査ログ） |
+| mcp/resources.rs | spec/core/mcp-server.md（§6.4 リソース） |
+| mcp/tools/mod.rs | spec/core/mcp-server.md（§6 ツール） |
+| mcp/tools/memory.rs | spec/core/mcp-server.md（§6.1 memory_search/save） |
+| mcp/tools/avatar.rs | spec/core/mcp-server.md（§6.2 speak/set_expression/notify） |
+| mcp/tools/anima.rs | spec/core/mcp-server.md（§6.3 anima制御） |
+| mcp/tools/event_feed.rs | spec/core/anima-orchestrator-architecture.md（MCP write_event ツール） |
+| narration.rs | spec/core/anima-orchestrator-architecture.md（ナレーション: batch取得・coalescing・dedupe・emit） |
+| worker_manager.rs | spec/core/anima-orchestrator-architecture.md（Worker管理: spawn/kill/list） |
+| event_feed.rs | spec/core/anima-orchestrator-architecture.md（EventFeed JSONL操作） |
+| department_config.rs | spec/core/anima-orchestrator-architecture.md（Department CRUD） |
+| events.rs | spec/core/anima-orchestrator-architecture.md（EventFeedItem型・変換トレイト） |
+| bin/oribis_mcp.rs | spec/core/mcp-server.md（§4.1 MCP子プロセスバイナリ） |
 
 ### フロントエンド（src/）
 
@@ -162,6 +181,11 @@ docs/projects/oribis/
 | loaders/animationLoader.ts | spec/ui/avatar-animation.md |
 | components/StatusPane.tsx | spec/ui/cli-status-pane.md |
 | components/XtermTerminal.tsx | spec/core/anima-orchestrator-architecture.md |
+| components/WorkerPanel.tsx | spec/core/anima-orchestrator-architecture.md（Worker タブバー + PTY） |
+| components/DrawerAnima.tsx | spec/core/anima-orchestrator-architecture.md（Animaドロワー） |
+| components/DrawerDepartment.tsx | spec/core/anima-orchestrator-architecture.md（Departmentドロワー） |
+| components/DrawerEventFeed.tsx | spec/core/anima-orchestrator-architecture.md（EventFeedドロワー） |
+| plugin/types.ts | spec/core/anima-orchestrator-architecture.md（WorkerInfo/DepartmentConfig/EventFeedItem/SpeechQueueItem型） |
 | components/AnimationAssignPanel.tsx | spec/ui/motion-anim-assign.md, spec/ui/unity-fbx-retarget.md |
 | plugin/usePluginLoader.ts | spec/ui/plugin-api.md |
 | skill/SkillPicker.tsx | spec/ui/plugin-api.md |

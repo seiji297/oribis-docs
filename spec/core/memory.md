@@ -1,6 +1,6 @@
 # 記憶システム 設計書
 
-**バージョン**: 3.1（4レイヤー + Operational Memory + 自己進化）
+**バージョン**: 3.5（4レイヤー + Operational Memory + 自己進化 + self_model スキーマ修正 + 軽量エンティティリンク改訂）
 **最終更新**: 2026-05-06
 
 ---
@@ -474,6 +474,128 @@ CREATE TABLE relationship_model (
 
 キー例: `communication_style`, `stressors`, `comfort_signals`, `important_people`, `boundaries`
 
+### 6.5 self_model（AI自己理解モデル）
+
+relationship_model がユーザーの人物像を保持するのに対し、self_model は **AIコンパニオン自身の嗜好・傾向** を経験から構築する。
+
+#### 設計原則
+
+- **CLAUDE.md が種（seed）、self_model が成長** — 静的人格定義は不変。self_model は経験に基づく追加レイヤー
+- **嗜好のみ更新可** — 倫理・口調・役割・価値観の根幹は更新不可
+- **「AIがそう言った」は証拠ではない** — self_model は自分の出力文を証拠にして更新しない。更新元は interaction evidence のみ
+
+#### SelfModel 型
+
+```rust
+pub struct SelfModel {
+    pub core_preferences: Vec<SelfTrait>,       // ほぼ永続的な嗜好
+    pub situational_preferences: Vec<SelfTrait>, // 中程度 decay の状況的嗜好
+    pub last_updated: DateTime<Utc>,
+}
+
+pub struct SelfTrait {
+    pub target: String,                  // 対象（例: "整理されたコード", "早朝作業"）
+    pub target_type: SelfTraitTargetType,
+    pub valence: f32,                    // -1.0（嫌い）〜 +1.0（好き）
+    pub confidence: f32,                 // 0.0〜1.0（証拠量に比例）
+    pub evidence_count: u32,            // 裏付け evidence 数
+    pub evidence_positive: u32,         // 正の evidence 数
+    pub evidence_negative: u32,         // 負の evidence 数
+    pub cross_day_count: u32,           // 日跨ぎ evidence 回数（昇格判定に使用）
+    pub source_event_ids: Vec<i64>,     // 根拠イベントID（直近10件）
+    pub scope: TraitScope,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,               // 最終更新時刻
+    pub last_confirmed_at: Option<DateTime<Utc>>, // 最終 evidence 確認時刻
+}
+
+pub enum SelfTraitTargetType {
+    Topic,              // 話題（技術、趣味等）
+    Style,              // スタイル（簡潔な会話、整理されたコード等）
+    Activity,           // 活動（レビュー、デバッグ等）
+    Constraint,         // 制約（マジックナンバー、ハードコード等）
+    Tool,               // ツール（Rust、TypeScript等）
+    TimePattern,        // 時間パターン（早朝、深夜等）
+    InteractionPattern, // 対話パターン（丁寧な依頼、技術議論等）
+}
+
+pub enum TraitScope {
+    Core,           // 永続的嗜好（会話スタイル、作業リズム、美学）
+    Situational,    // 状況的嗜好（直近タスクへの好悪、最近の関心）
+}
+```
+
+#### 更新ルール（人格ドリフト防止）
+
+| ルール | 値 | 理由 |
+|--------|---|------|
+| valence 範囲 | [-1.0, 1.0] 有界 | 極端化防止 |
+| 1回の更新量 | max delta = 0.03 | 急激な変化防止 |
+| trait 化閾値 | 同種 evidence 3件以上 + 日跨ぎ2回以上 | ノイズ除外 |
+| 多様性条件 | 同一セッション内 evidence のみでは trait 化しない | セッション偏り防止 |
+| hysteresis | trait 反転には通常の2倍の evidence 量を要求 | 安定性確保 |
+| 反証保持 | evidence_positive / evidence_negative 両方を保持 | 一方的強化防止 |
+| 循環強化禁止 | source_of_evidence != prior_self_model | AIの自己言及は証拠にしない |
+| evidence source 判定 | memory_events.id を source_event_ids で参照。evidence の日付・セッション多様性は memory_events テーブルから逆引きで検証 | DB参照前提 |
+| 日跨ぎカウント | evidence 追加時、前回の last_confirmed_at と異なる日付なら cross_day_count++ | セッション偏り防止の定量化 |
+| upsert 方針 | UNIQUE(target, target_type, scope) 制約。同一対象は既存 trait を更新（新規作成しない） | 重複防止 |
+
+#### Decay
+
+| scope | decay_rate | 意味 |
+|-------|-----------|------|
+| Core | 0.002 | ほぼ永続（会話スタイル、美学） |
+| Situational | 0.012 | 中程度減衰（直近の関心） |
+
+Core への昇格条件（全てAND）:
+1. `evidence_count >= 10`
+2. `confidence >= 0.7`
+3. `created_at` から30日以上経過（`julianday('now') - julianday(created_at) >= 30`）
+4. 日跨ぎ evidence が5回以上（`cross_day_count >= 5`）
+
+昇格時の処理: `scope = 'core'`, `decay_rate = 0.002` に更新
+
+#### ストレージ
+
+```sql
+CREATE TABLE self_model (
+    id TEXT PRIMARY KEY,
+    target TEXT NOT NULL,
+    target_type TEXT NOT NULL CHECK(target_type IN ('Topic','Style','Activity','Constraint','Tool','TimePattern','InteractionPattern')),
+    valence REAL NOT NULL DEFAULT 0.0 CHECK(valence >= -1.0 AND valence <= 1.0),
+    confidence REAL NOT NULL DEFAULT 0.0 CHECK(confidence >= 0.0 AND confidence <= 1.0),
+    evidence_count INTEGER NOT NULL DEFAULT 0 CHECK(evidence_count >= 0),
+    evidence_positive INTEGER NOT NULL DEFAULT 0 CHECK(evidence_positive >= 0),
+    evidence_negative INTEGER NOT NULL DEFAULT 0 CHECK(evidence_negative >= 0),
+    cross_day_count INTEGER NOT NULL DEFAULT 0,    -- 日跨ぎ evidence 回数
+    source_event_ids TEXT NOT NULL DEFAULT '[]',   -- JSON array（直近10件）
+    scope TEXT NOT NULL DEFAULT 'situational' CHECK(scope IN ('core','situational')),
+    decay_rate REAL NOT NULL DEFAULT 0.012,        -- core昇格時に0.002へ更新
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,                      -- 最終更新時刻（昇格判定・30日持続判定に使用）
+    last_confirmed_at TEXT,                        -- 最終 evidence 確認時刻
+
+    UNIQUE(target, target_type, scope)             -- 同一対象の重複 trait 防止
+);
+
+CREATE INDEX idx_self_confidence ON self_model(confidence DESC);
+CREATE INDEX idx_self_scope ON self_model(scope);
+```
+
+#### サイズ制限
+
+| 項目 | 値 |
+|------|---|
+| core 上限 | 30件 |
+| situational 上限 | 50件 |
+| confidence < 0.1 到達時 | 自動削除 |
+
+#### relationship_model との関係
+
+- **テーブルは独立**（schema / update rules / safety bounds は別）
+- **consolidation machinery は共有可**（extraction pipeline / target normalization / evidence aggregation / confidence update / decay scheduler）
+- 例: "user likes early morning work" は relationship_model、"I prefer reviewing code in early morning" は self_model
+
 ---
 
 ## 7. エンコーディング（書き込みフロー）
@@ -497,6 +619,12 @@ events::append_event() → memory_events テーブル
 open_loops 処理（create/update/resolve）
   ↓
 memory_saves → memories テーブル直接保存（既存互換）
+  ↓
+self_reactions 処理（§6.5 参照）
+  → 各 reaction の target を正規化
+  → 既存 self_model の同一 target を検索
+  → evidence 蓄積（trait 化閾値未達なら evidence のみ記録）
+  → 閾値到達時: self_model に新 trait 追加 or 既存 trait 更新（max delta = 0.03）
 ```
 
 **メタブロック欠落時（L1 fade / LLM未出力）**:
@@ -641,30 +769,47 @@ CREATE TABLE consolidation_state (
 
 ### 8.1 4チャネル検索
 
-`build_context_at()` 実行時に以下4チャネルから取得:
+`build_context_at()` 実行時に以下4チャネルから取得（retrieval.rs / SQLite経由）:
 
 | チャネル | 取得元 | 件数上限 | 条件 |
 |---------|--------|---------|------|
 | profile | memories (CoreIdentity/Preference/Boundary/Skill) + relationship_model要約 | 5件 | strength上位。relationship_modelはprofileに内包して注入 |
 | open_loops | open_loops | 3件 | priority上位 & 未解決 |
 | relevant_episodes | memory_events | 3件 | topic/entity重複 or 類似度 |
-| counter_context | event_counters | 変動分のみ | 既存ロジック維持 |
+| self_context | self_model | 2〜4件 | confidence上位 & 現在の会話トピックに関連する場合のみ（G1-SM まで stub） |
+
+※ counter_context は L2 注入（毎ターン固定）に移動。L3 チャネルから除外。
+
+**注入条件（ContextMode依存）**:
+- `StatefulSession` + `NormalTurn`: episodes チャネルのみ（他は既存コンテキスト窓に保持）
+- `StatefulSession` + `SessionStart` / `AfterCompaction`: 全4チャネル
+- `StatelessRequest` + any: 全4チャネル（毎ターン）
+
+**グレースフルデグレード**: DB（memory.db）が利用不可の場合、L3は空文字列として扱い処理を継続する。
+
+**self_context 注入ルール**:
+- 高 confidence（>= 0.5）の trait のみ
+- 毎ターン全件は出さない。現在の conversation topics と target が関連する場合のみ注入
+- 関連なしの場合は 0件（トークン節約 + 自己暗示防止）
+- **self_model から注入された内容は retrieval 用であり、次ターンの self_reactions の evidence source にしてはならない**
 
 ### 8.2 検索ランキング
 
 ```rust
 pub fn rank_for_injection(items: &[RankedItem]) -> Vec<RankedItem> {
-    // Phase 2 (keyword/structural):
-    //   keyword_entity_overlap * 0.25
+    // Phase 2 (keyword/structural + entity link):
+    //   keyword_entity_overlap * 0.20
+    //   + entity_link_score * 0.10  (§8.6 1-hop/2-hop)
     //   + salience * 0.25
     //   + current_strength * 0.2  (memories層のみ。events層はrecencyで代替)
-    //   + recency_decay * 0.2
+    //   + recency_decay * 0.15
     //   + open_loop_boost * 0.1
     //
     // Phase 3 (hybrid vector追加後):
-    //   semantic_relevance(vector) * 0.25
-    //   + keyword_entity_overlap(FTS5/RRF) * 0.15
-    //   + salience * 0.2
+    //   semantic_relevance(vector) * 0.20
+    //   + keyword_entity_overlap(FTS5/RRF) * 0.10
+    //   + entity_link_score * 0.10  (§8.6 1-hop/2-hop)
+    //   + salience * 0.20
     //   + current_strength * 0.15
     //   + recency_decay * 0.15
     //   + open_loop_boost * 0.1
@@ -687,7 +832,13 @@ pub fn rank_for_injection(items: &[RankedItem]) -> Vec<RankedItem> {
 
 [最近の出来事]
 - 昨日: 新しいプロジェクト開始を報告してくれた
+
+[あなた自身のこと]
+- 整理されたコードが好き（確信度: 0.9）
+- テスト設計の議論に関心がある（確信度: 0.6）
 ```
+
+`[あなた自身のこと]` は self_model の高 confidence trait から、現在の会話トピックに関連するもののみを注入。関連なしの場合はチャネルごと省略。
 
 ### 8.4 MEMORY_QUERY（既存互換）
 
@@ -698,6 +849,285 @@ pub fn rank_for_injection(items: &[RankedItem]) -> Vec<RankedItem> {
 ### 8.5 想起による強化
 
 L3注入に使用された memory は `on_memory_recalled()` で強度回復。忘却曲線に対抗する。
+
+### 8.6 軽量エンティティリンク（GraphRAG代替）
+
+#### 設計判断: なぜGraphRAGではないか
+
+GraphRAG（Neo4j + LLM entity extraction + Leiden community detection）は数万〜数百万ドキュメント規模の企業ナレッジベース向け。Oribisの単一ユーザー・数千件規模では:
+
+- **コスト超過**: エンティティ抽出・コミュニティ要約にLLM呼出が必要（$1/日目標と矛盾）
+- **インフラ過剰**: Neo4j追加はTauriデスクトップアプリの配布・運用に不適
+- **レイテンシ悪化**: graph traversal + community summary参照がL3の180tok軽量注入と非整合
+
+代わりに、SQLite内で「点と点を繋ぐ推論」の80%を実現する**軽量エンティティリンク**を採用する。
+
+#### アーキテクチャ
+
+```
+oribis-meta の topics/entities（既存）
+  ↓ エンコーディング時
+event_entities テーブル（正規化済み entity ↔ event 紐付け）
+  ↓ Level 1 consolidation 時
+entity_cooccurrence テーブル（entity 間の共起重み）
+  ↓ 検索時
+1-hop / 2-hop 関連記憶の取得（SQL JOIN）
+```
+
+#### テーブル定義
+
+```sql
+-- エンティティ正規化テーブル
+CREATE TABLE entities (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,              -- 正規化済みエンティティ名
+    entity_type TEXT NOT NULL DEFAULT 'concept'
+        CHECK(entity_type IN ('person','technology','concept','project','place')),
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    mention_count INTEGER NOT NULL DEFAULT 1 CHECK(mention_count >= 0),
+    last_retrieved_at TEXT                  -- 検索で使われた最終時刻（削除判定用）
+);
+
+CREATE INDEX idx_entities_name ON entities(name);
+CREATE INDEX idx_entities_type ON entities(entity_type);
+
+-- イベント ↔ エンティティ紐付け（多対多・role別に複数行可）
+CREATE TABLE event_entities (
+    event_id INTEGER NOT NULL REFERENCES memory_events(id) ON DELETE CASCADE,
+    entity_id INTEGER NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+    role TEXT NOT NULL DEFAULT 'mention'
+        CHECK(role IN ('mention','subject','object')),
+    PRIMARY KEY (event_id, entity_id, role)  -- role別に複数行を許容
+);
+
+CREATE INDEX idx_event_entities_entity ON event_entities(entity_id);
+CREATE INDEX idx_event_entities_event ON event_entities(event_id);
+
+-- エンティティ共起テーブル
+CREATE TABLE entity_cooccurrence (
+    entity_a INTEGER NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+    entity_b INTEGER NOT NULL REFERENCES entities(id) ON DELETE CASCADE,
+    weight REAL NOT NULL DEFAULT 1.0 CHECK(weight > 0),
+    last_seen_at TEXT NOT NULL,
+    PRIMARY KEY (entity_a, entity_b),
+    CHECK(entity_a < entity_b)             -- 順序正規化（重複防止）
+);
+
+CREATE INDEX idx_cooccurrence_weight ON entity_cooccurrence(weight DESC);
+CREATE INDEX idx_cooccurrence_a ON entity_cooccurrence(entity_a);
+CREATE INDEX idx_cooccurrence_b ON entity_cooccurrence(entity_b);
+```
+
+**外部キー CASCADE**: entities 削除時に event_entities / entity_cooccurrence が自動削除される。
+
+#### 書き込みフロー
+
+**エンコーディング時（§7.1 Pass A 内）**:
+
+```rust
+fn link_entities(event_id: i64, meta: &OrbisMeta) {
+    // 1. topics + entities からエンティティ候補を抽出
+    let raw_entities = meta.topics.iter()
+        .chain(meta.entities.iter());
+
+    // 2. 正規化（小文字化、同義語マージ）
+    let normalized = normalize_entities(raw_entities);
+
+    // 3. entities テーブルに upsert（mention_count++, last_seen_at 更新）
+    for entity in &normalized {
+        upsert_entity(entity);
+    }
+
+    // 4. event_entities に紐付け挿入
+    for entity in &normalized {
+        insert_event_entity(event_id, entity.id, "mention");
+    }
+}
+```
+
+**Level 1 consolidation 時（§7.2 内）**:
+
+```rust
+fn update_cooccurrence(event_id: i64) {
+    // 1. event_id に紐づく全 entity を取得
+    let entities = get_entities_for_event(event_id);
+
+    // 2. 全ペアの共起を更新（salience で重み付け）
+    let salience = get_event_salience(event_id);
+    for (a, b) in entity_pairs(&entities) {
+        let (lo, hi) = if a < b { (a, b) } else { (b, a) };
+        // weight += salience（高重要度イベントの共起ほど強い）
+        upsert_cooccurrence(lo, hi, salience);
+    }
+}
+```
+
+#### エンティティ正規化ルール
+
+| ルール | 例 | 備考 |
+|--------|---|------|
+| 小文字統一 | "Rust" → "rust" | ASCII のみ。日本語はそのまま |
+| 同義語マージ | "TS" / "TypeScript" → "typescript" | SYNONYM_MAP |
+| カタカナ→英字 | "タイプスクリプト" → "typescript" | KANA_MAP（主要技術用語のみ） |
+| 助詞・冠詞除去 | "のテスト" → "テスト" | 末尾助詞パターンマッチ |
+| 空白トリム | " React " → "react" | 全角スペースも対象 |
+| 記号除去 | "C++" → "cpp", "Node.js" → "nodejs" | SYMBOL_MAP |
+
+**topics と entities の区別**:
+
+oribis-meta の `topics`（概念タグ）と `entities`（固有名詞）は区別して処理する:
+
+| ソース | entity_type 推定 | 例 |
+|--------|-----------------|---|
+| `entities` フィールド | LLM出力の文脈から推定（person/technology/project/place） | "Alice" → person, "React" → technology |
+| `topics` フィールド | デフォルト `concept` | "テスト設計" → concept |
+
+同義語辞書: `entities` テーブルの `name` は正規化済み。マッピングは Rust 側の `SYNONYM_MAP: HashMap<&str, &str>` + `KANA_MAP` + `SYMBOL_MAP` で管理（初期は小規模。運用で拡張）。
+
+#### 検索への統合（§8.2 ランキング拡張）
+
+**1-hop 検索 SQL**:
+
+```sql
+-- current_entity_ids: 現在の会話から抽出した entity の id 群
+-- 自己イベント除外: 現在の会話イベント自体は除く
+-- 重複集約: 同一 event が複数経路でヒットした場合は MAX(weight) を採用
+SELECT ee2.event_id, MAX(ec.weight) AS link_weight
+FROM event_entities ee
+JOIN entity_cooccurrence ec
+  ON (ee.entity_id = ec.entity_a OR ee.entity_id = ec.entity_b)
+JOIN event_entities ee2
+  ON ee2.entity_id = CASE
+    WHEN ee.entity_id = ec.entity_a THEN ec.entity_b
+    ELSE ec.entity_a
+  END
+WHERE ee.entity_id IN (/* current_entity_ids */)
+  AND ee2.event_id NOT IN (/* current_event_ids */)  -- 自己除外
+  AND ee2.entity_id != ee.entity_id                  -- 自己ループ除外
+GROUP BY ee2.event_id                                -- 重複集約
+ORDER BY link_weight DESC
+LIMIT 10;
+```
+
+**2-hop 検索 SQL**:
+
+```sql
+-- 1-hop で得た entity_id 群を起点に、更に 1-hop を辿る
+-- weight は積で減衰: hop1_weight * hop2_weight * 0.5
+-- 1-hop 結果と重複するイベントは除外
+WITH hop1 AS (
+  -- 1-hop で到達した entity_id 群と weight
+  SELECT DISTINCT
+    CASE WHEN ee.entity_id = ec.entity_a THEN ec.entity_b ELSE ec.entity_a END AS mid_entity,
+    ec.weight AS hop1_weight
+  FROM event_entities ee
+  JOIN entity_cooccurrence ec
+    ON (ee.entity_id = ec.entity_a OR ee.entity_id = ec.entity_b)
+  WHERE ee.entity_id IN (/* current_entity_ids */)
+)
+SELECT ee3.event_id, MAX(h1.hop1_weight * ec2.weight * 0.5) AS link_weight
+FROM hop1 h1
+JOIN entity_cooccurrence ec2
+  ON (h1.mid_entity = ec2.entity_a OR h1.mid_entity = ec2.entity_b)
+JOIN event_entities ee3
+  ON ee3.entity_id = CASE
+    WHEN h1.mid_entity = ec2.entity_a THEN ec2.entity_b
+    ELSE ec2.entity_a
+  END
+WHERE ee3.event_id NOT IN (/* current_event_ids + hop1_event_ids */)
+  AND ee3.entity_id NOT IN (/* current_entity_ids */)  -- 起点に戻らない
+GROUP BY ee3.event_id
+ORDER BY link_weight DESC
+LIMIT 5;
+```
+
+**entity_link_score 正規化（0..1）**:
+
+```rust
+/// link_weight（生値）を 0..1 に正規化
+/// log 正規化: 共起 weight は加算蓄積で上限なしのため、log で圧縮
+fn normalize_link_score(link_weight: f32, max_weight: f32) -> f32 {
+    if max_weight <= 0.0 { return 0.0; }
+    // log(1 + w) / log(1 + max_w) で 0..1 に写像
+    let score = (1.0 + link_weight).ln() / (1.0 + max_weight).ln();
+    score.clamp(0.0, 1.0)
+}
+
+// max_weight は entity_cooccurrence の MAX(weight) を定期キャッシュ（consolidation時に更新）
+```
+
+1-hop と 2-hop のスコア統合: `entity_link_score = max(hop1_score, hop2_score)`（同一イベントが両方にヒットした場合は高い方を採用）
+
+**ランキングへの統合（Phase 2）**:
+
+```rust
+// Phase 2 (keyword/structural + entity link):
+//   keyword_entity_overlap * 0.20
+//   + entity_link_score * 0.10      // ← 新規追加（0..1 正規化済み）
+//   + salience * 0.25
+//   + current_strength * 0.2
+//   + recency_decay * 0.15
+//   + open_loop_boost * 0.1
+//
+// Phase 3 (hybrid vector追加後):
+//   semantic_relevance(vector) * 0.20
+//   + keyword_entity_overlap(FTS5/RRF) * 0.10
+//   + entity_link_score * 0.10      // ← 新規追加（0..1 正規化済み）
+//   + salience * 0.20
+//   + current_strength * 0.15
+//   + recency_decay * 0.15
+//   + open_loop_boost * 0.1
+```
+
+#### サイズ制限・メンテナンス
+
+| 項目 | 値 |
+|------|---|
+| entities 上限 | 1000件 |
+| entity_cooccurrence 上限 | 5000件 |
+| 共起の最小weight閾値 | 0.5未満かつ90日未更新 → 自動削除 |
+| メンテナンス実行 | Level 1 consolidation と同タイミング |
+
+**entities 削除順位**（上限超過時、スコア最低から削除）:
+
+```rust
+/// 削除優先度スコア（低いほど削除対象）
+fn entity_retention_score(e: &Entity) -> f32 {
+    let mention = (e.mention_count as f32).ln_1p();      // 言及頻度（log圧縮）
+    let recency = recency_score(e.last_seen_at);          // 最終言及からの新しさ 0..1
+    let retrieval = if e.last_retrieved_at.is_some() {     // 検索で使われたか
+        recency_score(e.last_retrieved_at.unwrap()) * 0.5
+    } else { 0.0 };
+    let edges = connected_edge_count(e.id) as f32 * 0.1;  // 共起エッジ数
+
+    mention * 0.3 + recency * 0.3 + retrieval * 0.2 + edges * 0.2
+}
+```
+
+**CASCADE による整合保証**: entities 削除時に `ON DELETE CASCADE` で event_entities / entity_cooccurrence が自動削除される（スキーマで定義済み）。
+
+#### パフォーマンス目標
+
+| 処理 | 目標 |
+|------|------|
+| エンティティ upsert（エンコーディング時） | < 3ms |
+| 共起更新（consolidation時） | < 10ms |
+| 1-hop 検索 | < 5ms |
+| 2-hop 検索 | < 15ms |
+
+#### GraphRAG との比較
+
+| 観点 | GraphRAG | 軽量エンティティリンク |
+|------|----------|---------------------|
+| DB | Neo4j（別プロセス） | SQLite（memory.db内） |
+| エンティティ抽出 | LLM呼出（毎ターン） | oribis-meta の topics/entities を流用（追加LLMコストなし） |
+| コミュニティ検出 | Leiden（バッチLLM要約） | 共起weight（自然に形成・LLM不要） |
+| 多段ホップ推論 | 任意深さのgraph traversal | 2-hop まで（実用上十分） |
+| グローバル要約 | community summary | relationship_model + self_model が代替 |
+| コスト | $3-10/日追加 | $0（既存oribis-metaを流用） |
+| レイテンシ | 100-500ms | < 15ms |
+| インフラ | Neo4j + worker process | SQLiteのみ |
 
 ---
 
@@ -738,6 +1168,17 @@ LLM応答の**末尾**に付加される構造化JSONブロック。記憶分類
     {"category": "work", "value": "明日14時に面接がある"}
   ],
   "memory_queries": [],
+  "self_reactions": [
+    {
+      "target_type": "activity",
+      "target": "面接対策の相談",
+      "valence": 0.4,
+      "confidence": 0.5,
+      "reason": "相手の将来に関わる相談は意義がある",
+      "evidence_kind": "experienced",
+      "scope": "situational"
+    }
+  ],
   "entities": ["面接"],
   "topics": ["仕事", "不安"],
   "relationship_signal": "trust"
@@ -771,6 +1212,21 @@ LLM応答の**末尾**に付加される構造化JSONブロック。記憶分類
 | entities | array | 固有名詞・人物 |
 | topics | array | トピックタグ |
 | relationship_signal | string | trust/repair/affection/boundary/null |
+| self_reactions | array | AI自身の主観的評価（§6.5 self_model の evidence 源） |
+
+**self_reactions[] 要素仕様**:
+
+| フィールド | 型 | 説明 |
+|-----------|---|------|
+| target_type | string | `topic\|style\|activity\|constraint\|tool\|time_pattern\|interaction_pattern` |
+| target | string | 評価対象（具体的な名称） |
+| valence | float | -1.0（不快）〜 +1.0（快） |
+| confidence | float | 0.0〜1.0（評価の確信度） |
+| reason | string | 理由（1文） |
+| evidence_kind | string | `experienced`（直接体験）\| `inferred`（推論） |
+| scope | string | `core`（永続的嗜好）\| `situational`（状況的） |
+
+1ターン = 0..N 件（対象ごとに分離）。ターン全体に1つではなく、ターン内の各対象に個別の評価を付ける。
 
 **null/omit ルール**:
 - 推奨フィールドは省略可（パーサーはデフォルト値を適用）
@@ -833,6 +1289,7 @@ JSONフォーマット。省略不可。出力できない場合は最低限 {"v
 - open_loops: 未解決事項の操作（create/update/resolve）
 - memory_saves: 長期記憶に保存すべき情報
 - entities/topics: 会話に登場した固有名詞・トピック
+- self_reactions: あなた自身が感じたこと（対象・快不快・理由）
 ```
 
 ---
@@ -847,15 +1304,16 @@ JSONフォーマット。省略不可。出力できない場合は最低限 {"v
 - classify_event ヒューリスティクス（Rust fallback）
 - salience scoring（heuristic + merge_salience）
 - pipeline.rs からの即時キャプチャ接続
-- 既存 memories.json → SQLite マイグレーション
+- 既存 memories.json → SQLite マイグレーション（**G1-e 完了時点で memories.json パスは削除済み**）
 - Memory 型に strength/salience/valence 追加
+- ContextMode / ReinjectionReason 実装（G1-e）: retrieval.rs（SQLite L3取得）+ context.rs（モード別注入制御）
 
 ### Phase 2: 統合
 
 - Level 1 consolidation（ルールベース）
 - open_loops テーブル + 基本CRUD
 - トリガー実装（5件蓄積/アプリ終了/起動時 + 未統合20件 or 30分タイマー）
-- L3 4チャネル検索
+- L3 4チャネル検索（profile/open_loops/episodes + self_context。counters は L2 固定注入に移動）
 - 忘却曲線適用
 - ranking に recency decay 反映
 
@@ -863,6 +1321,12 @@ JSONフォーマット。省略不可。出力できない場合は最低限 {"v
 
 - Level 2 consolidation（LLM使用・非同期）
 - relationship_model 構築・更新（lightweight から開始）
+- **self_model 構築**（§6.5）:
+  - self_reactions evidence 蓄積 + target 正規化
+  - trait 化（閾値: 3件 + 日跨ぎ2回）
+  - core/situational 分類 + decay 適用
+  - L3 `[あなた自身のこと]` チャネル注入
+  - 循環強化防止ガード
 - パターン検出
 - open_loop 自動解決
 - **記憶進化（A-MEM軽量版）**:
@@ -873,12 +1337,18 @@ JSONフォーマット。省略不可。出力できない場合は最低限 {"v
   - worker_outcome 記録 + worker_patterns 抽出
   - evidence-based evolution proposal（roles/ 更新提案）
   - regression window 監視
+- **軽量エンティティリンク**（§8.6）:
+  - entities / event_entities / entity_cooccurrence テーブル構築
+  - エンコーディング時: oribis-meta topics/entities → 正規化 → event_entities 紐付け
+  - consolidation時: 共起 weight 更新
+  - 検索: 1-hop / 2-hop 関連記憶取得 → ランキングに entity_link_score 統合
+  - メンテナンス: entities 1000件上限、cooccurrence 5000件上限
 - **ハイブリッドベクトル検索**:
   - sqlite-vec 拡張導入
   - ローカル embedding（multilingual-e5 or Ruri v3、CPU動作）
   - memory_events.raw_text + memories.content をベクトル化
-  - 検索: FTS5(BM25) + vector similarity + RRF 統合
-  - ranking: semantic_relevance + keyword_overlap + salience + current_strength + open_loop_boost + recency_decay
+  - 検索: FTS5(BM25) + vector similarity + entity_link_score + RRF 統合
+  - ranking: semantic_relevance + keyword_overlap + entity_link_score + salience + current_strength + open_loop_boost + recency_decay
 
 ---
 
@@ -1096,7 +1566,9 @@ LIMIT 5;
 | `src-tauri/src/anima/worker_patterns.rs` | worker_patterns CRUD, evolution proposal生成 | 新規 |
 | `src-tauri/src/anima/memory_db.rs` | SQLite接続, マイグレーション, スキーマ | 新規 |
 | `src-tauri/src/anima/pipeline.rs` | イベントキャプチャ接続 + utterance_log 書き込み | 既存改修 |
-| `src-tauri/src/anima/context.rs` | L3 4チャネル検索・注入 | 既存改修 |
+| `src-tauri/src/anima/context.rs` | L3 5チャネル検索・注入 | 既存改修 |
+| `src-tauri/src/anima/self_model.rs` | self_model CRUD, evidence蓄積, trait化, 循環強化防止 | 新規 |
+| `src-tauri/src/anima/entity_link.rs` | entities/event_entities/entity_cooccurrence CRUD, 正規化, 1-hop/2-hop検索 | 新規 |
 | `src-tauri/src/anima/utterance_log.rs` | anima_utterance_log CRUD, 自動クリーンアップ | 新規 |
 
 ---
@@ -1104,6 +1576,8 @@ LIMIT 5;
 ## 13. マイグレーション戦略
 
 既存ユーザーデータ（memories.json）からの移行:
+
+> **G1-e 実装ノート**: memories.json への参照パスはコードから削除済み。L3取得は retrieval.rs / SQLite のみ経由。既存の memories.json がある場合は以下の migrate_from_json で一度だけ移行し、以降は memory.db が唯一のストアとなる。
 
 ```rust
 pub fn migrate_from_json(base_dir: &Path) -> Result<()> {
@@ -1128,7 +1602,10 @@ pub fn migrate_from_json(base_dir: &Path) -> Result<()> {
 | 処理 | 目標 |
 |------|------|
 | イベント記録（append） | < 5ms |
-| 記憶検索（4チャネル） | < 50ms |
+| 記憶検索（5チャネル + entity link） | < 50ms |
+| エンティティ upsert（エンコーディング時） | < 3ms |
+| 1-hop / 2-hop 検索 | < 15ms |
+| 共起更新（consolidation時） | < 10ms |
 | Level 1 consolidation | < 200ms |
 | 忘却曲線計算（全件） | < 100ms |
 | L3注入構築 | < 30ms |
