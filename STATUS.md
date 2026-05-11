@@ -1,6 +1,6 @@
 # Oribis 進捗管理
 
-**最終更新**: 2026-05-08
+**最終更新**: 2026-05-11
 
 ---
 
@@ -88,11 +88,12 @@ Track 3: オーケストレーター — anima-orchestrator-architecture.md
 │   ブランチ: sysdev-1/oribis-orch-p1-fix (4e5d6c8)           │
 │   成果物: docs/deliverables/p1-fix-20260508/                │
 │                                                              │
-│ P2: 未着手（Tauri invoke接続・EventFeed自動購読・TTS完了CB）│
-│   codex-adviser指摘6件バックログ:                            │
-│     ~~HIGH: cursor重複/kill論理のみ/session仮値~~ → 解消済  │
-│     MED: TTS推定/JSONL全走査/spawn未検証                    │
-│   詳細: knowledge/patterns.md §Orchestrator P1               │
+│ P2 ✅ 実装済（Epic: epic-oribis-orchestrator-p2-20260510）   │
+│   CRUD API + PipelineView/DepartmentLane UI                  │
+│   OrchestratorEditor タブUI（5タブ）                         │
+│   PromptsTab セキュリティ（symlink/UUID/10MB制限）           │
+│   Delete/Rename hasActiveWorker UI拒否                       │
+│   vitest 563 PASS / cargo test 955 PASS（2026-05-11）        │
 │ P3: 未着手（Department CRUD永続化・Worker自動スケール）      │
 └─────────────────────────────────────────────────────────────┘
 
@@ -152,6 +153,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | MEDIUM | G3 | AnimaMode UI↔backend統一 | anima.md §6 | 実装済 | cb9db93 (2026-05-07) フロント off/cache/hybrid/ai → Rust Cache/Ai/Hybrid。codex-reviewer 3回PASS |
 | HIGH | G9 | MCP Server（外部Worker/Client接続基盤） | mcp-server.md v3.1 | 一部実装済 | Phase 1-9完了（3c6e86b）。111テストPASS。Phase 10（GUI統合）一部実装（P1 write_event+events/feed） |
 | HIGH | ORCH-P1 | オーケストレーター P1 | anima-orchestrator-architecture.md | 実装済 | 9タスク完了。types.ts/Rust基盤/narration/MCP統合/Tauriコマンド/フロントエンド5コンポ/App.tsx統合/テスト/Onboarding |
+| HIGH | ORCH-P2 | オーケストレーター P2 | anima-orchestrator-architecture.md | 実装済 | 12タスク完了。CRUD API/PipelineView+DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御。vitest 563/cargo test 955 PASS（2026-05-11） |
 | LOW | G8 | AI応答の軽重モード（一言/詳細 切替） | anima.md | 未着手 | 現状はモデル選択で軽量化のみ。応答自体の簡潔さ制御なし。Producer判断で優先度変更 |
 
 | MEDIUM | — | motion-anim-assign ランタイムマウント | motion-anim-assign.md | 不要 | Animation Editorプラグインで実現済・revert 2b727d4 |
@@ -209,6 +211,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | — | コンテキストテストhome fallback修正（setup_prompts_dir追加）11cf7dc | 2026-05-07 |
 | — | GUIテスト全項目PASS（AnimaMode, Prompt編集, Memory E2E, ベクトル検索）393テスト+スクショ確認 | 2026-05-07 |
 | ORCH-P1 | オーケストレーターP1 Epic全9タスク完了（types/Rust基盤/narration/MCP統合/Tauri cmd/フロントエンド/App.tsx統合/テスト/Onboarding） | 2026-05-08 |
+| ORCH-P2 | オーケストレーターP2 Epic全12タスク完了（CRUD API/PipelineView/DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御。vitest 563/cargo test 955 PASS） | 2026-05-11 |
 | E2E-FW | シナリオ駆動型E2Eテストフレームワーク（engine 22ファイル + scenarios 6 JSON + bone regression） | 2026-05-08 |
 
 ---
@@ -224,7 +227,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | anima.md | Anima + AnimaMode + throttle + キャッシュ | 一部実装済 |
 | anima-plan.md | 開発計画（GAP管理） | — |
 | anima-state.md | AnimaState一覧・カテゴリ | 実装済 |
-| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY | 一部実装済（P1完了、P2/P3未着手） |
+| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY | 一部実装済（P1/P2完了、P3未着手） |
 | affinity.md | 好感度システム | 実装済 |
 | memory.md | 4レイヤー記憶 + 自己進化 + entity linking + self_model | 実装済（Phase 1-3完了、v3.5） |
 | event-counter.md | イベントカウンタ | 実装済 |
