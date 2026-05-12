@@ -116,12 +116,13 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 │   Auth + Audit + Rate Limiting + DENIED_TOOLS enforcement   │
 │   111テスト PASS（107 unit + 4 integration）                │
 │                                                              │
-│ Phase 10: GUI統合（未着手）                                  │
-│   フロントエンド Tauri event subscription                    │
-│   Worker MCP自動注入（Orchestrator連携）                     │
-│   プロセスライフサイクル E2E                                 │
-│   GUI トークン発行 UI                                        │
-│   前提: Track 3（オーケストレーター）の Worker PTY 実装      │
+│ Phase 10: GUI統合 ✅ 完了（ff8efea on sysdev-1/oribis-orchestrator-p2）│
+│   P10-4: narration:speak subscription（useAnima.ts）✅       │
+│   P10-5: Worker MCP自動注入（pty_spawn_with_env + ORIBIS_MCP_SOCKET/TOKEN）✅ │
+│   P10-6: revoke_by_prefix + token lifecycle テスト追加 ✅    │
+│   GUI: mcp_list_tokens / mcp_issue_token / mcp_revoke_token  │
+│        + DrawerAnima Settings MCP セクション ✅             │
+│   1054テスト PASS                                            │
 └─────────────────────────────────────────────────────────────┘
 
 推奨実行順:
