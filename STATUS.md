@@ -1,6 +1,6 @@
 # Oribis 進捗管理
 
-**最終更新**: 2026-05-11
+**最終更新**: 2026-05-12
 
 ---
 
@@ -103,7 +103,26 @@ Track 3: オーケストレーター — anima-orchestrator-architecture.md
 │   GeneralTab Orchestrator対応 + DrawerAnima設定統合          │
 │   vitest 568 PASS / cargo test 1036 PASS（2026-05-12）       │
 │                                                              │
-│ P3: 未着手（Anima 常駐 + 自動ルーティング + スケジューラ）   │
+│ P3 ✅ 完了（sysdev-1/oribis-orchestrator-p2, 2026-05-12）   │
+│   P3-A: scheduler engine（parse_interval/should_run_now/    │
+│     start_scheduler_loop/update_schedule_item）6254a02      │
+│   P3-B: DELEGATE_TO 自動ルーティング（マーカーパース→        │
+│     target dept channel emit）f7ab1a7                       │
+│                                                              │
+│ セキュリティ修正 ✅ 完了（071e92b, 2026-05-12）              │
+│   assetProtocol scope制限 + Plugin icon XSS対策             │
+│   + filepath traversal修正                                  │
+│                                                              │
+│ 起動時Anima自動接続 ✅ 完了（b6f7e5a, 2026-05-12）           │
+│   プロジェクト選択後1.2秒で時刻別挨拶を自動送信             │
+│   （おはよう/こんにちは/こんばんは）                         │
+│                                                              │
+│ open_cli_terminal WSLフォールバック修正 ✅（b87f53d）        │
+│   powershell.exeフルパス(/mnt/c/Windows/System32/...)追加   │
+│                                                              │
+│ GUI動作確認 ✅（WSLg + スクリーンショット確認, 2026-05-12）  │
+│   自動挨拶「こんばんは、プロデューサー。何かありましたか。」  │
+│   表示確認済                                                 │
 └─────────────────────────────────────────────────────────────┘
 
 Track 4: MCP Server（G9） — mcp-server.md v3.1
@@ -164,6 +183,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | HIGH | G9 | MCP Server（外部Worker/Client接続基盤） | mcp-server.md v3.1 | 一部実装済 | Phase 1-9完了（3c6e86b）。111テストPASS。Phase 10（GUI統合）一部実装（P1 write_event+events/feed） |
 | HIGH | ORCH-P1 | オーケストレーター P1 | anima-orchestrator-architecture.md | 実装済 | 9タスク完了。types.ts/Rust基盤/narration/MCP統合/Tauriコマンド/フロントエンド5コンポ/App.tsx統合/テスト/Onboarding |
 | HIGH | ORCH-P2 | オーケストレーター P2 | anima-orchestrator-architecture.md | 実装済 | 12タスク完了+追加実装。CRUD API/PipelineView+DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御 + DrawerAnima内部タブ(Status/Prompt/Memory/Console/Settings) + Deep Reasoning delegation。vitest 568/cargo test 1036 PASS（2026-05-12） |
+| HIGH | ORCH-P3 | オーケストレーター P3 | anima-orchestrator-architecture.md | 実装済 | P3-A: scheduler engine / P3-B: DELEGATE_TO自動ルーティング。commits 6254a02, f7ab1a7（2026-05-12） |
 | LOW | G8 | AI応答の軽重モード（一言/詳細 切替） | anima.md | 未着手 | 現状はモデル選択で軽量化のみ。応答自体の簡潔さ制御なし。Producer判断で優先度変更 |
 
 | MEDIUM | — | motion-anim-assign ランタイムマウント | motion-anim-assign.md | 不要 | Animation Editorプラグインで実現済・revert 2b727d4 |
@@ -223,6 +243,11 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | ORCH-P1 | オーケストレーターP1 Epic全9タスク完了（types/Rust基盤/narration/MCP統合/Tauri cmd/フロントエンド/App.tsx統合/テスト/Onboarding） | 2026-05-08 |
 | ORCH-P2 | オーケストレーターP2 Epic全12タスク完了（CRUD API/PipelineView/DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御。vitest 563/cargo test 955 PASS） | 2026-05-11 |
 | ORCH-P2追加 | DrawerAnima内部タブ実装（Status/Prompt/Memory/Console/Settings）+ CSSテーマ対応 + Deep Reasoning delegation + GeneralTab統合。vitest 568/cargo test 1036 PASS（commits c7f224e〜0432867） | 2026-05-12 |
+| ORCH-P3 | P3-A scheduler engine + P3-B DELEGATE_TO自動ルーティング（6254a02, f7ab1a7） | 2026-05-12 |
+| — | セキュリティ修正: assetProtocol scope/Plugin icon XSS/filepath traversal（071e92b） | 2026-05-12 |
+| — | 起動時Anima自動接続: プロジェクト選択後1.2秒で時刻別挨拶自動送信（b6f7e5a） | 2026-05-12 |
+| — | open_cli_terminal WSL修正: powershell.exeフルパスフォールバック追加（b87f53d） | 2026-05-12 |
+| G9-P10 | MCP Phase 10 GUI統合: Worker token injection + GUI token UI + revoke_by_prefix（ff8efea）| 2026-05-12 |
 | E2E-FW | シナリオ駆動型E2Eテストフレームワーク（engine 22ファイル + scenarios 6 JSON + bone regression） | 2026-05-08 |
 
 ---
@@ -238,7 +263,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | anima.md | Anima + AnimaMode + throttle + キャッシュ | 一部実装済 |
 | anima-plan.md | 開発計画（GAP管理） | — |
 | anima-state.md | AnimaState一覧・カテゴリ | 実装済 |
-| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY | 一部実装済（P1/P2完了、P3未着手） |
+| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY | 実装済（P1/P2/P3完了） |
 | affinity.md | 好感度システム | 実装済 |
 | memory.md | 4レイヤー記憶 + 自己進化 + entity linking + self_model | 実装済（Phase 1-3完了、v3.5） |
 | event-counter.md | イベントカウンタ | 実装済 |
@@ -248,7 +273,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | prompt-layers.md | プロンプト三層構造（L1/L2/L3） | 実装済（v1.4: L1/L2正規パス統一） |
 | expression-system.md | 表情反映システム | 実装済 |
 | cache-generation-prompts.md | キャッシュ生成プロンプト集 | 設計確定 |
-| mcp-server.md | MCP Server（外部Worker/Client接続） | 一部実装済（Phase 1-9完了、Phase 10 GUI統合未着手） |
+| mcp-server.md | MCP Server（外部Worker/Client接続） | 実装済（Phase 1-10完了） |
 | architecture-diagrams.md | アーキテクチャ図集 | — |
 | test-requirements.md | テスト要件 | — |
 
