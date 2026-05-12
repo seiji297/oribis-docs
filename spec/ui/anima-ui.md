@@ -172,3 +172,37 @@
 - db.rs（Track A 実装済み）
 - 好感度・履歴・モード判定の stub 置換（Phase 2 後続ステップ）
 
+---
+
+## 2026-05-12 — DrawerAnima 内部タブ実装（branch: sysdev-1/oribis-orchestrator-p2）
+
+### DrawerAnima コンポーネント（src/components/DrawerAnima.tsx）
+
+左ドロワーの "Anima" タブ内に5つの内部タブを実装。
+
+#### タブ構成
+
+| タブ | 内容 |
+|------|------|
+| Status | animaState（mode/affinity）+ 会話履歴 |
+| Prompt | L1プロンプト(ANIMA.md/SOUL.md) / Critical Prompt(L2) / AnimaPhrase+AnimaCache / Persona Prompts / local専用(CLAUDE.md/USER.md/agent.md) |
+| Memory | カテゴリ別メモリ一覧（削除・セクション削除・Refresh・Raw表示） |
+| Console | consoleLogs + consoleStreamLogs（[AI]/[Think]/[Tool]/[Done]色分け） |
+| Settings | Connection(Path/Model/Permission/TTS) / Deep Reasoning(Model/Threshold) / Character(Name/UserName/Inference/Daily/Chat) |
+
+#### 設計ポイント
+- スタイル: CSS変数（`var(--c-*)` ）+ 既存CSSクラス（`custom-prompt-editor`, `custom-prompt-textarea`, `anima-cache-btn`, `console-view`, `console-entry`, `console-empty`, `memory-section`, `memory-h2`, `memory-li`, `memory-delete-btn` 等）
+- アウターコンテナは `v2-menu-drawer` のglass background/blur を継承（独自 background/height 設定なし）
+- L1プロンプト・Hook Injection・AnimaCache は全バックエンド対象（`backend === "local"` 限定解除）
+- CLAUDE.md/USER.md/agent.md のみ local backend 限定
+
+#### 関連コミット
+- `c7f224e` — GeneralTab Orchestrator対応 + DrawerAnima設定統合
+- `9a5f188` — Deep Reasoning delegation（DelegatingAdapter + threshold）
+- `45d640e` — DrawerAnima 内部タブ実装（初版）
+- `641c8e3` — DrawerAnima Prompt タブ修正（L1/L2/AnimaCache 全バックエンド対応）
+- `0432867` — DrawerAnima CSSクラス化（インラインハードコード暗色削除）
+
+#### テスト
+- vitest: 568 PASS / cargo test: 1036 PASS（pre-existing failures のみ）
+

@@ -94,7 +94,16 @@ Track 3: オーケストレーター — anima-orchestrator-architecture.md
 │   PromptsTab セキュリティ（symlink/UUID/10MB制限）           │
 │   Delete/Rename hasActiveWorker UI拒否                       │
 │   vitest 563 PASS / cargo test 955 PASS（2026-05-11）        │
-│ P3: 未着手（Department CRUD永続化・Worker自動スケール）      │
+│                                                              │
+│ P2追加実装 ✅（sysdev-1/oribis-orchestrator-p2, 2026-05-12） │
+│   DrawerAnima 内部タブ実装（Status/Prompt/Memory/Console/    │
+│     Settings）＋ CSS テーマ対応（CSS変数・クラス使用）        │
+│   Prompt タブ: L1/L2/AnimaCache 全バックエンドに表示         │
+│   Deep Reasoning delegation（DelegatingAdapter + threshold） │
+│   GeneralTab Orchestrator対応 + DrawerAnima設定統合          │
+│   vitest 568 PASS / cargo test 1036 PASS（2026-05-12）       │
+│                                                              │
+│ P3: 未着手（Anima 常駐 + 自動ルーティング + スケジューラ）   │
 └─────────────────────────────────────────────────────────────┘
 
 Track 4: MCP Server（G9） — mcp-server.md v3.1
@@ -153,7 +162,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | MEDIUM | G3 | AnimaMode UI↔backend統一 | anima.md §6 | 実装済 | cb9db93 (2026-05-07) フロント off/cache/hybrid/ai → Rust Cache/Ai/Hybrid。codex-reviewer 3回PASS |
 | HIGH | G9 | MCP Server（外部Worker/Client接続基盤） | mcp-server.md v3.1 | 一部実装済 | Phase 1-9完了（3c6e86b）。111テストPASS。Phase 10（GUI統合）一部実装（P1 write_event+events/feed） |
 | HIGH | ORCH-P1 | オーケストレーター P1 | anima-orchestrator-architecture.md | 実装済 | 9タスク完了。types.ts/Rust基盤/narration/MCP統合/Tauriコマンド/フロントエンド5コンポ/App.tsx統合/テスト/Onboarding |
-| HIGH | ORCH-P2 | オーケストレーター P2 | anima-orchestrator-architecture.md | 実装済 | 12タスク完了。CRUD API/PipelineView+DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御。vitest 563/cargo test 955 PASS（2026-05-11） |
+| HIGH | ORCH-P2 | オーケストレーター P2 | anima-orchestrator-architecture.md | 実装済 | 12タスク完了+追加実装。CRUD API/PipelineView+DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御 + DrawerAnima内部タブ(Status/Prompt/Memory/Console/Settings) + Deep Reasoning delegation。vitest 568/cargo test 1036 PASS（2026-05-12） |
 | LOW | G8 | AI応答の軽重モード（一言/詳細 切替） | anima.md | 未着手 | 現状はモデル選択で軽量化のみ。応答自体の簡潔さ制御なし。Producer判断で優先度変更 |
 
 | MEDIUM | — | motion-anim-assign ランタイムマウント | motion-anim-assign.md | 不要 | Animation Editorプラグインで実現済・revert 2b727d4 |
@@ -212,6 +221,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | — | GUIテスト全項目PASS（AnimaMode, Prompt編集, Memory E2E, ベクトル検索）393テスト+スクショ確認 | 2026-05-07 |
 | ORCH-P1 | オーケストレーターP1 Epic全9タスク完了（types/Rust基盤/narration/MCP統合/Tauri cmd/フロントエンド/App.tsx統合/テスト/Onboarding） | 2026-05-08 |
 | ORCH-P2 | オーケストレーターP2 Epic全12タスク完了（CRUD API/PipelineView/DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御。vitest 563/cargo test 955 PASS） | 2026-05-11 |
+| ORCH-P2追加 | DrawerAnima内部タブ実装（Status/Prompt/Memory/Console/Settings）+ CSSテーマ対応 + Deep Reasoning delegation + GeneralTab統合。vitest 568/cargo test 1036 PASS（commits c7f224e〜0432867） | 2026-05-12 |
 | E2E-FW | シナリオ駆動型E2Eテストフレームワーク（engine 22ファイル + scenarios 6 JSON + bone regression） | 2026-05-08 |
 
 ---
