@@ -4,8 +4,8 @@
 
 **カテゴリ**: oribis
 **フィーチャー**: web-remote
-**ステータス**: 設計中
-**前提**: axum未実装（ゼロから構築）
+**ステータス**: P1/P2 完了（2026-05-14）
+**前提**: axum 0.7既存（android-cprime実装済み）。流用可能。
 
 ---
 
@@ -270,15 +270,14 @@ dist_path = ""           # 空=バイナリ隣接 ./dist/ を自動検出
 ## 追加クレート (Cargo.toml)
 
 ```toml
-# [dependencies] に追加
-axum = { version = "0.8", features = ["ws"] }
+# [dependencies] に追加（axum 0.7 / dashmap / subtle / base64 は android-cprime で既存）
 tower-http = { version = "0.6", features = ["fs", "cors"] }
 tower = "0.5"
-subtle = "2"             # 定数時間Bearer比較
-dashmap = "6"            # WebSocket接続管理
 ```
 
-既存依存で流用可能: `tokio` (full), `serde_json`, `uuid`, `base64`
+既存依存で流用可能: `tokio` (full), `serde_json`, `uuid`, `base64`, `axum 0.7`, `dashmap`, `subtle`
+
+> **注意**: axum 0.7 → 0.8 バージョンアップは不要。既存を流用する。
 
 ---
 
@@ -316,6 +315,29 @@ dashmap = "6"            # WebSocket接続管理
 
 ---
 
+## Codex Adviser 設計指針（2026-05-13）
+
+### invoke ディスパッチャの設計方針
+`POST /api/invoke/:cmd` で全Tauriコマンドを文字列matchするアプローチはMVPでは許容。
+ただし以下を必ず守ること:
+- **公開commandのallowlist必須**: 内部commandを誤ってremote公開しないこと
+- **Phase 2以降**: `RemoteCommand` enumを定義し未知commandは拒否
+- **理想形**: Tauri commandの代替ではなく「同じ内部serviceを呼ぶ別入口」設計
+
+### 切り離し方針
+- **Phase 1**: `cargo feature: web-remote` + `runtime config toggle`（enabled/bind/port/token）
+- **Phase 3以降**: 安定後に `tauri-plugin-oribis-web-remote` crate化（必要なら）
+- JSプラグインによるaxumサーバー起動は禁止（Rust runtimeが必要・セキュリティリスク）
+
+### Phase 1 MVPスコープ制限
+全commandの一括remote化は禁止。チャット周辺のみに限定して動作確認後に拡張。
+- UI表示（dist/配信）
+- チャット送受信
+- `WS /ws/chat/:tabId`（LLMストリーミング）
+- 認証 + bind制限（`0.0.0.0` + token空は起動拒否）
+
+---
+
 ## 制約・注意事項
 
 - デスクトップ版（Tauri WebView）は一切壊さない。api-client.ts の `isTauri` 分岐で完全互換
@@ -323,13 +345,54 @@ dashmap = "6"            # WebSocket接続管理
 - `getCurrentWindow`（タイトルバー操作）はWeb版では非表示/不要
 - VRMモデルのHTTP配信はファイルサイズ大（10-50MB）。初回ロード時間に注意
 - Tailscale未接続時はLAN内 `192.168.x.x:7878` でもアクセス可
+- `0.0.0.0` + token空での起動は拒否（セキュリティ必須）
 
 ---
 
 ## Implementation Notes
 
-（実装開始後に記録）
+### P1 完了（2026-05-13）
+- ブランチ: `sysdev-1/web-remote-p1`
+- WR-01: axumサーバー `src-tauri/src/bin/web_remote_server.rs` として実装（standalone binary）
+- WR-02: ServeDir + SPA fallback（`/` → index.html）
+- WR-04: `POST /api/invoke/:cmd` + allowlist（`get_public_config` 等のみ公開）
+- WR-05: `src/lib/api-client.ts` 実装（isTauri判定 + HTTP fallback）
+- WR-07: `/ws/events` WebSocket双方向エンドポイント（P1はRust→WS broadcast実装、WS→Rust受信はP2で完成）
+- WR-08: Bearer token認証（WR_TOKEN環境変数）
+- WR-09: CORS設定
+- cargo test 1016 PASS / pnpm test 360 PASS（ベースライン）
+- smoke E2E 5/5 PASS（bash+curl）
+
+### P2 完了（2026-05-14）
+- ブランチ: `sysdev-1/web-remote-p2`
+- WS受信ディスパッチャ: `events.rs` read loopを完成。`type=="emit"` → `dispatch_emit()` → コールバック呼び出し
+- `ConnectionManager.register_emit_handler()` 追加
+- AndroidタッチCSS: `src/App.css` 末尾追記（@media coarse / 44px min targets / 100dvh / touch-action）
+- Cargoワークスペース: `src-tauri/Cargo.toml` に workspace定義、`src-tauri/crates/oribis-web-remote/` 追加（thin re-export crate）
+- pnpmワークスペース: `pnpm-workspace.yaml` + `packages/web-remote/`（@oribis/web-remote 外皮パッケージ）
+- Tailscaleセットアップガイド: `docs/deliverables/web-remote-android-setup.md`
+- cargo test 1022 PASS / pnpm test 360 PASS（ベースライン維持）
+
+### 依存方向（クレート分離）
+```
+oribis-web-remote → oribis（lib crate）
+```
+- remote/ コードは oribis-lib に残存。oribis-web-remote は `pub use oribis_lib::remote;` のみ
+- feature flag `web-remote` は従来通り維持
+
+### 環境変数
+| 変数 | 説明 | デフォルト |
+|------|------|---------|
+| WR_BIND | バインドアドレス | 127.0.0.1 |
+| WR_PORT | ポート番号 | 17878 |
+| WR_TOKEN | Bearer token | なし（認証なし） |
+| WR_DIST | static配信ディレクトリ | ./dist |
 
 ## Known Issues / Backlog
 
-（実装開始後に記録）
+- WR-11〜15（Phase 2: ストリーミング/PTY/音声）: 未着手
+- WR-16〜19（Phase 3: モバイルUI最適化）: タッチCSS追加済み（WR-17相当）、他は未着手
+- Android実機動作確認: 未実施（Tailscaleセットアップガイドは作成済み）
+- HTTPS/WSS対応: 未着手（Tailscale外アクセス用）
+- PWA化: 未着手
+- pnpmパッケージの逆向き依存（packages/web-remote → src/lib/api-client.ts）: 暫定外皮として許容中、Phase 3以降で正規化検討

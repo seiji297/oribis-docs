@@ -1,6 +1,6 @@
 # Oribis 進捗管理
 
-**最終更新**: 2026-05-12
+**最終更新**: 2026-05-14
 
 ---
 
@@ -125,6 +125,30 @@ Track 3: オーケストレーター — anima-orchestrator-architecture.md
 │   表示確認済                                                 │
 └─────────────────────────────────────────────────────────────┘
 
+Track 5: Web Remote — spec/ui/web-remote.md
+┌─────────────────────────────────────────────────────────────┐
+│ P1 ✅ 完了（sysdev-1/web-remote-p1, 2026-05-13）            │
+│   axum HTTP+WSサーバー（standalone binary: web_remote_server)│
+│   静的配信（ServeDir + SPA fallback）                        │
+│   POST /api/invoke/:cmd（allowlist制）                       │
+│   api-client.ts（isTauri切替）                               │
+│   Bearer token認証 + CORS                                    │
+│   /ws/events WS（Rust→WS broadcast）                        │
+│   smoke E2E 5/5 PASS / cargo test 1016 PASS                 │
+│                                                              │
+│ P2 ✅ 完了（sysdev-1/web-remote-p2, 2026-05-14）            │
+│   WS受信ディスパッチャ（WS→Rust dispatch_emit + callback）  │
+│   AndroidタッチCSS（@media coarse / 44px / 100dvh）          │
+│   Cargoワークスペース + oribis-web-remoteクレート分離        │
+│   pnpmワークスペース + @oribis/web-remote外皮パッケージ      │
+│   Tailscale+Android Chromeセットアップガイド                 │
+│   cargo test 1022 PASS / pnpm test 360 PASS                 │
+│                                                              │
+│ P3 未着手                                                    │
+│   WS ストリーミング/PTY/音声（WR-11〜15）                   │
+│   HTTPS/WSS対応・PWA化・Android実機確認                      │
+└─────────────────────────────────────────────────────────────┘
+
 Track 4: MCP Server（G9） — mcp-server.md v3.1
 ┌─────────────────────────────────────────────────────────────┐
 │ Phase 1-9: ✅ 完了（3c6e86b on sysdev-1/mcp-server）       │
@@ -181,6 +205,9 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | HIGH | G1-k | └ ハイブリッドベクトル検索 | memory.md §10.3 | 実装済 | 423a668。fastembed e5-small 384d + cosine + Phase3ランキング。113テストPASS。codex-adviser PASS (2026-05-07) |
 | MEDIUM | G3 | AnimaMode UI↔backend統一 | anima.md §6 | 実装済 | cb9db93 (2026-05-07) フロント off/cache/hybrid/ai → Rust Cache/Ai/Hybrid。codex-reviewer 3回PASS |
 | HIGH | G9 | MCP Server（外部Worker/Client接続基盤） | mcp-server.md v3.1 | 一部実装済 | Phase 1-9完了（3c6e86b）。111テストPASS。Phase 10（GUI統合）一部実装（P1 write_event+events/feed） |
+| HIGH | WR-P1 | web-remote P1（axum HTTP+WS / api-client.ts / Bearer認証）| spec/ui/web-remote.md | 実装済 | sysdev-1/web-remote-p1。smoke 5/5 PASS / cargo test 1016 PASS（2026-05-13） |
+| HIGH | WR-P2 | web-remote P2（WS双方向 / Android CSS / クレート分離）| spec/ui/web-remote.md | 実装済 | sysdev-1/web-remote-p2。cargo test 1022 PASS / pnpm 360 PASS（2026-05-14） |
+| MEDIUM | WR-P3 | web-remote P3（HTTPS/WS ストリーミング / PTY / PWA）| spec/ui/web-remote.md | 未着手 | Producer指示待ち |
 | HIGH | ORCH-P1 | オーケストレーター P1 | anima-orchestrator-architecture.md | 実装済 | 9タスク完了。types.ts/Rust基盤/narration/MCP統合/Tauriコマンド/フロントエンド5コンポ/App.tsx統合/テスト/Onboarding |
 | HIGH | ORCH-P2 | オーケストレーター P2 | anima-orchestrator-architecture.md | 実装済 | 12タスク完了+追加実装。CRUD API/PipelineView+DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御 + DrawerAnima内部タブ(Status/Prompt/Memory/Console/Settings) + Deep Reasoning delegation。vitest 568/cargo test 1036 PASS（2026-05-12） |
 | HIGH | ORCH-P3 | オーケストレーター P3 | anima-orchestrator-architecture.md | 実装済 | P3-A: scheduler engine / P3-B: DELEGATE_TO自動ルーティング。commits 6254a02, f7ab1a7（2026-05-12） |
@@ -248,6 +275,8 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | — | 起動時Anima自動接続: プロジェクト選択後1.2秒で時刻別挨拶自動送信（b6f7e5a） | 2026-05-12 |
 | — | open_cli_terminal WSL修正: powershell.exeフルパスフォールバック追加（b87f53d） | 2026-05-12 |
 | G9-P10 | MCP Phase 10 GUI統合: Worker token injection + GUI token UI + revoke_by_prefix（ff8efea）| 2026-05-12 |
+| WR-P1 | web-remote P1: axum HTTP+WSサーバー / api-client.ts / Bearer認証 / SPA fallback / smoke 5/5 PASS（sysdev-1/web-remote-p1） | 2026-05-13 |
+| WR-P2 | web-remote P2: WS双方向dispatch / AndroidタッチCSS / Cargoワークスペース / pnpmワークスペース / Tailscaleガイド（sysdev-1/web-remote-p2, ab5ab99） | 2026-05-14 |
 | E2E-FW | シナリオ駆動型E2Eテストフレームワーク（engine 22ファイル + scenarios 6 JSON + bone regression） | 2026-05-08 |
 
 ---
