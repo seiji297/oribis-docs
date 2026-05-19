@@ -195,6 +195,12 @@ docs/projects/oribis/
 | adapters/retargetMixamoToVrm.ts | spec/ui/avatar-animation.md, spec/ui/unity-fbx-retarget.md |
 | utils/proceduralClip.ts | spec/ui/avatar-animation.md |
 | components/avatarPoses.ts | spec/ui/vrm.md |
+| components/LuminaRenderer.tsx | spec/ui/lumina.md |
+| components/lumina/LuminaRing.ts | spec/ui/lumina.md |
+| components/lumina/LuminaParticles.ts | spec/ui/lumina.md |
+| components/lumina/LuminaCore.ts | spec/ui/lumina.md |
+| components/lumina/luminaParams.ts | spec/ui/lumina.md |
+| components/lumina/luminaShaders.ts | spec/ui/lumina.md |
 
 ---
 
