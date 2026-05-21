@@ -1,7 +1,7 @@
 # Worker直接指示機能 設計書
 
 **作成日**: 2026-05-21
-**ステータス**: 方針確定（Codex Adviser v3レビュー済み）
+**ステータス**: 実装完了（Phase 1）
 **関連**: design-commercial-io-channels-20260521.md
 
 ## 背景
@@ -90,44 +90,69 @@ enum IntentType {
 ## バックエンド: anima_direct_dispatch
 
 ```
-anima_direct_dispatch(message, worker_id, project_id, settings)
-  → [同期] dispatch前検証
-    → worker_id存在・起動中確認
-    → worker_session_id取得
-    → project_id整合性チェック
-  → [同期] InputEvent記録（domain=WorkerOps, source="human_direct"）
-  → [同期] Anima把握イベント（domain=Companion, kind="observed_human_direct_dispatch"）
-  → [同期] WorkerManager.dispatch(worker_id, message)
-    → PTY経由でWorkerにメッセージ送信
-  → [ストリーミング] Worker PTY出力 → バッファリング → Tauri Event → チャット欄表示
-  → [同期] OutputEvent記録（Worker応答、domain=WorkerOps）
-  → [非同期・オフ可能] LLM後処理（要約・重要度判定・記憶enrichment）
-  → [非同期・オフ可能] L1 consolidation
+anima_direct_dispatch(worker_id, task, sender)
+  → [同期] タスクサニタイズ（制御文字除去 + 4096文字制限）
+  → [同期] WorkerManager.validate_dispatch_target(worker_id) — Idle確認
+  → [同期] DispatchIntent生成（ULID dispatch_id）
+  → [同期] WorkerManager.dispatch(worker_id, intent) — status=Running化
+  → [同期] PTY write（pty_write経由）— ベストエフォート
+  → [同期] イベント記録:
+    → WorkerOps: "Human→{worker_id}: {task先頭100文字}"
+    → Companion: "observed_human_direct_dispatch: {worker_id}"
+  → [同期] Tauri Event emit("worker-dispatch-{worker_id}", payload)
+  → [非同期] enrich_dispatch_event(dispatch_id, worker_id) — スタブ（ログのみ）
 ```
 
-### 新規Tauriコマンド
+### 実装済みTauriコマンド
 
 ```rust
+// lib.rs
 #[tauri::command]
 async fn anima_direct_dispatch(
-    message: String,
     worker_id: String,
-    project_id: String,
-    app: AppHandle,
-    state: State<'_, AppState>,
+    task: String,
+    sender: String,
+    app_handle: tauri::AppHandle,
 ) -> Result<DirectDispatchResult, String>
+
+#[tauri::command]
+async fn cancel_direct_dispatch(
+    worker_id: String,
+    dispatch_id: String,
+    app_handle: tauri::AppHandle,
+) -> Result<(), String>
 ```
 
 ### DirectDispatchResult
 
 ```rust
-struct DirectDispatchResult {
-    dispatch_id: String,       // 一意ID（監査・再送・enrichment紐付け用）
-    worker_id: String,
-    worker_session_id: String,
-    pty_session_id: String,
-    status: DispatchStatus,    // Dispatched / Failed
+pub struct DirectDispatchResult {
+    pub dispatch_id: String,   // ULID一意ID
+    pub worker_id: String,
+    pub status: String,        // "dispatched"
 }
+```
+
+### DispatchIntent（worker_manager.rs）
+
+```rust
+pub struct DispatchIntent {
+    pub target_worker_id: String,
+    pub task: String,
+    pub sender: String,
+    pub dispatch_id: String,   // ULID
+    pub created_at: String,
+}
+```
+
+### cancel_direct_dispatch フロー
+
+```
+cancel_direct_dispatch(worker_id, dispatch_id)
+  → WorkerManager.cancel_dispatch(worker_id, dispatch_id) — active_dispatch_idクリア+Idle化
+  → PTY write("\x03") — Ctrl+C送信（ベストエフォート）
+  → キャンセルイベント記録（WorkerOps）
+  → Tauri Event emit
 ```
 
 ---
@@ -294,42 +319,78 @@ Worker PTY output
 
 セキュリティ・デバッグ・事故調査のため、dispatch factは完全消去不可。
 
-### 設定永続化
+### 設定永続化（実装済み）
 
-- デフォルト値: Tauri config（`tauri.conf.json`拡張 or アプリ設定ファイル）
-- ユーザー/プロジェクト別実値: SQLite DB（memory_db or 設定専用テーブル）
-- UI表示用キャッシュ: localStorage可（ただし実行時判定はRust側で最終確認）
-- 環境変数: 開発・運用フラグとしてのみ使用
+- JSONファイル: `{ORIBIS_HOME}/config/direct_dispatch.json`
+- Atomic Write: tempfile → rename パターン
+- serde defaults: 未設定フィールドはデフォルト値(全ON)適用
+- Tauriコマンド: `get_direct_dispatch_config` / `update_direct_dispatch_config`
+
+```rust
+pub struct DirectDispatchConfig {
+    pub enabled: bool,              // default: true
+    pub event_record: bool,         // default: true
+    pub memory_save: bool,          // default: true
+    pub anima_awareness: bool,      // default: true
+    pub async_enrichment: bool,     // default: true
+    pub consolidation: bool,        // default: true
+    pub max_task_length: usize,     // default: 4096
+}
+```
 
 ---
 
-## WorkerManager拡張
+## WorkerManager拡張（実装済み）
 
 ### 追加メソッド
 
 ```rust
 impl WorkerManager {
-    /// Worker PTYにメッセージを送信
-    pub fn dispatch(&self, worker_id: &str, message: &str) -> Result<DispatchHandle, WorkerError>;
+    /// dispatch前検証: worker存在 + Idle状態確認
+    pub fn validate_dispatch_target(&self, worker_id: &str) -> Result<(), DispatchError>;
 
-    /// Worker PTY出力ストリームに接続
-    pub fn attach_stream(&self, worker_id: &str) -> Result<PtyOutputStream, WorkerError>;
+    /// dispatch実行: validate → status=Running + active_dispatch_id記録
+    pub fn dispatch(&self, worker_id: &str, intent: DispatchIntent) -> Result<(), DispatchError>;
 
-    /// Worker実行をキャンセル
-    pub fn cancel(&self, worker_id: &str) -> Result<(), WorkerError>;
+    /// dispatchキャンセル: active_dispatch_idクリア + status=Idle
+    pub fn cancel_dispatch(&self, worker_id: &str, dispatch_id: &str) -> Result<(), DispatchError>;
 
-    /// dispatch前の検証（存在・起動中・session整合）
-    pub fn validate_dispatch_target(&self, worker_id: &str, project_id: &str) -> Result<WorkerSessionInfo, WorkerError>;
+    /// Workerステータスを手動でIdleに戻す
+    pub fn mark_worker_idle(&self, worker_id: &str) -> Result<(), DispatchError>;
 }
+```
+
+### DispatchError
+
+```rust
+pub enum DispatchError {
+    WorkerNotFound(String),
+    WorkerNotIdle { worker_id: String, current_status: String },
+    NoActiveDispatch(String),
+    DispatchIdMismatch { expected: String, actual: String },
+    TaskTooLong { length: usize, max: usize },
+}
+```
+
+### WorkerInfo拡張
+
+```rust
+// 追加フィールド
+pub active_dispatch_id: Option<String>  // #[serde(default, skip_serializing_if = "Option::is_none")]
 ```
 
 ### dispatch検証
 
-- worker_id存在確認
-- Worker status == Active
-- worker_session_idの一致（再起動後の古いセッションへの誤送防止）
-- project_id整合性（別プロジェクトWorkerへの誤dispatch防止）
-- メッセージサイズ上限（4096文字、既存task sanitizeと同等）
+- worker_id存在確認（WorkerNotFoundエラー）
+- Worker status == Idle（WorkerNotIdleエラー）
+- メッセージサイズ上限: `intent.task.len() <= 4096`（TaskTooLongエラー）
+- cancel時: dispatch_id一致確認（DispatchIdMismatchエラー）
+
+### 未実装（将来）
+
+- `attach_stream()`: PTY出力ストリーム接続（pty_spawn_with_streamingで代替中）
+- project_id整合性チェック（Phase 2）
+- worker_session_id検証（Phase 2）
 
 ---
 
@@ -386,32 +447,54 @@ Phase 2（将来）: persist_oribis_meta_eventからLLM非依存部分を抽出�
 
 ---
 
-## 実装対象ファイル
+## 実装済みファイル一覧
 
 ### Rust（src-tauri/src/）
 
-| ファイル | 変更内容 |
-|---------|---------|
-| lib.rs | `anima_direct_dispatch` Tauriコマンド追加 |
-| worker_manager.rs | `dispatch()` / `attach_stream()` / `cancel()` / `validate_dispatch_target()` 追加 |
-| anima/events.rs | `worker_direct_instruction`イベント種別追加 |
-| anima/pipeline.rs | 変更なし（anima_chatパイプライン維持） |
-| mcp/tools/worker.rs | `dispatch_task_to_worker` MCPツール追加（将来、外部MCP client用） |
+| ファイル | 変更内容 | ステータス |
+|---------|---------|----------|
+| lib.rs | `anima_direct_dispatch` / `cancel_direct_dispatch` / `get/update_direct_dispatch_config` Tauriコマンド、`sanitize_task_input`関数、`enrich_dispatch_event`スタブ | ✅ 実装済み |
+| worker_manager.rs | `DispatchIntent` / `DispatchError` 構造体、`validate_dispatch_target` / `dispatch` / `cancel_dispatch` / `mark_worker_idle` メソッド | ✅ 実装済み |
+| pty_commands.rs | `pty_spawn_with_streaming` — AppHandle経由でpty-output-{pid}イベントバッチemit | ✅ 実装済み |
+| anima/events.rs | 変更なし（既存Domain::WorkerOps / EventType::WorkerOutcomeを活用） | — |
+| anima/pipeline.rs | 変更なし（anima_chatパイプライン維持） | — |
+| mcp/tools/worker.rs | 変更なし（将来、dispatch_task_to_worker MCPツール追加予定） | 🔜 Phase 2 |
 
 ### TypeScript（src/）
 
-| ファイル | 変更内容 |
-|---------|---------|
-| App.tsx | @メンション分類器 + anima_direct_dispatch invoke |
-| components/ChatInput.tsx or 相当 | @メンション補完候補UI |
-| components/XtermTerminal.tsx | Worker選択ドロップダウン・接続状態表示追加 |
-| components/WorkerOutputInline.tsx | チャット欄インラインWorker出力コンポーネント（新規） |
+| ファイル | 変更内容 | ステータス |
+|---------|---------|----------|
+| App.tsx | @メンション分類器統合 + sendMessage分岐 + @補完ドロップダウンUI + WorkerOutputInlineレンダリング | ✅ 実装済み |
+| utils/mentionParser.ts | `parseMention(text, workers)` 正規表現ベース分類器 | ✅ 新規作成 |
+| utils/mentionParser.test.ts | 18件テスト（正常系+エッジケース） | ✅ 新規作成 |
+| components/WorkerOutputInline.tsx | チャット欄インラインWorker出力（pty-output listen、ANSI除去、500行制限） | ✅ 新規作成 |
+| components/WorkerPanel.tsx | ConnectionIndicator + DispatchIcon + Cancel Dispatchボタン | ✅ 修正済み |
+| types/orchestrator.ts | WorkerInfo型に`active_dispatch_id`追加 | ✅ 修正済み |
+| App.css | worker-inline-output スタイル追加 | ✅ 修正済み |
 
-### 設定
+### PTY出力ストリーミング実装詳細
 
-| ファイル | 変更内容 |
-|---------|---------|
-| src-tauri/tauri.conf.json | direct_dispatch設定デフォルト値 |
+```rust
+// pty_commands.rs — pty_spawn_with_streaming
+// reader_thread内でバッチemit
+const MAX_BATCH_SIZE: usize = 4096;   // 4KB
+const BATCH_INTERVAL_MS: u64 = 50;    // 50ms
+
+// emit_buf蓄積 → サイズ or 時間窓でemit
+let _ = app_handle.emit(&format!("pty-output-{}", pid), &emit_buf);
+```
+
+### @メンション分類器実装詳細
+
+```typescript
+// utils/mentionParser.ts
+export function parseMention(text: string, workers: WorkerEntry[]): MentionResult {
+  // 1. コードブロック/引用/メール/URLをマスク
+  // 2. 文頭or空白後の @([\w#-]+) で抽出
+  // 3. Worker alias完全一致(case insensitive) → type='worker'
+  // 4. 不一致 → type='anima'
+}
+```
 
 ---
 
@@ -429,10 +512,36 @@ Phase 2（将来）: persist_oribis_meta_eventからLLM非依存部分を抽出�
 - 設定はTauri config + DB推奨 → **採用**
 
 ### v3（最終設計レビュー）
-- @メンション: 登録alias完全一致のみ → **採用**
-- PTY出力: 50-100msバッファリング + 200-500行制限 → **採用**
-- dispatch時worker_session_id検証 → **採用**
-- 長時間タスクcheckpointイベント → **採用**
-- event_record OFF時も最小監査ログ残す → **採用**
-- DispatchIntent正規化 → **採用**
-- enrichment前秘匿情報マスキング → **採用**
+- @メンション: 登録alias完全一致のみ → **採用・実装済み**
+- PTY出力: 50msバッファリング + 500行制限 → **採用・実装済み**
+- dispatch時worker_session_id検証 → **Phase 2へ延期**
+- 長時間タスクcheckpointイベント → **Phase 2へ延期（スタブのみ）**
+- event_record OFF時も最小監査ログ残す → **採用・実装済み**
+- DispatchIntent正規化 → **採用・実装済み**
+- enrichment前秘匿情報マスキング → **Phase 2へ延期**
+
+---
+
+## Phase 1 実装結果
+
+### テスト結果
+- cargo test: 1452 passed, 5 ignored
+- pnpm typecheck: 0 errors
+- vitest (mentionParser): 18/18 PASS
+
+### ブランチ
+- `sysdev-1/worker-direct-dispatch` — 8 commits
+
+### Phase 2 残課題
+1. `attach_stream()` — PTY出力ストリーム接続API
+2. `project_id` 整合性チェック（別プロジェクトWorker誤dispatch防止）
+3. `worker_session_id` 検証（再起動後の古いセッション誤送防止）
+4. チェックポイントイベント本実装（30秒〜2分間隔）
+5. LLM enrichment本実装（`enrich_dispatch_event`スタブ→実装）
+6. enrichment前秘匿情報マスキング
+7. `dispatch_task_to_worker` MCPツール（外部MCP client用）
+8. `output_seq` 順序保証（Workerごと・sessionごと）
+9. L1 consolidationトリガー連携
+
+### 証跡
+- `deliverables/test-worker-direct-dispatch-20260521.md` — AC12件照合済み
