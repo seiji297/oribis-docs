@@ -39,40 +39,82 @@
 | 大容量アセット | Shareフォルダ（ファイルサーバー） |
 | Oribisビルド成果物 | 現PCで直接ビルド（git pull → pnpm tauri build） |
 
-## 移行手順
+## 移行フロー
+
+### 役割分担
+
+| 担当 | 作業内容 |
+|------|----------|
+| **Producer（物理/認証）** | Ubuntuインストール、GPUドライバ、ネットワーク接続、Shareフォルダ物理設定、GitHub SSH key登録（ブラウザ）、Claude Code初回認証、Discord Bot Token入力 |
+| **Claude（自動化）** | apt基盤パッケージ、rustup/Node/pnpm、Tauri依存、tmux/Claude Code環境、SSH key生成、リポジトリclone、Oribisビルド確認、Discord Relay Bot設定、ECC自走構築、systemdサービス |
 
 ### Phase 0: 棚卸し（現PC・WSL2内）
+
+**担当: Claude（自動実行可能）**
 - 全リポジトリ git status確認（未commit/未push洗い出し）
 - Secrets一覧化: SSH keys, GPG keys, GitHub token, Discord Bot token, .env各種, Claude Code設定
 - 常駐プロセス一覧: tmuxセッション構成, Discord Relay Bot, supporter-watch等
+- rustup / node / pnpm バージョン記録
+- cargo install済みツール一覧記録
+
+**担当: Producer**
 - WSL export取得（wsl --export Ubuntu backup.tar）→ 外部保存
 
 ### Phase 1: 2台目PC構築
-1. Ubuntu ネイティブインストール
-2. GPU ドライバ（NVIDIA推奨）
-3. 基盤ツール: git, rustup, Node.js, pnpm, Tauri v2 CLI, cargo
-4. Tauri v2 Linux依存: libwebkit2gtk-4.1-dev, libgtk-3-dev, libayatana-appindicator3-dev等
-5. Claude Code + tmux環境構築
-6. GitHub SSH key生成・登録
-7. agent-projects/ clone（GitHub経由）
-8. Oribis動作確認: cargo build → cargo test → pnpm install → pnpm typecheck → pnpm tauri dev
-9. Discord Relay Bot移行・起動確認
-10. ECC自走フロー動作確認（テストエピック実行）
+
+**担当: Producer（30分〜1時間）**
+1. Ubuntu ネイティブインストール（USB起動メディア→インストール）
+2. GPU ドライバインストール（NVIDIA: `ubuntu-drivers autoinstall`）
+3. ネットワーク接続（LAN/Wi-Fi設定）
+4. Claude Code初回認証（API key入力）
+
+**担当: Claude（自動・2〜3時間）**
+5. apt基盤パッケージ一括インストール（build-essential, git, curl, pkg-config等）
+6. rustup + Rust toolchainインストール
+7. Node.js + pnpmインストール
+8. Tauri v2 Linux依存パッケージ（libwebkit2gtk-4.1-dev, libgtk-3-dev, libayatana-appindicator3-dev等）
+9. tmux環境構築
+10. SSH key生成（ssh-keygen）→ 公開鍵をProducerに渡す
+
+**担当: Producer（10分）**
+11. GitHub SSH key登録（ブラウザでSettings → SSH keys → 公開鍵追加）
+12. Discord Bot Token入力（環境変数設定）
+
+**担当: Claude（自動・続き）**
+13. agent-projects/ 全リポジトリclone（GitHub経由）
+14. Oribis動作確認: cargo build → cargo test → pnpm install → pnpm typecheck → pnpm tauri dev
+15. Discord Relay Bot設定・起動確認
+16. ECC自走フロー動作確認（テストエピック実行）
+17. tmux自動起動設定（systemd service）
 
 ### Phase 2: Shareフォルダ設定
-1. ファイルサーバーにShare設定
-2. 両PCからアクセス確認
-3. 大容量アセット同期運用ルール決定
+
+**担当: Producer**
+1. ファイルサーバーにShare設定（物理/権限）
+
+**担当: Claude**
+2. 2台目PCからShareフォルダマウント設定（/etc/fstab or systemd mount）
+3. 両PCからアクセス確認
+4. 大容量アセット同期運用ルール決定
 
 ### Phase 3: 並行運用（数日〜1週間）
-1. 2台目でOribis開発・AI自走を実運用
-2. 現PCでgit pull → pnpm tauri build → ビルド版動作確認
-3. 問題発生時は現PC WSL2にフォールバック可能
 
-### Phase 4: 現PC WSL2削除（完全安定後）
-1. 2台目の完全安定確認後
-2. Secrets再発行（GitHub token, Bot token等）→ 旧環境分は失効
-3. WSL2削除（wsl --unregister Ubuntu）
+**担当: Claude**
+1. 2台目でOribis開発・AI自走を実運用
+2. 安定性モニタリング（常駐プロセス死活、ビルド成功率）
+
+**担当: Producer**
+3. 現PCでgit pull → pnpm tauri build → ビルド版動作確認
+4. 問題報告（問題発生時は現PC WSL2にフォールバック可能）
+
+### Phase 4: 現PC WSL2削除（完全安定後・急がない）
+
+**担当: Claude**
+1. Secrets再発行リスト作成
+
+**担当: Producer**
+2. Secrets再発行実行（GitHub token, Bot token等）→ 旧環境分は失効
+3. WSL2削除（`wsl --unregister Ubuntu`）
 4. 現PCにOribisビルド版インストール・動作確認
 
 ## 準備チェックリスト
