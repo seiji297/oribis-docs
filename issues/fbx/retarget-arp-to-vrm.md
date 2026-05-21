@@ -5,47 +5,58 @@
 
 ---
 
-## 確定済み: 数式
+## 確定済み: 数式（2026-05-21 修正）
 
 ```
-Q_vrm = R * inv(f0) * fN * inv(R)
+Q_vrm = R * inv(rSA) * inv(R) * fN
 ```
 
 - `R` = Z-up → Y-up 変換 = quaternion(-0.70710678, 0, 0, 0.70710678)（X軸 -90°回転）
-- `f0` = ARP ボーンの bind pose local quaternion（Z-up 座標系）
-- `fN` = FBX アニメーション frame N の local quaternion（Z-up 座標系）
-- **M = R（全ボーン共通）**。親の armature-space は分子分母でキャンセルされる。
+- `rSA` = ARP ボーンの parent-relative rest quaternion（Blender Z-up 座標系、bone.matrix由来）
+- `fN` = GLTF アニメーション frame N の local quaternion（**Y-up** 座標系）
+- `R * inv(rSA) * inv(R)` = inv(rSA) を共役変換で Y-up に変換
 
-### 導出（Python TEST3 で数値検証済み）
+### 座標系の違いが鍵
+- rSA は Blender Z-up 空間（bone.matrix = parent-relative）
+- fN は GLTF Y-up 空間（THREE.js GLTFLoader が座標変換済み）
+- → rSA を Y-up に変換してから fN に適用する必要がある
+
+### 旧公式のバグ（2026-05-21 修正前）
 ```
-ARP_bone_T_yup = R * (parent_world * f0) * inv(R)
-ARP_bone_N_yup = R * (parent_world * fN) * inv(R)
-Q_vrm = inv(ARP_bone_T_yup) * ARP_bone_N_yup
-      = R * inv(f0) * fN * inv(R)   ← parent_world がキャンセル
+旧: Q_vrm = R * inv(rSA) * fN * inv(R)   ← inv(R) が全体に掛かる（間違い）
+新: Q_vrm = R * inv(rSA) * inv(R) * fN    ← inv(rSA) だけ共役変換（正しい）
+```
+旧公式は腕の回転軸が Y軸（水平振り）になり、腕が下がらず前方に突き出る結果になっていた。
+
+### 導出
+```
+rSA_yup = R * rSA * inv(R)              ← Z-up rest を Y-up に変換
+Q_vrm   = inv(rSA_yup) * fN             ← rest 除去して animation delta のみ残す
+        = inv(R * rSA * inv(R)) * fN
+        = R * inv(rSA) * inv(R) * fN
 ```
 
 ---
 
-## f0 ソースの優先順位
+## rSA ソース（2026-05-21 更新）
+
+**ARP_BONE_REST テーブルに52ボーン全登録**（hips〜指先）。動的計算パス廃止。
 
 ```typescript
-const f0 = vrmName === "hips"
-  ? identity
-  : ARP_BONE_REST[vrmName]?.restSelfArmature   // (1) 体幹ボーン: Blender export
-  : computedRestSA.get(vrmName)                 // (2) 手指ボーン: inv(parent) * child
-  ?? frame0Map.get(vrmName);                    // (3) frame 0 fallback
+const rSA = ARP_BONE_REST[vrmName]?.restSelfArmature ?? identity;
+// hips: identity（GLTFキーフレームにrest未焼き込みのため）
+// 他全ボーン: Blender bone.matrix（parent-relative Z-up）
 ```
 
-### restSelfArmature の定義（2026-05-08 判明）
+### restSelfArmature の定義
+- `bone.matrix` = parent-relative rest quaternion（Z-up）← 名前が紛らわしいが armature-space ではない
+- `bone.matrix_local` = armature-space rest quaternion ← こちらが累積
+- ソース: `tools/export_arp_bone_rest.py` → `arp_bone_rest_arp.json`
 
-```
-restSelfArmature[bone] = inv(restLocal[parent]) * restLocal[bone]
-```
-
-- `restLocal` = bone.quaternion（T-pose時のローカル回転）
-- `restSelfArmature` = 親の restLocal を打ち消した後の子の回転（≠累積ワールド回転）
-- `ARP_BONE_REST` は `tools/export_arp_bone_rest.py` で Blender から取得
-- 手指ボーンは `ARP_BONE_REST` 未登録 → `restPoseCache`（GLBシーンの bone.quaternion）から動的に計算
+### hips 特別扱いの理由
+- GLTF キーフレーム: 子ボーンは `rSA_yup * pose_delta`（rest焼き込み済み）
+- hips は `pure_animation`（rest未焼き込み、identity at rest）
+- → hips の rSA を identity にすることで `inv(identity) * fN = fN` となり正しく動作
 
 ---
 
@@ -53,11 +64,10 @@ restSelfArmature[bone] = inv(restLocal[parent]) * restLocal[bone]
 
 | ボーン群 | 状態 | 備考 |
 |---------|------|------|
-| 腕全般 (upperArm/lowerArm/shoulder) | ✅ 修正済み | M=R に変更。`leftUpperArm Q_vrm[0]=(18.0,28.3,-70.4)` 確認 |
-| leftHand / rightHand | 🔧 修正中 | restSelfArmature 空間不一致バグ修正（GLBシーンから動的計算に変更）。視覚テスト待ち |
-| 指全般 (finger bones) | 🔧 修正中 | hand と同じ computedRestSA で対応。視覚テスト待ち |
-| 脊椎 (hips/spine/chest/upperChest/neck/head) | 動作中（詳細未検証） | |
-| 脚 (upperLeg/lowerLeg) | ✅ baseline 復元 | ARP_BONE_REST から脚4本を削除。frame0 fallback 使用 |
+| 全52ボーン ARP_BONE_REST | ✅ 登録済み | commit 19b794c。hips〜指先。Blender export値 |
+| hips rSA = identity | ✅ 修正済み | commit a247df5。root bone GLTFキーフレームはrest未焼き込み |
+| 数式 inv(R) 位置修正 | ✅ 修正済み | commit 8f6e49c。`R*inv(rSA)*inv(R)*fN` に変更 |
+| 全身 | 🔧 視覚テスト待ち | 上記3修正の統合結果を要確認 |
 
 ## sysdev-2 handoff（2026-05-07, commit 28f352b, branch sysdev-2/fbx）
 
@@ -96,24 +106,22 @@ restSelfArmature[bone] = inv(restLocal[parent]) * restLocal[bone]
 
 ---
 
-## ARP_BONE_REST 欠損リスト
+## ARP_BONE_REST 登録状況
 
-| VRM名 | ARP bone | 状態 |
-|-------|---------|------|
-| leftHand | handl | Blender export 空 → 削除済み |
-| rightHand | handr | Blender export 空 → 削除済み |
-| leftFoot/rightFoot | footl/footr | 未確認 |
-| leftToes/rightToes | toes_01l/r | 未確認 |
-| 全指ボーン | c_thumb1l 等 | ARP_BONE_REST 未登録 |
+**全52ボーン登録済み**（commit 19b794c）。欠損なし。
+- 体幹: hips, spine, chest, upperChest, neck, head
+- 腕: shoulder/upperArm/lowerArm/hand × L/R
+- 脚: upperLeg/lowerLeg/foot/toes × L/R
+- 指: thumb(3)/index(3)/middle(3)/ring(3)/little(3) × L/R
 
 ---
 
 ## 次のアクション（優先順）
 
-1. **視覚テスト**: pnpm tauri dev → タイピングアニメGLB読み込み → 手指の向き確認
-2. 結果に応じた追加修正（必要なら）
-3. 全ボーン OK 確認後 → デバッグログ削除
-4. commit & merge
+1. **視覚テスト**: pnpm tauri dev → Typing_Stand.glb 読み込み → 全身姿勢確認
+2. OUTPUTダンプ取得 → rightUpperArm の Z軸回転が支配的か確認
+3. OK → デバッグログ削除 → commit & merge
+4. NG → ダンプ値から次の原因特定
 
 **やってはいけないこと**:
 - `animationLoader.ts` に Node 専用 import を戻す
@@ -122,18 +130,25 @@ restSelfArmature[bone] = inv(restLocal[parent]) * restLocal[bone]
 
 ---
 
-## sysdev-2 進捗（2026-05-08, branch sysdev-2/retarget-test）
+## sysdev-2 進捗（2026-05-21, branch sysdev-2/retarget-test）
 
-**到達点**: f0 空間不一致バグ特定・修正コード済み。視覚テスト待ち。
+**到達点**: 数式バグ修正済み。視覚テスト待ち。
 
 **今回の修正**:
-1. GLB（GLTF）ロード時も `extractBoneRestPoses()` + `setFbxRestPoses()` を実行（commit dd845d5）
-2. `computedRestSA` マップ追加: ARP_BONE_REST 未登録ボーン（hand/finger/foot/toes）の f0 を `inv(parent_restLocal) * bone_restLocal` で動的計算
-3. f0 優先順位変更: ARP_BONE_REST → computedRestSA → frame0Map
+1. ARP_BONE_REST に52ボーン全登録（19b794c）— 動的計算パス廃止
+2. hips rSA = identity に修正（a247df5）— root bone GLTF rest 未焼き込み対応
+3. **inv(R) 位置修正（8f6e49c）** — `R*inv(rSA)*fN*inv(R)` → `R*inv(rSA)*inv(R)*fN`
+
+**バグの根本原因**:
+- rSA は Blender Z-up、fN は GLTF Y-up
+- 旧公式は inv(R) を全体に掛けていた → fN（既にY-up）も変換されて軸がズレた
+- rightUpperArm が Y軸63°回転（水平振り）になり、Z軸回転（腕を下ろす）にならなかった
+- 正しくは rSA だけを共役変換 R*inv(rSA)*inv(R) して Y-up にし、fN はそのまま掛ける
 
 **重要な知見**:
-- `restSelfArmature` は累積ワールド回転ではなく `inv(parent_restLocal) * bone_restLocal`
-- 以前の restPoseCache は `restLocal` そのものだったため、body bones（restSelfArmature）と空間が一致していなかった
+- bone.matrix = parent-relative（名前と逆）、bone.matrix_local = armature-space
+- GLTF loader は座標変換済みの Y-up 値を返す → bone local quaternion に R 変換は不要
+- rSA が Z-up のまま → rSA だけ共役変換が必要
 
 ---
 
