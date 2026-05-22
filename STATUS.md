@@ -1,3 +1,12 @@
+<!-- AUTO-DOC-GEN:STATUS-START -->
+| 項目 | 値 |
+|------|-----|
+| ブランチ | `sysdev-1/auto-doc-gen` |
+| コミット | `9518472` |
+| 日時 | 2026-05-22 19:43:24 +0900 |
+| サマリー | feat: add doc-map.json for auto-doc-gen skill (oribis project config) |
+<!-- AUTO-DOC-GEN:STATUS-END -->
+
 # Oribis 進捗管理
 
 **最終更新**: 2026-05-14
