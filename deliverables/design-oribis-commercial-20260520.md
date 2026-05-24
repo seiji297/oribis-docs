@@ -185,9 +185,13 @@ PMF検証結果に応じて分岐:
 
 ### 6.2 テスト実績
 
-- Rust: 1,339テスト PASS / 5 ignored（全16スイート）
+- Rust: 1,493テスト PASS / 5 ignored（全15スイート）
+- TypeScript: 823テスト PASS（54ファイル）
 - AppBridge単体: 151テスト
 - 結合テスト: AC-1〜AC-10（MockTCP + MockLLM）
+- E2E Smoke: 5項目 PASS（web_remote_server起動+API検証）
+- Secret Leakage: 549ファイルスキャン / 0漏洩
+- 商用テスト統合ランナー: `scripts/test-all-commercial.sh`（Phase 1-5 全自動）
 
 ### 6.3 主要モジュール
 
@@ -240,7 +244,7 @@ PMF検証結果に応じて分岐:
 
 **「使ってもらえるか」が全て。収益は後。**
 
-- 84,000行・1,339テスト → 技術基盤は十分
+- 84,000行・2,316テスト（Rust 1,493 + TS 823） → 技術基盤は十分
 - MCP+DAG+Debug+Anima統合 → 差別化ポジションあり
 - ユーザー0人 → 全ての商業計画は仮説
 - ビルド販売¥980 → Solo devの生活費にはならない
