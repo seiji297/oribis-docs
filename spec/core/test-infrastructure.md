@@ -17,7 +17,7 @@ Oribis のテスト基盤は **3層構成**:
 | E2E (Browser) | Playwright | UIフロー（Tauri IPC mock 環境） | `cd e2e && pnpm test` |
 | E2E (Node) | Vitest (node) | VRM ボーンリグレッション | `cd e2e && pnpm test:node` |
 
-**現在のテスト数**: Unit 826件 / E2E シナリオ 21件 / Rust統合テスト 33件
+**現在のテスト数**: Unit 822件 / E2E シナリオ 22件 / Rust 1500件（2026-05-27更新）
 
 ---
 
@@ -135,7 +135,7 @@ const result = renderWithProviders(<MyComponent />, {
 ### 1.4 テスト実行コマンド
 
 ```bash
-pnpm test              # 単回実行（826件）
+pnpm test              # 単回実行（822件）
 pnpm test:coverage     # カバレッジレポート付き
 pnpm test:watch        # ファイル変更検知で自動再実行
 ```
@@ -179,7 +179,7 @@ e2e/
 ├── fixtures/
 │   ├── app.fixture.ts         # Tauri mock 注入フィクスチャ
 │   └── tauri-mock.ts          # IPC mock スクリプトビルダー
-├── scenarios/                 # JSON シナリオ群（21件）
+├── scenarios/                 # JSON シナリオ群（22件）
 ├── tests/
 │   └── scenario-driven.spec.ts # 汎用シナリオドライバ
 ├── playwright.config.ts
@@ -295,7 +295,7 @@ Stage 3: Claude API fallback
 - `anima_chat` — キャラクターチャット応答（CharacterChatResult 型）
 - `app_v2_scan` — プラグイン v2 アプリ一覧
 
-### 2.8 シナリオ一覧（21件）
+### 2.8 シナリオ一覧（22件）
 
 | ID | 名前 | mock | カテゴリ |
 |---|---|---|---|
@@ -312,14 +312,15 @@ Stage 3: Claude API fallback
 | t-13 | Department Add Form | list_departments_config, create_department | オーケストレーター |
 | t-14 | Skills/Prompts Tab | list_departments_config | オーケストレーター |
 | t-15 | Form Validation | list_departments_config | オーケストレーター |
-| t-16 | AI Resolver Smoke | - | エンジン検証 |
-| t-17 | Chat Send/Receive | anima_chat, claude_chat | チャット |
-| t-18 | Session Management | load_project_tabs, start/stop_project_session | セッション |
-| t-19 | Post-Onboarding UI | - | UI全体 |
-| t-20 | Project Switch | load_project_tabs, start/stop_project_session | プロジェクト |
-| t-21 | Settings Detail | - | 設定 |
-| t-22 | Avatar Render | - | 3D |
-| t-23 | BGM Radio | app_v2_scan | プラグイン |
+| t-16 | Chat Send/Receive | anima_chat, claude_chat | チャット |
+| t-17 | Department Save Flow | list_departments_config | オーケストレーター |
+| t-18 | Sidebar Drawer + Project List | load_project_tabs, start/stop_project_session | セッション |
+| t-19 | Project Tab Management | load_project_tabs, start/stop_project_session | プロジェクト |
+| t-20 | Settings Persistence (Theme) | - | 設定 |
+| t-21 | Onboarding Flow | - | UI全体 |
+| t-22 | i18n Language Switch | - | i18n |
+| t-23 | About Section | - | UI基本 |
+| t-24 | Cost Warning Settings | - | 設定 |
 
 ### 2.9 新規シナリオ追加手順
 

@@ -1,264 +1,5 @@
 <!-- AUTO-DOC-GEN:TREE-START -->
 ```
-src-tauri/src/
-├── anima
-│   ├── affinity.rs
-│   ├── amem.rs
-│   ├── anima.rs
-│   ├── cache.rs
-│   ├── cli_adapter.rs
-│   ├── consolidation.rs
-│   ├── context.rs
-│   ├── counter.rs
-│   ├── db.rs
-│   ├── delegation.rs
-│   ├── embedding.rs
-│   ├── entity_link.rs
-│   ├── events.rs
-│   ├── history.rs
-│   ├── memory.rs
-│   ├── memory_db.rs
-│   ├── mod.rs
-│   ├── parser.rs
-│   ├── pipeline.rs
-│   ├── retrieval.rs
-│   ├── self_model.rs
-│   ├── task.rs
-│   └── throttle.rs
-├── bin
-│   ├── fake_claude.rs
-│   ├── fake_codex.rs
-│   ├── oribis_headless.rs
-│   ├── oribis_mcp.rs
-│   └── web_remote_server.rs
-├── blender
-│   ├── scripts
-│   │   ├── bake_animation.py
-│   │   ├── export_vrm.py
-│   │   ├── list_shapekeys.py
-│   │   └── set_shapekey.py
-│   ├── client.rs
-│   ├── commands.rs
-│   ├── mod.rs
-│   └── types.rs
-├── discord
-│   ├── bot_bridge.rs
-│   ├── client.rs
-│   ├── commands.rs
-│   ├── config.rs
-│   ├── mod.rs
-│   └── webhook.rs
-├── github
-│   ├── client.rs
-│   ├── commands.rs
-│   └── mod.rs
-├── google
-│   ├── calendar.rs
-│   ├── client.rs
-│   ├── commands.rs
-│   ├── drive.rs
-│   ├── gmail.rs
-│   ├── identity.rs
-│   ├── mod.rs
-│   ├── oauth.rs
-│   ├── photos.rs
-│   ├── scheduler.rs
-│   ├── tasks.rs
-│   ├── token_store.rs
-│   └── youtube.rs
-├── mcp
-│   ├── tools
-│   │   ├── anima.rs
-│   │   ├── avatar.rs
-│   │   ├── blender.rs
-│   │   ├── core_test.rs
-│   │   ├── discord.rs
-│   │   ├── event_feed.rs
-│   │   ├── google.rs
-│   │   ├── memory.rs
-│   │   ├── mod.rs
-│   │   ├── orchestrator.rs
-│   │   └── worker.rs
-│   ├── audit.rs
-│   ├── broker.rs
-│   ├── external.rs
-│   ├── mod.rs
-│   ├── protocol.rs
-│   ├── resources.rs
-│   ├── server.rs
-│   ├── state_machine.rs
-│   └── types.rs
-├── plugin_v2
-│   ├── error.rs
-│   ├── fs.rs
-│   ├── lifecycle.rs
-│   ├── manifest.rs
-│   ├── mod.rs
-│   ├── package.rs
-│   └── storage.rs
-├── remote
-│   ├── assets.rs
-│   ├── auth.rs
-│   ├── commands.rs
-│   ├── config.rs
-│   ├── cors.rs
-│   ├── error.rs
-│   ├── events.rs
-│   ├── mod.rs
-│   ├── server.rs
-│   ├── types.rs
-│   └── web_remote_state.rs
-├── schema
-│   └── departments_schema.json
-├── templates
-│   └── mod.rs
-├── work_report
-│   ├── commands.rs
-│   └── mod.rs
-├── audio_playback.rs
-├── cli_adapters.rs
-├── config.rs
-├── department_config.rs
-├── dept_commands.rs
-├── error.rs
-├── event_feed.rs
-├── events.rs
-├── execution_engine.rs
-├── home.rs
-├── json_log.rs
-├── lib.rs
-├── main.rs
-├── named_pipe.rs
-├── narration.rs
-├── pty_commands.rs
-├── recording.rs
-├── scheduler.rs
-├── skill.rs
-├── test_utils.rs
-├── tts.rs
-└── worker_manager.rs
-
-src/
-├── adapters
-│   ├── FbxAvatarAdapter.ts
-│   ├── MmdAvatarAdapter.ts
-│   ├── VRMLookAtSmoother.ts
-│   ├── VrmAvatarAdapter.ts
-│   ├── boneMapping.ts
-│   ├── expressionMapping.ts
-│   ├── lookAtHelper.ts
-│   ├── morphMapLoader.ts
-│   └── retargetMixamoToVrm.ts
-├── assets
-│   ├── morph-maps
-│   │   ├── default.morph.json
-│   │   └── nagiko.morph.json
-│   ├── gear.svg
-│   ├── logo_oribis.png
-│   └── react.svg
-├── components
-│   ├── __tests__
-│   ├── AnimaStatusBar.tsx
-│   ├── AnimationAssignPanel.tsx
-│   ├── AvatarViewer.tsx
-│   ├── BgmRadioPanel.tsx
-│   ├── CameraControlsUI.tsx
-│   ├── ConfirmDialog.tsx
-│   ├── Dashboard.tsx
-│   ├── DepartmentDetail.tsx
-│   ├── DepartmentLane.tsx
-│   ├── DiscordSetupWizard.tsx
-│   ├── DrawerAnima.tsx
-│   ├── DrawerDepartment.tsx
-│   ├── DrawerEventFeed.tsx
-│   ├── GeneralTab.tsx
-│   ├── GitHubSetupWizard.tsx
-│   ├── LanguageSwitcher.tsx
-│   ├── MarkdownRenderer.tsx
-│   ├── Onboarding.tsx
-│   ├── OrchestratorEditor.tsx
-│   ├── PipelineView.tsx
-│   ├── PoseDebugUI.tsx
-│   ├── PromptsTab.tsx
-│   ├── ScheduleTab.tsx
-│   ├── SidebarSelect.tsx
-│   ├── SkillsTab.tsx
-│   ├── StatusPane.tsx
-│   ├── TemplatePicker.tsx
-│   ├── VrmViewer.tsx
-│   ├── WorkerOutputInline.tsx
-│   ├── WorkerPanel.tsx
-│   ├── WorkflowTab.tsx
-│   ├── XtermTerminal.tsx
-│   ├── avatarPoses.ts
-│   ├── pipeline.types.ts
-│   ├── pipeline.utils.ts
-│   ├── promptValidation.ts
-│   └── useValidation.ts
-├── controllers
-│   └── AvatarController.ts
-├── hooks
-│   ├── useAnima.ts
-│   ├── useCliStatus.ts
-│   ├── useTTS.ts
-│   └── useVoiceInput.ts
-├── i18n
-│   ├── __tests__
-│   ├── en.json
-│   ├── index.ts
-│   └── ja.json
-├── lib
-│   ├── __tests__
-│   └── api-client.ts
-├── loaders
-│   ├── animationLoader.ts
-│   └── avatarLoader.ts
-├── plugin-v2
-│   ├── __tests__
-│   ├── debug-plugin
-│   │   ├── index.ts
-│   │   └── manifest.yaml
-│   ├── sdk
-│   │   └── template
-│   ├── AudioStreamManager.ts
-│   ├── BgmAnalyser.ts
-│   ├── EventBus.ts
-│   ├── HostAPI.ts
-│   ├── PluginSandbox.ts
-│   ├── PluginSystem.ts
-│   ├── UIRenderer.tsx
-│   ├── bgm-stations.ts
-│   ├── types.ts
-│   └── usePluginSystem.ts
-├── skill
-│   ├── SkillPicker.tsx
-│   ├── types.ts
-│   └── useSkills.ts
-├── test
-│   ├── helpers
-│   │   ├── createMockInvoke.ts
-│   │   └── renderWithProviders.tsx
-│   ├── mocks
-│   │   ├── r3f.ts
-│   │   ├── tauri.ts
-│   │   └── three-vrm.ts
-│   └── setup.ts
-├── themes
-│   └── avatarThemes.ts
-├── types
-│   ├── avatar.ts
-│   └── orchestrator.ts
-├── utils
-│   ├── expressionSystem.ts
-│   ├── mentionParser.ts
-│   ├── proceduralClip.ts
-│   └── toast.ts
-├── App.css
-├── App.tsx
-├── SplashApp.tsx
-├── main.tsx
-└── splash.tsx
-
 ```
 <!-- AUTO-DOC-GEN:TREE-END -->
 
@@ -420,6 +161,9 @@ docs/projects/oribis/
 | department_config.rs | spec/core/anima-orchestrator-architecture.md（Department CRUD） |
 | events.rs | spec/core/anima-orchestrator-architecture.md（EventFeedItem型・変換トレイト） |
 | bin/oribis_mcp.rs | spec/core/mcp-server.md（§4.1 MCP子プロセスバイナリ） |
+| github/update_check.rs | —（商用化: GitHub Releases APIバージョンチェック） |
+| error.rs | —（OribisError: i18nキー化済み） |
+| remote/web_remote_state.rs | spec/ui/web-remote.md |
 
 ### フロントエンド（src/）
 
@@ -454,7 +198,11 @@ docs/projects/oribis/
 | plugin/usePluginLoader.ts | spec/ui/plugin-api.md |
 | skill/SkillPicker.tsx | spec/ui/plugin-api.md |
 | skill/useSkills.ts | spec/ui/plugin-api.md |
-| App.tsx | spec/ui/anima-ui.md（メイン統合面） |
+| App.tsx | spec/ui/anima-ui.md（メイン統合面）+ 商用化（update check / offline banner） |
+| hooks/useNetworkStatus.ts | —（商用化: navigator.onLine監視） |
+| components/ErrorRetryBanner.tsx | —（商用化: オフライン/タイムアウト通知UI） |
+| utils/invokeWithTimeout.ts | —（商用化: Tauri invokeタイムアウトラッパー） |
+| utils/resolveErrorMessage.ts | —（商用化: i18nキーエラーメッセージ解決） |
 | themes/avatarThemes.ts | spec/ui/vrm.md（テーマ定義） |
 | adapters/retargetMixamoToVrm.ts | spec/ui/avatar-animation.md, spec/ui/unity-fbx-retarget.md |
 | utils/proceduralClip.ts | spec/ui/avatar-animation.md |
@@ -465,6 +213,13 @@ docs/projects/oribis/
 | components/lumina/LuminaCore.ts | spec/ui/lumina.md |
 | components/lumina/luminaParams.ts | spec/ui/lumina.md |
 | components/lumina/luminaShaders.ts | spec/ui/lumina.md |
+
+### CI/CD（.github/workflows/）
+
+| コードパス | spec |
+|-----------|------|
+| release.yml | —（Tauri Release + artifact validation） |
+| smoke-install.yml | —（商用化P0-2: クリーン環境インストールテスト） |
 
 ---
 

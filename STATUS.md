@@ -1,15 +1,15 @@
 <!-- AUTO-DOC-GEN:STATUS-START -->
 | 項目 | 値 |
 |------|-----|
-| ブランチ | `sysdev-1/auto-doc-gen` |
-| コミット | `9518472` |
-| 日時 | 2026-05-22 19:43:24 +0900 |
-| サマリー | feat: add doc-map.json for auto-doc-gen skill (oribis project config) |
+| ブランチ | `` |
+| コミット | `` |
+| 日時 |  |
+| サマリー |  |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
 
-**最終更新**: 2026-05-14
+**最終更新**: 2026-05-27
 
 ---
 
@@ -25,9 +25,11 @@
 ## 全体フロー
 
 ### 現在地
-- **アクティブトラック**: 記憶システム（G1）、MCP Server（G9）、オーケストレーター の3トラック
+- **アクティブトラック**: 商用化準備（COM）— 残P0: リリースページ公開のみ
+- **完了トラック**: 記憶システム（G1）、MCP Server（G9）、オーケストレーター、Web Remote P1/P2、商用化P1全件
 - **Phase 0（表情）**: 完了
 - **Phase 1（記憶基盤）**: 完了
+- **商用化P0-2/P1-1〜5**: 完了（2026-05-27）— Rust 1500 / TS 822 / E2E 22 全PASS
 - **その他**: pending-tasks.md に移動済み。Producer指示があれば復帰
 
 ### 実装フロー（codex-adviser レビュー済 2026-05-07）
@@ -287,6 +289,12 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | WR-P1 | web-remote P1: axum HTTP+WSサーバー / api-client.ts / Bearer認証 / SPA fallback / smoke 5/5 PASS（sysdev-1/web-remote-p1） | 2026-05-13 |
 | WR-P2 | web-remote P2: WS双方向dispatch / AndroidタッチCSS / Cargoワークスペース / pnpmワークスペース / Tailscaleガイド（sysdev-1/web-remote-p2, ab5ab99） | 2026-05-14 |
 | E2E-FW | シナリオ駆動型E2Eテストフレームワーク（engine 22ファイル + scenarios 6 JSON + bone regression） | 2026-05-08 |
+| COM-P0-2 | 配布物クリーン環境テストCI: release.yml artifact validation + smoke-install.yml（Windows MSI/Linux DEB/AppImage）| 2026-05-27 |
+| COM-P1-1 | VOICEVOXクレジット表示: About画面にVOICEVOX利用表記+ライセンスリンク追加 | 2026-05-27 |
+| COM-P1-2 | コスト警告Settings UI: 閾値カスタマイズUI実装 | 2026-05-27 |
+| COM-P1-3 | 自動アップデート軽量版: GitHub Releases API起動時チェック+toast通知（update_check.rs） | 2026-05-27 |
+| COM-P1-4 | エラーメッセージi18n: OribisError Serialize→i18nキー化（error.io/internal/network/command/database） | 2026-05-27 |
+| COM-P1-5 | ネットワークエラーUX: useNetworkStatus hook + ErrorRetryBanner + invokeWithTimeout | 2026-05-27 |
 
 ---
 
@@ -331,7 +339,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | plugin-api.md | プラグインAPI | 実装済 |
 | theme-system.md | テーマシステム | 実装済 |
 | voice-input.md | 音声入力（push-to-talk） | 実装済 |
-| web-remote.md | Webリモート（axum + browser UI） | 未実装 |
+| web-remote.md | Webリモート（axum + browser UI） | 実装済（P1/P2完了、P3未着手） |
 | namedpipe.md | 名前付きパイプ通信 | 実装済 |
 | file-attachment.md | ファイル添付 | 実装済 |
 | 1mb-warning.md | 1MBコンテキスト警告 | 実装済 |
