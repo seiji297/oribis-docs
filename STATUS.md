@@ -297,6 +297,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | COM-P1-4 | エラーメッセージi18n: OribisError Serialize→i18nキー化（error.io/internal/network/command/database） | 2026-05-27 |
 | COM-P1-5 | ネットワークエラーUX: useNetworkStatus hook + ErrorRetryBanner + invokeWithTimeout | 2026-05-27 |
 | chat-mode T1 | App System v2 実行経路確立: usePluginSystem互換/PluginSandbox統合/App.tsxレンダリング/HostAPI堅牢化/テスト792PASS | 2026-05-29 |
+| chat-mode T2 | UIRenderer チャット用コンポーネント追加: scrollable-list/message/markdown-text + autoScrollBottom + 7テスト追加/テスト799PASS | 2026-05-29 |
 
 ---
 
@@ -338,7 +339,8 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | cli-status-pane.md | CLIステータスペイン | 実装済 |
 | output-viewer.md | 出力ビューア | 未着手 |
 | scene-plugin.md | シーンプラグイン | 実装済 |
-| plugin-api.md | プラグインAPI | 実装済 |
+| plugin-api.md | プラグインAPI（v1廃止） | 廃止 |
+| app-system-v2.md | App System v2（iframe sandbox + Host API + 宣言的UI） | 一部実装済 |
 | theme-system.md | テーマシステム | 実装済 |
 | voice-input.md | 音声入力（push-to-talk） | 実装済 |
 | web-remote.md | Webリモート（axum + browser UI） | 実装済（P1/P2完了、P3未着手） |

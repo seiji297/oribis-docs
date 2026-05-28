@@ -1,6 +1,6 @@
 # Oribis App System v2 — 設計書
 
-最終更新: 2026-05-15
+最終更新: 2026-05-15 / 2026-05-29（scrollable-list/message/markdown-text 追加）
 
 ---
 
@@ -312,7 +312,7 @@ interface ComponentNode {
 }
 ```
 
-### 対応コンポーネント（17種）
+### 対応コンポーネント（20種）
 
 | type | 主要props | イベント |
 |------|----------|---------|
@@ -333,6 +333,9 @@ interface ComponentNode {
 | group | direction(vertical/horizontal), gap | — |
 | tabs | tabs[], activeIndex | onTabChange |
 | form | — | onSubmit |
+| scrollable-list | maxHeight, gap, autoScrollBottom | — |
+| message | role(user/assistant/system/error), timestamp, status | — |
+| markdown-text | text | — |
 
 ### レンダリングフロー
 
