@@ -202,7 +202,7 @@ assets/morph-maps/
 - codex-sysdev-1 見解取得: SkeletonUtils.retargetClip/loadMixamoAnimation.js 確認
 - sysdev-1 調整: expressionMapping.ts 13種実装済み確認、lookAt null フォールバック合意
 - spec.md 草案確定
-> 状態: AC 12件定義 / バグ 0 / 次: planner→ECC チェーン開始
+> 状態: AC 12件定義 / バグ 0 / 次: planner→AC開始
 
 ### 2026-04-25 実装フェーズ（P1〜P4 + codex修正3ラウンド）
 - P1(e72a2ea): expressionMapping.ts 13→18種拡張（neutral/lookUp/lookDown/lookLeft/lookRight追加）、MMD null フォールバック修正

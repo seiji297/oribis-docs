@@ -161,7 +161,7 @@ max_workers: 3 で全スロット使用中 → 4つ目のタスクはキュー�
 
 ### Worker 内部品質パイプライン（Workflow）
 
-旧称 ECC（Everything Claude Code 由来）。Worker が内部的に従う品質工程。
+エージェントチェーン（AC: Agent Chain）。Worker が内部的に従う品質工程。
 各フェーズは内部サブエージェント（`roles/worker/agents/` で定義）が担当する:
 
 | タイプ | フェーズ（担当エージェント） |

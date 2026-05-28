@@ -42,7 +42,7 @@ Claude CLI の累積出力が800KBを超えた時点でフロントエンドに 
 
 ## 2026-04-21 TASK-4-1MB 完了
 
-- ECC chain: planner(opus) → codex-reviewer(design) x6 → DA-design-gate → tdd-guide → codex-reviewer(code) x4 → DA-final-gate
+- Agent Chain: planner(opus) → codex-reviewer(design) x6 → DA-design-gate → tdd-guide → codex-reviewer(code) x4 → DA-final-gate
 - commit: ce207d5 on feature/task-4-1mb (seiji297/oribis.git)
 - cargo test: 35件PASS（既存21件 + 新規14件）
 - vitest: 7件PASS（既存4件 + 新規3件）

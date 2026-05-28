@@ -59,7 +59,7 @@ docs/projects/oribis/
 **命名**: `{カテゴリ}/{issue名}.md`（例: `fbx/retarget-arp-to-vrm.md`）
 
 ### deliverables/
-**条件**: ECC チェーンの成果物（設計書・レビュー結果・計画書）を保存するとき
+**条件**: エージェントチェーン（AC）の成果物（設計書・レビュー結果・計画書）を保存するとき
 **例**: planner の設計書、codex-reviewer のレビュー結果、DA ゲート判定
 **命名**: `{種別}-{内容}.md`（例: `design-expression-wiring-v5.md`, `codex-code-review-expression.md`）
 **保持ルール**: バージョン付きファイル（v2, v3...）は最新版のみ残し、旧版は削除する。タスク完了後に整理すること。

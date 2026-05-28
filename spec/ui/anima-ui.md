@@ -44,7 +44,7 @@
 - scaffold (anima/mod.rs + 空ファイル群) commit 4322485
 - 両ブランチ push 完了
 
-### Phase 2: Track B 実装（ECC: tdd-guide → codex-reviewer → DA）
+### Phase 2: Track B 実装（AC: tdd-guide → codex-reviewer → DA）
 
 #### Step 2: parser.rs (commit ce68ca7)
 - 21 tests PASS

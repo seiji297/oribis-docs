@@ -91,7 +91,7 @@ DepartmentDetailの5タブ設定が実際のワークフロー制御に直結
 - 利点: quality_gate→実DAゲート、review_mode→実レビューフロー
 - 弱点: 大規模実装。Department抽象がワークフロー実行に適合するか未検証
 
-### E案: Node Editor → ECC DSL生成
+### E案: Node Editor → AC DSL生成
 
 ```
 ノード配置 → epic-*.md / ワークフローJSON自動生成 → 既存start-epic/run-epic実行
@@ -136,9 +136,9 @@ Phase 1のスコープをCodexレビューに基づき大幅縮小:
 ```rust
 /// 事前定義済みコマンドテンプレート（allowlist方式）
 pub struct CommandTemplate {
-    pub id: String,              // "ecc-run", "cargo-test", etc.
+    pub id: String,              // "ac-run", "cargo-test", etc.
     pub executable: String,      // "/usr/bin/bash"
-    pub fixed_args: Vec<String>, // ["run-ecc.sh"]
+    pub fixed_args: Vec<String>, // ["run-agent-chain.sh"]
     pub bind_params: Vec<String>, // ["task_file", "output_dir"]
 }
 
@@ -294,7 +294,7 @@ Codex指摘に基づき、旧Phase 1から以下を除外:
 
 ### Phase 2
 
-**ECC DSL生成 + CLI-first互換 + event_feed SQLite移行**
+**AC DSL生成 + CLI-first互換 + event_feed SQLite移行**
 
 - Node Editor → ワークフローJSON export
 - JSON → start-epic/run-epic互換フォーマット変換
@@ -366,7 +366,7 @@ Phase 2 追加:
 │                 │       │
 └─────────────────┘       ▼
                     ┌─────────────────┐
-                    │  ECC Chain       │
+                    │  Agent Chain     │
                     │  start-epic      │
                     │  run-epic        │
                     └─────────────────┘
