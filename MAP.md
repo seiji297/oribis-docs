@@ -213,6 +213,13 @@ docs/projects/oribis/
 | components/lumina/LuminaCore.ts | spec/ui/lumina.md |
 | components/lumina/luminaParams.ts | spec/ui/lumina.md |
 | components/lumina/luminaShaders.ts | spec/ui/lumina.md |
+| plugin-v2/usePluginSystem.ts | spec/ui/plugin-api.md |
+| plugin-v2/HostAPI.ts | spec/ui/plugin-api.md |
+| plugin-v2/PluginSandbox.tsx | spec/ui/plugin-api.md |
+| plugin-v2/UIRenderer.tsx | spec/ui/plugin-api.md |
+| plugin-v2/EventBus.ts | spec/ui/plugin-api.md |
+| plugin-v2/types.ts | spec/ui/plugin-api.md |
+| plugin-v2/bootstrap.ts | spec/ui/plugin-api.md |
 
 ### CI/CD（.github/workflows/）
 

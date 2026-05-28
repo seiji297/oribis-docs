@@ -9,7 +9,7 @@
 
 # Oribis 進捗管理
 
-**最終更新**: 2026-05-27
+**最終更新**: 2026-05-29
 
 ---
 
@@ -26,6 +26,7 @@
 
 ### 現在地
 - **アクティブトラック**: 商用化準備（COM）— 残P0: リリースページ公開のみ
+- **進行中トラック**: chat-mode-plugin（Task 1 完了、Task 2 以降進行予定）
 - **完了トラック**: 記憶システム（G1）、MCP Server（G9）、オーケストレーター、Web Remote P1/P2、商用化P1全件
 - **Phase 0（表情）**: 完了
 - **Phase 1（記憶基盤）**: 完了
@@ -295,6 +296,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | COM-P1-3 | 自動アップデート軽量版: GitHub Releases API起動時チェック+toast通知（update_check.rs） | 2026-05-27 |
 | COM-P1-4 | エラーメッセージi18n: OribisError Serialize→i18nキー化（error.io/internal/network/command/database） | 2026-05-27 |
 | COM-P1-5 | ネットワークエラーUX: useNetworkStatus hook + ErrorRetryBanner + invokeWithTimeout | 2026-05-27 |
+| chat-mode T1 | App System v2 実行経路確立: usePluginSystem互換/PluginSandbox統合/App.tsxレンダリング/HostAPI堅牢化/テスト792PASS | 2026-05-29 |
 
 ---
 
