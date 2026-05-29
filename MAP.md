@@ -220,6 +220,10 @@ docs/projects/oribis/
 | plugin-v2/EventBus.ts | spec/ui/plugin-api.md |
 | plugin-v2/types.ts | spec/ui/plugin-api.md |
 | plugin-v2/bootstrap.ts | spec/ui/plugin-api.md |
+| plugins-v2/chat-mode/manifest.yaml | spec/ui/app-system-v2.md |
+| plugins-v2/chat-mode/index.ts | spec/ui/app-system-v2.md |
+| plugins-v2/chat-mode/chat-logic.ts | spec/ui/app-system-v2.md |
+| e2e/scenarios/t-23-chat-mode-plugin.scenario.json | spec/ui/app-system-v2.md |
 
 ### CI/CD（.github/workflows/）
 
