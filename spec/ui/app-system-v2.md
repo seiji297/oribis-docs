@@ -236,11 +236,14 @@ audio.stop(): Promise<void>
 ```typescript
 ai.registerTool(name: string, description: string, handler: (args) => Promise<unknown>): void
 ai.unregisterTool(name: string): void
-ai.sendToAnima(text: string): Promise<void>
+ai.sendToAnima(text: string): Promise<string>
+ai.sendToDepartment(dept: string, text: string): Promise<string>
 ```
 
 - Capability: `aiTool`
-- 実装: EventBus emit
+- `sendToAnima`: `request_id` 付き Promise 管理 → App.tsx で `invoke("anima_chat")` → `ai:response` で返却。30秒タイムアウト（`TIMEOUT`）。
+- `sendToDepartment`: `request_id` 付き Promise 管理 → App.tsx で `invoke("spawn_worker_with_task")` → PTY 出力収集（`pty:data` / `pty:close`）→ `ai:response` で返却。30秒タイムアウト（`TIMEOUT`）、出力上限 100KB（`WORKER_OUTPUT_TOO_LARGE`）、3秒無出力フォールバック完了。
+- エラー種別: `ANIMA_ERROR`, `WORKER_ERROR`, `TIMEOUT`, `WORKER_OUTPUT_TOO_LARGE`
 
 ### oribis.fs
 
@@ -499,7 +502,7 @@ src-tauri/src/plugin_v2/          # Rust側
 | スイート | テスト数 | 対象 |
 |---------|---------|------|
 | Rust cargo test | 1121 | manifest検証、lifecycle、storage、fs、package |
-| vitest plugin-v2 | 106 | HostAPI、AppSandbox、EventBus、UIRenderer、useAppSystem、SDK、E2E |
+| vitest plugin-v2 | 113 | HostAPI、AppSandbox、EventBus、UIRenderer、useAppSystem、SDK、E2E（chat-mode含む） |
 
 ---
 

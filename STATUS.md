@@ -26,7 +26,7 @@
 
 ### 現在地
 - **アクティブトラック**: 商用化準備（COM）— 残P0: リリースページ公開のみ
-- **進行中トラック**: chat-mode-plugin（Task 1 完了、Task 2 以降進行予定）
+- **進行中トラック**: chat-mode-plugin（Task 1〜3 完了、Task 4 以降進行予定）
 - **完了トラック**: 記憶システム（G1）、MCP Server（G9）、オーケストレーター、Web Remote P1/P2、商用化P1全件
 - **Phase 0（表情）**: 完了
 - **Phase 1（記憶基盤）**: 完了
@@ -298,6 +298,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | COM-P1-5 | ネットワークエラーUX: useNetworkStatus hook + ErrorRetryBanner + invokeWithTimeout | 2026-05-27 |
 | chat-mode T1 | App System v2 実行経路確立: usePluginSystem互換/PluginSandbox統合/App.tsxレンダリング/HostAPI堅牢化/テスト792PASS | 2026-05-29 |
 | chat-mode T2 | UIRenderer チャット用コンポーネント追加: scrollable-list/message/markdown-text + autoScrollBottom + 7テスト追加/テスト799PASS | 2026-05-29 |
+| chat-mode T3 | ai.sendToAnima/sendToDepartment 実動経路確立: Promise/timeout/PTY収集/ai:response単一登録/テスト805PASS | 2026-05-29 |
 
 ---
 
