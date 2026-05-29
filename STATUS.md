@@ -299,6 +299,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | chat-mode T2 | UIRenderer チャット用コンポーネント追加: scrollable-list/message/markdown-text + autoScrollBottom + 7テスト追加/テスト799PASS | 2026-05-29 |
 | chat-mode T3 | ai.sendToAnima/sendToDepartment 実動経路確立: Promise/timeout/PTY収集/ai:response単一登録/テスト805PASS | 2026-05-29 |
 | chat-mode T4 | チャットモードプラグイン骨格+Animaチャット画面: Enter送信安定化/data-testid対応/TTS表示改善/テスト807PASS | 2026-05-29 |
+| chat-mode FIX | builtin plugin discovery fix: plugin_v2_scan結果にBUILTINマニフェストをマージ、enable/disableをローカルstate+storageで永続化 | 2026-05-29 |
 
 ---
 
