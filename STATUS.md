@@ -300,6 +300,8 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | chat-mode T3 | ai.sendToAnima/sendToDepartment 実動経路確立: Promise/timeout/PTY収集/ai:response単一登録/テスト805PASS | 2026-05-29 |
 | chat-mode T4 | チャットモードプラグイン骨格+Animaチャット画面: Enter送信安定化/data-testid対応/TTS表示改善/テスト807PASS | 2026-05-29 |
 | chat-mode FIX | builtin plugin discovery fix: plugin_v2_scan結果にBUILTINマニフェストをマージ、enable/disableをローカルstate+storageで永続化 | 2026-05-29 |
+| TTS-ONB-T1 | TTS Engine Onboarding Task 1: 型定義・レジストリ・永続化・DTO/Command・Preset拡張。Rust 1508 PASS（新規15テスト含む） | 2026-05-29 |
+| TTS-ONB-T5 | TTS Engine Onboarding Task 5: E2E統合テスト `tests/tts_engine_integration.rs`。mock DL→install→health→fetch WAV→amplitude フルフロー。Rust 1441 PASS + 統合1 PASS | 2026-05-29 |
 
 ---
 
