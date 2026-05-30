@@ -1,10 +1,10 @@
 <!-- AUTO-DOC-GEN:STATUS-START -->
 | 項目 | 値 |
 |------|-----|
-| ブランチ | `` |
-| コミット | `` |
-| 日時 |  |
-| サマリー |  |
+| ブランチ | `develop` |
+| コミット | `5899d45` |
+| 日時 | 2026-05-30 17:31:02 +0900 |
+| サマリー | docs: update activeContext.md for 2026-05-30 session |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
