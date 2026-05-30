@@ -1,6 +1,6 @@
 # Oribis App System v2 — 設計書
 
-最終更新: 2026-05-15 / 2026-05-29（scrollable-list/message/markdown-text 追加）
+最終更新: 2026-05-15 / 2026-05-30（chat-mode onboarding blur 制約 追加）
 
 ---
 
@@ -552,3 +552,9 @@ v1の5プラグイン（XP/ポモドーロ/シーン/デバッグ/アニメー�
 2. toggle ON → `chat-mode:enabled` 発火 → 設定パネル非表示 → チャットUI表示（`renderChatUI`）
 3. チャットUI「設定に戻る」ボタン → 設定パネル再表示
 4. toggle OFF → `chat-mode:disabled` 発火 → 3D表示復帰 → 設定パネル維持
+
+### オンボード中 フォーカス喪失制約（2026-05-30追加）
+- SS起動直後で onboarding 画面表示中は、window blur / 非アクティブ化を理由に右側チャットログ領域や chat-mode UI を表示してはならない
+- onboarding 完了前は右側チャットログ領域を常時非表示とし、フォーカス復帰後も自動再表示しない
+- 右側チャットログ表示は onboarding 完了後、かつ明示的なユーザー操作がある場合だけ許可
+- 表示優先順位は `onboarding > chat-log auto reveal`。blur/focus イベントは onboarding state を上書き禁止
