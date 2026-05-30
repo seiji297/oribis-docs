@@ -134,3 +134,28 @@ Oribisのチャット入力欄に音声入力（STT）機能を追加。Ctrl+D�
 - 実装計画: `docs/deliverables/plan-oribis-voice-input-20260422.md`
 - spec: `docs/features/oribis/voice-input/spec.md`
 
+---
+
+## TTS Engine Onboarding — 追記（2026-05-30）
+
+> 注: 本項は voice-input (STT) spec への追記。独立した TTS Engine Management spec の作成が推奨。
+
+### 追加実装（2026-05-30）
+
+| エンジン | 実装方式 | 状態 | 備考 |
+|----------|---------|------|------|
+| Piper | CLI (`piper -m model.onnx -c config.json`) | 実装済 | GitHub Releases 実URL・SHA256・tar.gz symlink許可・リアルE2Eテスト |
+| Sherpa ONNX | CLI (`sherpa-onnx-offline-tts`) | 実装済 | 337MB static tar.bz2・ONNX自動検出 |
+| RHVoice | CLI (`rhvoice-test`) | 実装済 | PATH自動検出 (`which rhvoice-test`) |
+| VOICEVOX | HTTP API (`audio_query` → `synthesis`) | 実装済 | mock E2Eテスト済 |
+| AivisSpeech | HTTP API (managed auto-start) | 実装済 | mock E2Eテスト済 |
+| StyleBertVITS2 | HTTP API (managed auto-start) | 実装済 | mock E2Eテスト済 |
+
+### TtsPreset 拡張
+- `model_path: Option<String>` フィールド追加
+- Piper / Sherpa ONNX で必須（voice model ファイルパス）
+- VOICEVOX / AivisSpeech / StyleBertVITS2 では未使用（HTTP API経由）
+
+### フロントエンド対応
+- `TtsPreset` TypeScript インターフェースに `model_path?: string` 追加
+

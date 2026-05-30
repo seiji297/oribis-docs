@@ -521,3 +521,34 @@ src-tauri/src/plugin_v2/          # Rust側
 | 無制限DOM/API | capability-based permission |
 
 v1の5プラグイン（XP/ポモドーロ/シーン/デバッグ/アニメーションエディタ）は全て廃止。Debug Panel v2のみ移植済み。
+
+---
+
+## Chat Mode Plugin — 設定ウィンドウ（2026-05-30追加）
+
+### 機能概要
+チャットモード専用の設定ウィンドウを提供。タイトルバー左側にプラグインアイコン表示、アイコン選択時に設定ウィンドウを dock パネルとして展開。
+
+### UI構成
+- **設定パネル**（`ui.render` → slot: dock）
+  - `heading`: 「チャットモード設定」
+  - `toggle`: チャットモード ON/OFF（ラベル動的変更）
+  - `text`: 現在状態の説明（ON時: "3D表示を隠し、チャットモードUIを表示中" / OFF時: "通常の3D表示を表示中"）
+  - `divider` + `heading-small`: 「チャットモードがONの時:」
+  - `text` × 3: 機能一覧（3Dキャラクター非表示 / チャット専用UI / 音声入力・テキスト入力維持）
+
+### 状態管理
+- **永続化**: `oribis.storage.set("chat_mode_enabled", boolean)`
+- **初期化時復元**: `oribis.storage.get("chat_mode_enabled")`
+- **起動時適用**: ON の場合 `oribis.events.emit("chat-mode:enabled")` を発火
+
+### イベント連携（App.tsx）
+- `chat-mode:enabled` → `setChatModeEnabled(true)` + `localStorage.setItem`
+- `chat-mode:disabled` → `setChatModeEnabled(false)` + `localStorage.setItem`
+- 3D表示制御: `.avatar-section.vrm-panel` に `display: none` を付与（CSS inline）
+
+### 画面遷移
+1. プラグインアイコンクリック → 設定パネル表示（`renderSettingsPanel`）
+2. toggle ON → `chat-mode:enabled` 発火 → 設定パネル非表示 → チャットUI表示（`renderChatUI`）
+3. チャットUI「設定に戻る」ボタン → 設定パネル再表示
+4. toggle OFF → `chat-mode:disabled` 発火 → 3D表示復帰 → 設定パネル維持

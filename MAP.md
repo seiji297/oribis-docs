@@ -136,12 +136,15 @@ docs/projects/oribis/
 | config.rs | spec/ui/plugin-api.md |
 | named_pipe.rs | spec/ui/namedpipe.md |
 | audio_playback.rs | spec/ui/voice-input.md |
-| tts.rs | spec/ui/voice-input.md（TTS基盤含む） |
-| tts/engine_registry.rs | —（TTSエンジン管理spec未作成） |
-| tts/install_state.rs | —（TTSエンジン管理spec未作成） |
-| tts/installer.rs | —（TTSエンジン管理spec未作成） |
-| tts/lifecycle.rs | —（TTSエンジン管理spec未作成） |
-| tests/tts_engine_integration.rs | —（TTSエンジン管理spec未作成） |
+| tts.rs | spec/ui/voice-input.md（TTS基盤 + Piper/Sherpa/RHVoice CLI実装含む） |
+| tts/engine_registry.rs | spec/ui/voice-input.md（TTSエンジンレジストリ・GitHub URL管理） |
+| tts/install_state.rs | spec/ui/voice-input.md（EngineInstallState永続化） |
+| tts/installer.rs | spec/ui/voice-input.md（ダウンロード・検証・展開・原子インストール） |
+| tts/lifecycle.rs | spec/ui/voice-input.md（自動起動・PID管理・排他制御） |
+| tts/license_state.rs | spec/ui/voice-input.md（ライセンス同意永続化） |
+| tts/platform.rs | spec/ui/voice-input.md（アーカイブ形式判定） |
+| tests/tts_engine_integration.rs | spec/ui/voice-input.md（E2E統合テスト: mock DL→install→health→fetch WAV） |
+| tests/tts_engine_real_download_test.rs | spec/ui/voice-input.md（リアルE2Eテスト: GitHub実DL→WAV合成検証） |
 | recording.rs | spec/ui/voice-input.md |
 | skill.rs | spec/ui/plugin-api.md |
 | pty_commands.rs | spec/core/anima-orchestrator-architecture.md |
