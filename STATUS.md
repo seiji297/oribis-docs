@@ -2,9 +2,9 @@
 | 項目 | 値 |
 |------|-----|
 | ブランチ | `develop` |
-| コミット | `5899d45` |
-| 日時 | 2026-05-30 17:31:02 +0900 |
-| サマリー | docs: update activeContext.md for 2026-05-30 session |
+| コミット | `e557eef` |
+| 日時 | 2026-05-31 15:54:00 +0900 |
+| サマリー | feat: TTSエンジン選択をオンボードStep 2に追加 |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
@@ -304,7 +304,8 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | TTS-ONB-T5 | TTS Engine Onboarding Task 5: E2E統合テスト `tests/tts_engine_integration.rs`。mock DL→install→health→fetch WAV→amplitude フルフロー。Rust 1441 PASS + 統合1 PASS | 2026-05-29 |
 | TTS-CLI | Piper fetch_tts_wav_for_preset CLI実装: model_path追加・GitHub実URL・tar.gz symlink許可・リアルE2Eテスト(26MB DL+WAV合成)。Rust 91 PASS | 2026-05-30 |
 | TTS-Sherpa | Sherpa ONNX + RHVoice CLI合成実装: sherpa-onnx-offline-tts / rhvoice-test 自動検出。レジストリに実URL+SHA256。Rust 91 PASS | 2026-05-30 |
-| chat-mode UI | チャットモード設定ウィンドウ: title bar icon + ON/OFF toggle・3D表示切替・localStorage永続化。プラグインstorage連携 | 2026-05-30 |
+| オンボードUI修正 | デフォルトホームフォルダ/レイアウト/モデル表示/完了フロー/チャットモード/タイトルバー/オーケストレータ統合 | 2026-05-31 |
+| TTS-ONB-UI | TTSエンジン選択をオンボードStep 2に追加: list_tts_engines+install+localStorage+ProjectMeta保存 | 2026-05-31 |
 | CI-Windows | WindowsビルドCI修正: tsc type checkスキップ(`pnpm vite build`)、未使用import削除 | 2026-05-30 |
 | launcher | エージェントランチャー `default-agent`: 部門起動のデフォルトAIエージェント切替（claude/codex/opencode/openclaw + モデル指定） | 2026-05-30 |
 
