@@ -136,15 +136,26 @@ docs/projects/oribis/
 | config.rs | spec/ui/plugin-api.md |
 | named_pipe.rs | spec/ui/namedpipe.md |
 | audio_playback.rs | spec/ui/voice-input.md |
-| tts.rs | spec/ui/voice-input.md（TTS基盤 + Piper/Sherpa/RHVoice CLI実装含む） |
+| tts.rs | spec/ui/voice-input.md（TTS基盤 + Piper/Sherpa/RHVoice CLI実装含む）+ spec/core/embedded-tts.md（組み込みTTS統合） |
+| tts/router.rs | spec/core/embedded-tts.md（言語判定→エンジン選択→音声合成ルーティング） |
+| tts/types.rs | spec/core/embedded-tts.md（TtsLanguage, TtsEngineChoice, TtsSynthesisRequest/Response） |
+| tts/voicevox_core.rs | spec/core/embedded-tts.md（VOICEVOX Core 0.16.4 FFI実装） |
+| tts/kokoro.rs | spec/core/embedded-tts.md（Kokoro ONNX自前実装） |
+| tts/voice_defs.rs | spec/core/embedded-tts.md（9音声スタイル定義） |
 | tts/engine_registry.rs | spec/ui/voice-input.md（TTSエンジンレジストリ・GitHub URL管理） |
 | tts/install_state.rs | spec/ui/voice-input.md（EngineInstallState永続化） |
 | tts/installer.rs | spec/ui/voice-input.md（ダウンロード・検証・展開・原子インストール） |
 | tts/lifecycle.rs | spec/ui/voice-input.md（自動起動・PID管理・排他制御） |
 | tts/license_state.rs | spec/ui/voice-input.md（ライセンス同意永続化） |
 | tts/platform.rs | spec/ui/voice-input.md（アーカイブ形式判定） |
+| tests/tts_manual.rs | spec/core/embedded-tts.md（手動統合テスト: VOICEVOX+Kokoro実音声合成） |
+| tests/tts_e2e.rs | spec/core/embedded-tts.md（E2E定義・検証テスト） |
+| tests/tts_smoke.rs | spec/core/embedded-tts.md（Smokeテスト） |
 | tests/tts_engine_integration.rs | spec/ui/voice-input.md（E2E統合テスト: mock DL→install→health→fetch WAV） |
 | tests/tts_engine_real_download_test.rs | spec/ui/voice-input.md（リアルE2Eテスト: GitHub実DL→WAV合成検証） |
+| resources/voicevox-core/n0.vvm | spec/core/embedded-tts.md（VOICEVOX Nemo音声モデル） |
+| models/kokoro/model.onnx | spec/core/embedded-tts.md（Kokoro ONNXモデル） |
+| models/kokoro/voices/*.bin | spec/core/embedded-tts.md（Kokoro音声スタイルファイル） |
 | recording.rs | spec/ui/voice-input.md |
 | skill.rs | spec/ui/plugin-api.md |
 | pty_commands.rs | spec/core/anima-orchestrator-architecture.md |

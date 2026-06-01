@@ -340,6 +340,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | mcp-server.md | MCP Server（外部Worker/Client接続） | 実装済（Phase 1-10完了） |
 | architecture-diagrams.md | アーキテクチャ図集 | — |
 | test-requirements.md | テスト要件 | — |
+| embedded-tts.md | 組み込みTTSエンジン（VOICEVOX Core + Kokoro） | 実装済 |
 
 ### spec/ui/ — UI・フロントエンド機能
 

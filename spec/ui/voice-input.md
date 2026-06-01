@@ -150,6 +150,8 @@ Oribisのチャット入力欄に音声入力（STT）機能を追加。Ctrl+D�
 | VOICEVOX | HTTP API (`audio_query` → `synthesis`) | 実装済 | mock E2Eテスト済 |
 | AivisSpeech | HTTP API (managed auto-start) | 実装済 | mock E2Eテスト済 |
 | StyleBertVITS2 | HTTP API (managed auto-start) | 実装済 | mock E2Eテスト済 |
+| VOICEVOX Core | 組み込み FFI (`libvoicevox_core.so` 0.16.4) | 実装済 | `spec/core/embedded-tts.md` 参照。n0.vvm Nemoモデル・9音声スタイル |
+| Kokoro | 組み込み ONNX (`ort` + `model.onnx`) | 実装済 | `spec/core/embedded-tts.md` 参照。310MB ONNXモデル・英語音声合成 |
 
 ### TtsPreset 拡張
 - `model_path: Option<String>` フィールド追加
