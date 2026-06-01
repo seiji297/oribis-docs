@@ -2,14 +2,14 @@
 | 項目 | 値 |
 |------|-----|
 | ブランチ | `develop` |
-| コミット | `54696ac` |
-| 日時 | 2026-05-31 16:37:00 +0900 |
-| サマリー | fix: TTSエンジンオンボード表示・インストール修正（5タスク完了） |
+| コミット | `最新` |
+| 日時 | 2026-06-01 22:00:00 +0900 |
+| サマリー | feat: VOICEVOX Core 0.16.4カスタムFFI + KokoroTTS自前実装 |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
 
-**最終更新**: 2026-05-31
+**最終更新**: 2026-06-01
 
 ---
 
@@ -31,6 +31,8 @@
 - **Phase 1（記憶基盤）**: 完了
 - **商用化P0-2/P1-1〜5**: 完了（2026-05-27）— Rust 1500 / TS 822 / E2E 22 全PASS
 - **オンボードTTSエンジン修正**: 完了（2026-05-31）— 外部インストール検出 + 進捗イベント + UI改善 + E2Eテスト
+- **VOICEVOX Core組み込みTTS**: 完了（2026-06-01）— voicevox-dyn crate廃止→0.16.4新C APIカスタムFFI実装。n0.vvm Nemoモデル+9音声スタイル動作確認
+- **KokoroTTS組み込み**: 完了（2026-06-01）— kokoro-en crate廃止→ort直接利用のカスタム実装。ONNXモデル310MB+音声ファイル。英語音声合成実動確認
 - **その他**: pending-tasks.md に移動済み。Producer指示があれば復帰
 
 ### 実装フロー（codex-adviser レビュー済 2026-05-07）
@@ -307,6 +309,8 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | TTS-Sherpa | Sherpa ONNX + RHVoice CLI合成実装: sherpa-onnx-offline-tts / rhvoice-test 自動検出。レジストリに実URL+SHA256。Rust 91 PASS | 2026-05-30 |
 | オンボードUI修正 | デフォルトホームフォルダ/レイアウト/モデル表示/完了フロー/チャットモード/タイトルバー/オーケストレータ統合 | 2026-05-31 |
 | TTS-ONB-UI | TTSエンジン選択をオンボードStep 2に追加: list_tts_engines+install+localStorage+ProjectMeta保存 | 2026-05-31 |
+| TTS-VOICEVOX-FFI | VOICEVOX Core 0.16.4 カスタムFFI実装: voicevox-dyn廃止→libloading+新C API。n0.vvm+9スタイル。/tmp/test_japanese.wav生成 | 2026-06-01 |
+| TTS-KOKORO | KokoroTTS 自前実装: kokoro-en廃止→ort直接利用。ONNXモデル310MB+音声ファイル。/tmp/test_english.wav生成 | 2026-06-01 |
 | CI-Windows | WindowsビルドCI修正: tsc type checkスキップ(`pnpm vite build`)、未使用import削除 | 2026-05-30 |
 | launcher | エージェントランチャー `default-agent`: 部門起動のデフォルトAIエージェント切替（claude/codex/opencode/openclaw + モデル指定） | 2026-05-30 |
 
