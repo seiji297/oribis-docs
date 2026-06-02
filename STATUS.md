@@ -3,13 +3,13 @@
 |------|-----|
 | ブランチ | `develop` |
 | コミット | `最新` |
-| 日時 | 2026-06-01 22:00:00 +0900 |
-| サマリー | feat: VOICEVOX Core 0.16.4カスタムFFI + KokoroTTS自前実装 |
+| 日時 | 2026-06-02 11:45:00 +0900 |
+| サマリー | test: KokoroTTS 英語チャット応答 E2E 追加 |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
 
-**最終更新**: 2026-06-01
+**最終更新**: 2026-06-02
 
 ---
 
@@ -33,6 +33,7 @@
 - **オンボードTTSエンジン修正**: 完了（2026-05-31）— 外部インストール検出 + 進捗イベント + UI改善 + E2Eテスト
 - **VOICEVOX Core組み込みTTS**: 完了（2026-06-01）— voicevox-dyn crate廃止→0.16.4新C APIカスタムFFI実装。n0.vvm Nemoモデル+9音声スタイル動作確認
 - **KokoroTTS組み込み**: 完了（2026-06-01）— kokoro-en crate廃止→ort直接利用のカスタム実装。ONNXモデル310MB+音声ファイル。英語音声合成実動確認
+- **KokoroTTS英語チャットE2E**: 完了（2026-06-02）— fake_claude英語応答→Kokoroルーティング→WAV生成→5秒以内検証→`/tmp/oribis-kokoro-test.wav`
 - **その他**: pending-tasks.md に移動済み。Producer指示があれば復帰
 
 ### 実装フロー（codex-adviser レビュー済 2026-05-07）

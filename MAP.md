@@ -150,6 +150,7 @@ docs/projects/oribis/
 | tts/platform.rs | spec/ui/voice-input.md（アーカイブ形式判定） |
 | tests/tts_manual.rs | spec/core/embedded-tts.md（手動統合テスト: VOICEVOX+Kokoro実音声合成） |
 | tests/tts_e2e.rs | spec/core/embedded-tts.md（E2E定義・検証テスト） |
+| tests/kokoro_chat_e2e.rs | spec/core/embedded-tts.md（英語チャット応答→KokoroTTS→WAV保存 E2Eテスト） |
 | tests/tts_smoke.rs | spec/core/embedded-tts.md（Smokeテスト） |
 | tests/tts_engine_integration.rs | spec/ui/voice-input.md（E2E統合テスト: mock DL→install→health→fetch WAV） |
 | tests/tts_engine_real_download_test.rs | spec/ui/voice-input.md（リアルE2Eテスト: GitHub実DL→WAV合成検証） |

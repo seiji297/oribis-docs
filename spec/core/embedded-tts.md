@@ -143,6 +143,20 @@ cargo test --lib tts
 # 68 passed, 17 ignored
 ```
 
+### E2Eテスト
+
+```bash
+cargo test --test kokoro_chat_e2e -- --ignored --nocapture
+# 1 passed
+```
+
+検証内容:
+- fake_claude で英語入力 `Hello` → 英語応答 `pong`
+- `TtsRouter` が `TtsEngineChoice::Kokoro` へルーティング
+- WAVヘッダ `RIFF` / `WAVE` 検証
+- Kokoro合成時間 5秒以内 検証
+- `/tmp/oribis-kokoro-test.wav` 保存
+
 ### 手動統合テスト
 
 ```bash
@@ -152,6 +166,7 @@ cargo test --test tts_manual -- --ignored --nocapture
 生成ファイル:
 - `/tmp/test_japanese.wav` — VOICEVOX日本語合成（104.5KB）
 - `/tmp/test_english.wav` — Kokoro英語合成（164KB）
+- `/tmp/oribis-kokoro-test.wav` — 英語チャット応答→Kokoro E2E合成（82KB前後）
 - `/tmp/test_voice_*.wav` — 9音声スタイル個別合成
 
 ## 依存関係
