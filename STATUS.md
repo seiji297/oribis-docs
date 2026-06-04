@@ -2,14 +2,14 @@
 | 項目 | 値 |
 |------|-----|
 | ブランチ | `develop` |
-| コミット | `最新` |
-| 日時 | 2026-06-02 11:45:00 +0900 |
-| サマリー | test: KokoroTTS 英語チャット応答 E2E 追加 |
+| コミット | `29ab5a2` |
+| 日時 | 2026-06-04 18:40:00 +0900 |
+| サマリー | fix(wdio): producer-tasks spec passes - WebKit WebDriver crash回避 |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
 
-**最終更新**: 2026-06-02
+**最終更新**: 2026-06-04
 
 ---
 

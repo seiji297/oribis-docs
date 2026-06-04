@@ -27,23 +27,32 @@ Playwright + Chromium (swiftshader) でブラウザレベルで UI 挙動を検�
 
 ※ T-5, T-6 は欠番。
 
-### wdio 実機GUIテスト（5件 / 2026-05-11時点）
+### wdio 実機GUIテスト（8件 / 2026-06-04時点）
 
 実バイナリ（Tauri）+ Xvfb 環境で実行する実機テスト。
 
-| シナリオ | 内容 |
-|---------|------|
-| T-W-01 | アプリ起動確認（ウィンドウ表示） |
-| T-W-02 | 基本UI要素の表示確認 |
-| T-W-03 | サイドバータブ切り替え（実機） |
-| T-W-04 | PTYトグル（実機） |
-| T-W-05 | ウィンドウリサイズ（getWindowRect） |
+| シナリオ | 内容 | ファイル |
+|---------|------|---------|
+| T-W-01 | アプリ起動確認（ウィンドウ表示） | `tests/app-launch.spec.ts` |
+| T-W-02 | 基本UI要素の表示確認 | `tests/onboarding.spec.ts` |
+| T-W-03 | サイドバータブ切り替え（実機） | `tests/sidebar-tabs.spec.ts` |
+| T-W-04 | PTYトグル（実機） | `tests/tts-chat-e2e.spec.ts` |
+| T-W-05 | ウィンドウリサイズ（getWindowRect） | `tests/tts-voice-playback.spec.ts` |
+| T-W-PRODUCER P1 | Onboarding → 通常画面遷移 | `tests/producer-tasks.spec.ts` |
+| T-W-PRODUCER P2 | anima.vrm 3Dモデル読み込み | `tests/producer-tasks.spec.ts` |
+| T-W-PRODUCER P3 | Chat入力・送信（AI通信間接確認） | `tests/producer-tasks.spec.ts` |
+| T-W-WORKER W1〜W4 | Workerタブ部門CRUD | `tests/worker-crud.spec.ts` |
+| T-W-SCREENSHOT | スクリーンショット比較 | `tests/screenshot-verify.spec.ts` |
 
 **実行コマンド**:
 ```bash
-cd oribis/e2e
+cd oribis/e2e/wdio
+bash run-wdio-sequential.sh   # 順次実行（失敗しても止まらない）
+# or
 pnpm test:wdio   # wdio 実機テスト（Xvfb必須）
 ```
+
+**注意**: WebKit WebDriver + Tauri 上で `browser.execute` 内から async Tauri invoke を呼ぶと WebDriver セッションがクラッシュする（`unknown error: Could not parse script result`）。T-W-P3c/P3d はこの回避策を適用済み。
 
 ## 実行環境
 
