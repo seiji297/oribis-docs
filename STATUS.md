@@ -41,6 +41,7 @@
 - **VOICEVOX Core組み込みTTS**: 完了（2026-06-01）— voicevox-dyn crate廃止→0.16.4新C APIカスタムFFI実装。n0.vvm Nemoモデル+9音声スタイル動作確認
 - **KokoroTTS組み込み**: 完了（2026-06-01）— kokoro-en crate廃止→ort直接利用のカスタム実装。ONNXモデル310MB+音声ファイル。英語音声合成実動確認
 - **KokoroTTS英語チャットE2E**: 完了（2026-06-02）— fake_claude英語応答→Kokoroルーティング→WAV生成→5秒以内検証→`/tmp/oribis-kokoro-test.wav`
+- **Live Mode実装**: 完了（2026-06-09）— Silero VAD連続録音→自動STT→AIダイレクト送信。常時音声入力状態。テキスト入力欄バイパス
 - **その他**: pending-tasks.md に移動済み。Producer指示があれば復帰
 
 ### 実装フロー（codex-adviser レビュー済 2026-05-07）

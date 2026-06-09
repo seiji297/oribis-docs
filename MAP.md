@@ -158,6 +158,7 @@ docs/projects/oribis/
 | models/kokoro/model.onnx | spec/core/embedded-tts.md（Kokoro ONNXモデル） |
 | models/kokoro/voices/*.bin | spec/core/embedded-tts.md（Kokoro音声スタイルファイル） |
 | recording.rs | spec/ui/voice-input.md |
+| live_mode.rs | spec/ui/voice-input.md（Live Mode連続録音+VAD） |
 | skill.rs | spec/ui/plugin-api.md |
 | pty_commands.rs | spec/core/anima-orchestrator-architecture.md |
 | cli_adapters.rs | spec/core/pipeline.md（実アダプタ実装） |
