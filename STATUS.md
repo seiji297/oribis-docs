@@ -32,7 +32,7 @@
 ## 全体フロー
 
 ### 現在地
-- **アクティブトラック**: 商用化準備（COM）— 残P0: リリースページ公開のみ
+- **アクティブトラック**: 商用化準備（COM）— 残P0: リリースページ公開のみ、GTM戦略（GTM）— Kawaii-Agent後出し勝利計画（新規）
 - **完了トラック**: 記憶システム（G1）、MCP Server（G9）、オーケストレーター、Web Remote P1/P2、商用化P1全件、chat-mode-plugin（Task 1〜6 全完了）
 - **Phase 0（表情）**: 完了
 - **Phase 1（記憶基盤）**: 完了
@@ -237,6 +237,31 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | LOW | G8 | AI応答の軽重モード（一言/詳細 切替） | anima.md | 未着手 | 現状はモデル選択で軽量化のみ。応答自体の簡潔さ制御なし。Producer判断で優先度変更 |
 
 | MEDIUM | — | motion-anim-assign ランタイムマウント | motion-anim-assign.md | 不要 | Animation Editorプラグインで実現済・revert 2b727d4 |
+
+### GTM戦略 — Kawaii-Agent 後出し勝利計画（2026-06-14 新規）
+
+> 詳細: `oribis/docs/gtm/kawaii-agent-counterstrategy.md`
+> ポジショニング: 「可愛いのに、ちゃんと仕事する。」— Creator/Developer向け常駐AI相棒
+
+| 優先度 | ID | 内容 | 関連 | 状態 | 備考 |
+|--------|-----|------|------|------|------|
+| HIGH | GTM-P0-1 | 看板キャラ発注・納品 | gtm/kawaii-agent-counterstrategy.md | 未着手 | Producer判断必須（外部イラストレーター or VRoid改修）。一目惚れされる設計が前提 |
+| HIGH | GTM-P0-2 | BOOTH商品ページ刷新 | gtm/kawaii-agent-counterstrategy.md | 未着手 | 体験訴求順「可愛い→常駐→覚える→見守る→仕事する→報告」に再設計。スクショ・文言ともに |
+| HIGH | GTM-P0-3 | ダウンロードリンク開通 | gtm/kawaii-agent-counterstrategy.md | 未着手 | GitHub Releases自動デプロイ整備。「Coming soon」を「Download」に変更 |
+| HIGH | GTM-P0-4 | 初回起動体験の完成 | gtm/kawaii-agent-counterstrategy.md | 未着手 | Onboarding完了→キャラが出迎えるまで一気通貫で体験できる状態に |
+| MEDIUM | GTM-P0-5 | Onboarding文言の体験化 | gtm/kawaii-agent-counterstrategy.md | 未着手 | 「APIキーを入力してください」→「一緒に設定しよう」等の体験的な言葉に変更 |
+| MEDIUM | GTM-P0-6 | README.ja.md 体験中心に書き直し | gtm/kawaii-agent-counterstrategy.md | 未着手 | 技術スペック比較先行 → 「どんな体験か」先行に変更 |
+| MEDIUM | GTM-P1-1 | 記憶の可視化強化 | gtm/kawaii-agent-counterstrategy.md | 未着手 | 「〇〇が得意なんだね」「昨日の続きやる？」等の気づきUIカードを表示 |
+| MEDIUM | GTM-P1-2 | 今日のレポートUI | gtm/kawaii-agent-counterstrategy.md | 未着手 | 作業終了時「今日は〇〇できたね、お疲れ様」の自動サマリー生成 |
+| MEDIUM | GTM-P1-3 | 常駐通知強化 | gtm/kawaii-agent-counterstrategy.md | 未着手 | タスクバー常駐 + 通知バブル（「タスク完了したよ」） |
+| LOW | GTM-P2-1 | Multi-Worker可視化UI | gtm/kawaii-agent-counterstrategy.md | 未着手 | 複数Workerが並列実行する様子をアニメーションで可視化（デモ映え） |
+| LOW | GTM-P2-2 | Discord連携デモ動画 | gtm/kawaii-agent-counterstrategy.md | 未着手 | 「自動Discord報告」のシーンを動画化してBOOTH掲載 |
+| LOW | GTM-P2-3 | Scheduler GUI簡易化 | gtm/kawaii-agent-counterstrategy.md | 未着手 | 「毎朝9時に予定を教えてくれる」をGUIで簡単設定できるように |
+
+**Producer確認待ち（これが決まれば実装に落とせる）:**
+1. 看板キャラ: 外部発注か / 既存VRoid改修か
+2. リリース: 0.1.0 を公開版にするか / バージョン番号
+3. BOOTH価格モデル: 無料＋有料版の構成 / 単品 / サブスク
 
 ### バグ修正・技術的負債
 
