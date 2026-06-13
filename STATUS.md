@@ -2,9 +2,9 @@
 | 項目 | 値 |
 |------|-----|
 | ブランチ | `develop` |
-| コミット | `29ab5a2` |
-| 日時 | 2026-06-04 18:40:00 +0900 |
-| サマリー | fix(wdio): producer-tasks spec passes - WebKit WebDriver crash回避 |
+| コミット | `f942c61` |
+| 日時 | 2026-06-14 03:40:54 +0900 |
+| サマリー | feat(anima): connect backend providers to chat pipeline |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
@@ -16,7 +16,7 @@
 - ✅ **実GUI表示確認必須** — テキスト入力→送信後、GUI上にメッセージが表示されることを確認
 - ✅ **GUIイベントと同じ流れ** — `__setChatInput`（textarea表示確認）→ `__sendChatMessage`（送信）→ GUI応答確認
 
-**最終更新**: 2026-06-04
+**最終更新**: 2026-06-14
 
 ---
 
@@ -42,6 +42,7 @@
 - **KokoroTTS組み込み**: 完了（2026-06-01）— kokoro-en crate廃止→ort直接利用のカスタム実装。ONNXモデル310MB+音声ファイル。英語音声合成実動確認
 - **KokoroTTS英語チャットE2E**: 完了（2026-06-02）— fake_claude英語応答→Kokoroルーティング→WAV生成→5秒以内検証→`/tmp/oribis-kokoro-test.wav`
 - **Live Mode実装**: 完了（2026-06-09）— Silero VAD連続録音→自動STT→AIダイレクト送信。常時音声入力状態。テキスト入力欄バイパス
+- **AIバックエンド配線**: 完了（2026-06-14）— `anthropic` / `openai_compat` を保存済みprovider設定から実HTTP providerへ接続。`cargo test --lib` 1433 PASS / `npm test` 796 PASS
 - **その他**: pending-tasks.md に移動済み。Producer指示があれば復帰
 
 ### 実装フロー（codex-adviser レビュー済 2026-05-07）
@@ -277,6 +278,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | LOW | TASK-J | 左ドロワー push レイアウト | — | 休止中 | R3F ResizeObserver問題 |
 | HIGH | — | Force-close後チャット入力スタック | lib.rs, App.tsx | 修正済 | bbd0ec2。session IDクリア+orphan検知+state reset |
 | MEDIUM | — | L1/L2プロンプトパス不一致 | context.rs, lib.rs | 修正済 | 786fd8b。_common→orchestrator統一 |
+| HIGH | — | AIバックエンド配線未接続 | pipeline.md | 修正済 | f942c61。`anthropic`/`openai_compat` がClaude CLIへフォールスルーする問題を修正。provider_wiring_smoke PASS、cargo test --lib 1433 PASS、npm test 796 PASS |
 
 ### テスト・品質
 
@@ -347,6 +349,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | TTS-KOKORO | KokoroTTS 自前実装: kokoro-en廃止→ort直接利用。ONNXモデル310MB+音声ファイル。/tmp/test_english.wav生成 | 2026-06-01 |
 | CI-Windows | WindowsビルドCI修正: tsc type checkスキップ(`pnpm vite build`)、未使用import削除 | 2026-05-30 |
 | launcher | エージェントランチャー `default-agent`: 部門起動のデフォルトAIエージェント切替（claude/codex/opencode/openclaw + モデル指定） | 2026-05-30 |
+| AI-BACKEND-WIRING | Anima AIバックエンド配線: provider_config.json→ResolvedModelConfig→BackendProviderAdapter→Anthropic/OpenAI互換HTTP provider接続。Anthropic 100-delta SSEデッドロック回帰テスト追加。cargo test --lib 1433 PASS / npm test 796 PASS | 2026-06-14 |
 
 ---
 
@@ -357,7 +360,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | spec | 概要 | ステータス |
 |------|------|-----------|
 | overview.md | 概要・設計原則・フェーズ計画 | 設計確定 |
-| pipeline.md | 統一応答パイプライン + CLI Adapter | 実装済 |
+| pipeline.md | 統一応答パイプライン + CLI Adapter + HTTP provider配線 | 実装済 |
 | anima.md | Anima + AnimaMode + throttle + キャッシュ | 一部実装済 |
 | anima-plan.md | 開発計画（GAP管理） | — |
 | anima-state.md | AnimaState一覧・カテゴリ | 実装済 |

@@ -1,7 +1,7 @@
 # 統一応答パイプライン + CLI Adapter 設計書
 
-**バージョン**: 2.0（spec-pipeline.md + spec-cli-adapter.md 統合）
-**最終更新**: 2026-04-28
+**バージョン**: 2.1（spec-pipeline.md + spec-cli-adapter.md 統合、HTTP provider配線反映）
+**最終更新**: 2026-06-14
 
 ---
 
@@ -13,6 +13,7 @@
 
 - メインチャットとAnimaを**完全分離しない**（統一パイプライン採用）
 - CLI Adapter抽象化でバックエンド差異を吸収
+- `anthropic` / `openai_compat` は保存済みprovider設定を `ResolvedModelConfig` に解決し、HTTP providerへ直接接続する
 - スクリプトファースト: LLM呼出は表現生成時のみ
 - **CLI非依存原則**: マーカー方式でCLI共通動作。CLI固有機能に依存しない
 
@@ -91,7 +92,7 @@ pub enum PipelineResponse {
 pub struct PipelineConfig {
     pub base_dir: PathBuf,
     pub project_id: String,
-    pub backend: String,          // "claude" | "codex" | "local" | ""
+    pub backend: String,          // "claude" | "codex" | "local" | "anthropic" | "openai_compat" | ""
     pub anima_mode: AnimaMode,    // Cache / Ai / Hybrid
     pub context_mode: ContextMode, // StatefulSession | StatelessRequest
 }
@@ -295,7 +296,14 @@ pub fn create_adapter(backend: Backend) -> Box<dyn CliAdapter> {
 }
 ```
 
-文字列対応: `"claude"` → Claude, `"codex"` → Codex, `"local"` / `""` → Local
+文字列対応:
+- `"claude"` → Claude CLI互換経路
+- `"codex"` → Codex CLI経路
+- `"local"` / `""` → OpenClaw/ローカル経路
+- `"anthropic"` → `provider_config.json` から `AnthropicProvider`
+- `"openai_compat"` → `provider_config.json` から `OpenAICompatProvider`
+
+`anthropic` / `openai_compat` はClaude CLIへフォールスルーしない。保存済みproviderとプロジェクトbackendが一致しない場合は設定エラーとして停止する。
 
 ### 8.6 ストリーミング
 
@@ -310,9 +318,73 @@ pub fn create_adapter(backend: Backend) -> Box<dyn CliAdapter> {
 
 | Backend | 実装クラス | 状態 |
 |---------|-----------|------|
-| Claude CLI（Claude Code） | `ClaudeCliAdapter` | stub（未実装） |
-| Codex CLI（GPT系） | `CodexCliAdapter` | stub（未実装） |
-| ローカルLLM | `LocalLlmAdapter` | stub（未実装） |
+| Claude CLI（Claude Code） | `ChatCoreAdapter` | 実装済 |
+| Codex CLI（GPT系） | `CodexChatAdapter` | 実装済 |
+| OpenCode CLI | `OpenCodeChatAdapter` | 実装済 |
+| ローカルLLM/OpenClaw | `OpenClawChatAdapter` | 実装済 |
+| Anthropic Messages API | `BackendProviderAdapter` → `AnthropicProvider` | 実装済 |
+| OpenAI互換 Chat Completions API | `BackendProviderAdapter` → `OpenAICompatProvider` | 実装済 |
+
+#### 8.7.1 provider_config.json
+
+Onboardingで保存したAI provider設定は `provider_config.json` に永続化する。
+
+```json
+{
+  "provider": "anthropic",
+  "api_key": "dummy-key",
+  "model": "claude-sonnet-4-5"
+}
+```
+
+`openai_compat` の場合は保存時にAPI rootを明示値として保持する。
+
+```json
+{
+  "provider": "openai_compat",
+  "api_key": "dummy-key",
+  "model": "gpt-4.1",
+  "base_url": "https://api.openai.com"
+}
+```
+
+読込処理は型付き構造体で行い、以下の3段階を分離する。
+
+1. parse / validate: provider、APIキー、model、base URLを検証する。
+2. normalize: `ModelConfig` へ変換する。
+3. resolve: APIキーを含む `ResolvedModelConfig` を構築する。
+
+`openai_compat` の `base_url` はAPI rootであり、`/v1/chat/completions` を含めない。末尾スラッシュは正規化し、認証情報埋め込みURL、不正URL、古いJSONのbase URL欠落は明示エラーとする。
+
+#### 8.7.2 BackendProviderAdapter
+
+`BackendProviderAdapter` はHTTP providerを既存 `CliAdapter` パイプラインへ接続するアダプターである。HTTP/SSE処理は `AnthropicProvider` / `OpenAICompatProvider` に委譲し、adapter側でprovider別HTTP処理を複製しない。
+
+Prompt変換規則:
+- `Prompt.system` と `Prompt.dynamic` は順序を保って `ConversationRequest.system_prompt` に統合する。
+- `Prompt.history` は既存message列として保持する。
+- `Prompt.user_input` は末尾のuser messageとして1回だけ追加する。
+- `Prompt.session_id` は `ConversationRequest.conversation_id` に渡す。
+
+応答写像規則:
+- `StreamEvent::Done` 受信のみ成功完了とし、`RawResponse.completed = true`、`error = None` を返す。
+- `Done.final_response.text` を `RawResponse.text` に写像する。
+- `Done.usage` を `RawResponse.usage` に写像する。
+- providerの `conversation_id` がある場合のみ `RawResponse.session_id` に写像する。
+- provider error、Done欠落、channel closeのみの終了は成功扱いしない。
+
+#### 8.7.3 Anthropic streaming完了条件
+
+`AnthropicProvider::complete()` はstream producerとconsumerを同時に進める。容量64のchannelが満杯になっても停止しないことを100 delta SSEテストで確認済み。
+
+成功条件:
+- `StreamEvent::Done` を受信した場合のみ成功。
+- usageは `Done` 由来を正とする。
+
+失敗条件:
+- `StreamEvent::Error` は即時失敗。
+- producerが正常終了しても `Done` 未受信なら `StreamClosed`。
+- channel closeだけでは成功しない。
 
 ### 8.8 projects.toml でのバックエンド設定
 
@@ -369,12 +441,14 @@ critical_prompt = "..."
 
 - backend不在 → 起動失敗 or デフォルト切替
 - セッション切断 → 再接続試行 → 失敗時新規セッション
+- `anthropic` / `openai_compat` のprovider設定欠落・不一致 → Claude CLIへフォールバックせず設定エラー
+- HTTP provider streamがDoneなしで閉じた場合 → `StreamClosed`
 
 ---
 
 ## 10. 拡張設計（§22）
 
-- バックエンド追加: `CliAdapter` trait 実装のみ
+- バックエンド追加: CLI系は `CliAdapter` trait 実装、HTTP provider系は `BackendProvider` 実装 + `BackendProviderAdapter` 接続
 - AnimaCategory追加: `AnimaCategory` enum + `to_cache_category()` マッピング追加
 - L3注入項目追加: `build_context_at()` の dynamic 構築部を拡張
 - 新マーカー追加: `parser::parse_response()` に解析規則追加 + 後処理追加
@@ -383,12 +457,16 @@ critical_prompt = "..."
 
 ## 11. 実装場所
 
-- `src-tauri/src/character/pipeline.rs` — パイプライン本体
-- `src-tauri/src/character/cli_adapter.rs` — CliAdapter トレイト・型・factory・stub実装
-- `src-tauri/src/character/context.rs` — `build_context_at()`（L2/L3構築）
-- `src-tauri/src/character/parser.rs` — `parse_response()`（マーカー解析）
-- `src-tauri/src/character/throttle.rs` — `should_speak_at()`
-- `src-tauri/src/character/cache.rs` — キャッシュ管理
+- `src-tauri/src/anima/pipeline.rs` — パイプライン本体
+- `src-tauri/src/anima/cli_adapter.rs` — CliAdapter トレイト・型・BackendProviderAdapter
+- `src-tauri/src/anima/providers/mod.rs` — HTTP provider factory
+- `src-tauri/src/anima/providers/anthropic.rs` — Anthropic Messages API provider
+- `src-tauri/src/anima/providers/openai_compat.rs` — OpenAI互換 Chat Completions provider
+- `src-tauri/src/anima/context.rs` — `build_context_at()`（L2/L3構築）
+- `src-tauri/src/anima/parser.rs` — `parse_response()`（マーカー解析）
+- `src-tauri/src/anima/throttle.rs` — `should_speak_at()`
+- `src-tauri/src/anima/cache.rs` — キャッシュ管理
+- `src-tauri/src/lib.rs` — Tauri command、provider_config保存/読込、backend選択
 
 ---
 

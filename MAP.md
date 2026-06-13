@@ -120,6 +120,9 @@ docs/projects/oribis/
 |-----------|------|
 | anima/pipeline.rs | spec/core/pipeline.md |
 | anima/cli_adapter.rs | spec/core/pipeline.md（§8 CLI Adapter） |
+| anima/providers/mod.rs | spec/core/pipeline.md（§8.7 HTTP provider factory） |
+| anima/providers/anthropic.rs | spec/core/pipeline.md（§8.7 Anthropic Messages API provider） |
+| anima/providers/openai_compat.rs | spec/core/pipeline.md（§8.7 OpenAI互換 Chat Completions provider） |
 | anima/affinity.rs | spec/core/affinity.md |
 | anima/memory.rs | spec/core/memory.md |
 | anima/counter.rs | spec/core/event-counter.md |
