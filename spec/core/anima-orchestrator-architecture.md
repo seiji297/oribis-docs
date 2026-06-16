@@ -76,12 +76,12 @@ Anima が Worker を介さず自ら実行してよい範囲:
 
 **判定ルール**: 「ファイルシステムやリポジトリに副作用を与える操作」は全て Worker 委譲。Anima は read-only + 会話 + メタ操作のみ。
 
-#### Internal Worker read-only closed loop（Phase 3実装済）
+#### Internal Worker read-only closed loop + write proposal preview（Phase 4 P1実装済）
 
 OpenCode代替内製化の最初の実用経路として、既存PTY Workerとは分離した **Internal Worker Job** を追加する。
 この経路は「Animaが提案し、ユーザー承認後にread-only toolだけを実行し、結果をAnima説明へ戻す」閉ループである。
 
-**実装済み（2026-06-16 / `integration/action-platform-foundation` commit `ade1f2c`）**:
+**実装済み（2026-06-16 / `integration/action-platform-foundation` commit `d7ef3e9`）**:
 
 | 領域 | 実装内容 |
 |------|----------|
@@ -93,10 +93,12 @@ OpenCode代替内製化の最初の実用経路として、既存PTY Workerと�
 | Permission/Audit | internal worker Tauri commandsをAction Router評価に通す土台を追加。Anima intentをread-only capabilityへ分類し、FileRead/Audit/Ui以外を拒否 |
 | Approval Decision | `approval_decisions.jsonl` に承認判断をappend-only保存。`policyDecision`/`idempotencyKey`必須、idempotency replay、expiry、deny終端化、proposal/workspace不一致key拒否 |
 | UI | Jobsタブに `AnimaDispatchPanel` / `TaskJobView` / `ActionAuditPanel` を同居。提案カード→policy判定→承認→read-only実行→Job詳細/Event/Artifact→Anima説明を実GUIで確認 |
+| Write Plan Store/API | `internal_worker_write_plan.rs` を追加。write proposal/operationをJSONL保存し、`proposalHash` / `requestFingerprint` / operation fingerprint / idempotency replay / pathScope検証 / secret-like path拒否 / symlink escape拒否を実装 |
+| Write Proposal Preview | write適用前の表示専用UIとして `WriteProposalPreview` / `ApprovalBinding` を追加。unified diffを安全表示し、approval hash bindingを可視化する。実write/applyボタンは出さない |
 
 **安全境界**:
 
-- Phase 2はread-only限定。write / shell / network / MCP writeは追加しない
+- Phase 4 P1時点でも実行はread-only限定。write planとproposal previewは保存・表示のみで、write / shell / network / MCP writeは実行しない
 - 既存PTY Worker / TaskQueue / `list_tasks` / `cancel_task` とは混ぜない
 - `workerProviderMode` は `useAnima` をデフォルトにし、オンボード済みAnima ProviderをWorker側でも参照できる
 - credentialRefやsecret値はJob/Event/Artifact/UIに平文保存・表示しない
@@ -104,12 +106,24 @@ OpenCode代替内製化の最初の実用経路として、既存PTY Workerと�
 - backendは `policyDecision` 未指定を拒否し、UI fail-closedをTauri直呼びで迂回できないようにする
 - deny/expiredはproposalを終端状態にし、同じproposalの後続承認を防ぐ
 - idempotency replayは同一proposal + 同一workspaceの既存approved decisionに限定し、異なるproposal/workspaceでは拒否する
+- write plan idempotency replayは同一request fingerprint / operation fingerprintに限定し、同じkeyでも内容が異なる場合は拒否する
+- write planのpathScopeはworkspace配下に正規化し、absolute path、`..`、scope外path、secret-like path、既存symlink escapeを拒否する
+- approval hash bindingは表示専用。write適用を有効化する前にapply直前TOCTOU再検証、operation種別別検証、承認後append禁止またはrevision hash設計が必要
 - Event/Artifactのapproval snapshotにはpolicyDecision/riskLevel/idempotencyKey/expiresAt/approvalDecisionIdを含め、Job metadataと監査情報を揃える
 - WDIO実行時、別worktreeのVite dev serverを誤再利用しないよう `scripts/run-wdio-tests.sh` でport所有プロセスのcwdを確認する
+
+**テスト結果（Phase 4 P1 / 2026-06-16）**:
+
+- `pnpm run typecheck`: PASS
+- `pnpm vitest run`: 950 PASS / 3 skipped
+- `cargo test --manifest-path src-tauri/Cargo.toml internal_worker_write_plan`: 12 PASS
+- `cargo check --manifest-path src-tauri/Cargo.toml --no-default-features --features tauri-backend`: PASS
+- WDIO `write-proposal-preview`: 1 spec PASS（2 skipped。preview UI未マウント時は型契約・危険ボタン不在のみ検証）
 
 **未実装（後続Phase）**:
 
 - fs write / git write / shell exec / MCP write
+- write apply executor
 - sidecar/WASM plugin runtimeの実起動
 - exe hash/署名検証、OS sandbox
 - artifact integrityの本番運用強化

@@ -170,6 +170,7 @@ docs/projects/oribis/
 | cli_adapters.rs | spec/core/pipeline.md（実アダプタ実装） |
 | action_router.rs | spec/core/anima-orchestrator-architecture.md（Action Router policy/audit boundary） |
 | internal_worker.rs | spec/core/anima-orchestrator-architecture.md（Internal Worker JSONL store/API/read-only runtime/tool registry） |
+| internal_worker_write_plan.rs | spec/core/anima-orchestrator-architecture.md（Internal Worker write plan Store/API、pathScope/idempotency/secret-like path hardening） |
 | anima/anima_dispatch.rs | spec/core/anima-orchestrator-architecture.md（Anima dispatch proposal/approval decision store/closed loop） |
 | anima/anima_policy.rs | spec/core/anima-orchestrator-architecture.md（Anima intent classification / read-only policy boundary） |
 | anima/anima_explainer.rs | spec/core/anima-orchestrator-architecture.md（deterministic Anima explanation / scope check） |
@@ -237,6 +238,9 @@ docs/projects/oribis/
 | components/TaskJobView.tsx | spec/core/anima-orchestrator-architecture.md（Internal Worker Job一覧/詳細/Event/Artifact） |
 | components/AnimaDispatchPanel.tsx | spec/ui/anima-ui.md（Anima dispatch proposal/approval/explanation UI） |
 | components/ActionAuditPanel.tsx | spec/ui/anima-ui.md（Action Router audit metadata UI） |
+| components/WriteProposalPreview.tsx | spec/ui/anima-ui.md（write proposal preview / unified diff安全表示） |
+| components/ApprovalBinding.tsx | spec/ui/anima-ui.md（approval hash binding表示） |
+| components/writeProposal.types.ts | spec/ui/anima-ui.md（write proposal preview型契約） |
 | hooks/useDispatchProposal.ts | spec/ui/anima-ui.md（Anima dispatch proposal hook） |
 | action-router/index.ts | spec/ui/anima-ui.md（frontend Action Router registry） |
 | action-router/types.ts | spec/ui/anima-ui.md（frontend Action Router types） |

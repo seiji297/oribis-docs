@@ -256,4 +256,40 @@ AnimaがWorker実行を提案し、policy/audit評価を表示し、ユーザー
 - WDIO `anima-approval`: 2 scenarios PASS
 - WDIO `anima-approval-policy`: 3 scenarios PASS
 - WDIO `action-platform`: 5 scenarios PASS
-- WDIO `action-platform`: 5 scenarios PASS
+
+## 2026-06-16 — Write Proposal Preview（Phase 4 P1 / display-only）
+
+### 目的
+
+Internal Workerのwrite系をすぐ実行可能にせず、まず「どのファイルに何を書き込む予定か」「承認がどのdiff/hashに紐づくか」を安全に見せる表示専用UIを追加する。
+Phase 4 P1では write apply / shell / MCP write は実装しない。
+
+### UI構成
+
+| コンポーネント | 役割 |
+|---------------|------|
+| `WriteProposalPreview.tsx` | operation/path/unified diff/rollback方針を表示する。diffは行数・長行をtruncateし、secret-like値をmaskする |
+| `ApprovalBinding.tsx` | `proposalHash` と `approvedHash` の一致/不一致を表示し、承認が特定proposalに束縛されているかを可視化する |
+| `writeProposal.types.ts` | write proposal preview / approval binding のフロント型契約 |
+
+### 表示・安全仕様
+
+- write/apply実行ボタンは表示しない
+- path/diff/note/denialReasonのsecret-like値はmaskする
+- large diffは行数制限と長行truncateで表示する
+- approval bindingはUI側でも再計算し、backend由来の`bound`値と矛盾する場合は安全側でmismatch表示にする
+- hashの未設定値は`unknown`として表示し、平文secretやcredentialRefは表示しない
+
+### 実GUIテスト
+
+- `e2e/wdio/tests/write-proposal-preview.spec.ts`
+  - preview UIが未マウントの場合はskipし、型契約と危険ボタン不在を検証する
+  - 実API配線後は、proposal取得→preview表示→approval hash binding→applyボタン不在を同specで確認する
+
+### テスト結果（2026-06-16）
+
+- `pnpm run typecheck`: PASS
+- `pnpm vitest run`: 950 PASS / 3 skipped
+- `cargo test --manifest-path src-tauri/Cargo.toml internal_worker_write_plan`: 12 PASS
+- `cargo check --manifest-path src-tauri/Cargo.toml --no-default-features --features tauri-backend`: PASS
+- WDIO `write-proposal-preview`: 1 spec PASS（2 skipped）
