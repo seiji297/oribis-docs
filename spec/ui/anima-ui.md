@@ -206,11 +206,11 @@
 #### テスト
 - vitest: 568 PASS / cargo test: 1036 PASS（pre-existing failures のみ）
 
-## 2026-06-16 — Anima Dispatch Approval UI（read-only closed loop）
+## 2026-06-16 — Anima Dispatch Approval UI（read-only closed loop / Phase 3）
 
 ### 目的
 
-AnimaがWorker実行を提案し、ユーザー承認後にInternal Workerのread-only Jobを実行し、結果をAnimaの説明として返すUI。
+AnimaがWorker実行を提案し、policy/audit評価を表示し、ユーザー承認後にInternal Workerのread-only Jobを実行し、結果をAnimaの説明として返すUI。
 既存のPTY Workerチャットとは分離し、Jobsタブ内で「提案」「承認」「実行結果」「説明」を1画面で追跡する。
 
 ### UI構成
@@ -219,6 +219,7 @@ AnimaがWorker実行を提案し、ユーザー承認後にInternal Workerのrea
 |---------------|------|
 | `AnimaDispatchPanel.tsx` | pending proposal一覧、read-only確認、承認/拒否、approval record、Anima explanation、Job詳細への導線 |
 | `TaskJobView.tsx` | Internal Worker Job一覧、Job詳細、Event timeline、Artifact表示 |
+| `ActionAuditPanel.tsx` | Action Router audit metadata表示。actor/capability/command/target/decisionをsecret非露出で表示 |
 | `useDispatchProposal.ts` | `anima_list_dispatch_proposals` / approve / reject / refresh のhook |
 
 ### 表示・安全仕様
@@ -226,7 +227,9 @@ AnimaがWorker実行を提案し、ユーザー承認後にInternal Workerのrea
 - proposalカードは `task` / `instruction` / sanitized `contextRefs` のみ表示する
 - `credentialRef`、secret値、raw context snapshotは表示しない
 - built-in toolsが全件 `readOnly=true` と確認できない場合、承認ボタンを無効化する
-- 承認後は `anima_approve_and_run_readonly_dispatch` を呼び、成功時のみJob詳細を自動選択する
+- policy評価が `allow` / `requireConfirmation` でない場合、承認ボタンを無効化する
+- 承認後は `policyDecision` / `idempotencyKey` / `expiresAt` を含めて `anima_approve_and_run_readonly_dispatch` を呼び、成功時のみJob詳細を自動選択する
+- backendも `policyDecision` / `idempotencyKey` 必須でfail-closedにし、UIを迂回したTauri直呼びを拒否する
 - `completed` / `partial` のみ成功扱い。`failed` / `cancelled` / `timeout` / unknown status は失敗扱い
 - backend生errorはUIに表示せず、汎用エラー文言に丸める
 - Job/Event/Artifact表示でもsecret-like値をredactし、artifact pathはbasenameのみ表示する
@@ -239,13 +242,18 @@ AnimaがWorker実行を提案し、ユーザー承認後にInternal Workerのrea
   - read-only Job実行、approval record、Job詳細、Event timeline、Artifact/empty、Anima explanationを実GUIで確認
 - `e2e/wdio/tests/action-platform.spec.ts`
   - JobsタブのInternal Worker実データ表示とJob詳細/Event/Artifact表示を確認
+- `e2e/wdio/tests/anima-approval-policy.spec.ts`
+  - pending proposalのstatus/policy表示を確認
+  - auditパネルの行または空状態を確認
+  - secret-like値が画面textに露出しないことを確認
 
 ### テスト結果（2026-06-16）
 
 - `pnpm run typecheck`: PASS
-- `pnpm vitest run`: 892 PASS / 3 skipped
-- `cargo test internal_worker`: 21 PASS
-- `cargo test anima_dispatch::tests job_selector::tests anima_explainer::tests`: 27 PASS
+- `pnpm vitest run`: 918 PASS / 3 skipped
+- `cargo test anima_dispatch::tests job_selector::tests anima_explainer::tests anima_policy::tests action_router::tests internal_worker`: 83 PASS
 - `cargo check --no-default-features --features tauri-backend`: PASS
 - WDIO `anima-approval`: 2 scenarios PASS
+- WDIO `anima-approval-policy`: 3 scenarios PASS
+- WDIO `action-platform`: 5 scenarios PASS
 - WDIO `action-platform`: 5 scenarios PASS

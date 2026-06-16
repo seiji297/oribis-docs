@@ -2,7 +2,7 @@
 
 > 策定日: 2026-05-03
 > 最終更新: 2026-06-16
-> ステータス: 一部実装済（P1/P2/P3完了・Action Platform Phase 0-2完了・write/shell/MCP-write未実装）
+> ステータス: 一部実装済（P1/P2/P3完了・Action Platform Phase 0-3完了・write/shell/MCP-write未実装）
 
 ---
 
@@ -76,12 +76,12 @@ Anima が Worker を介さず自ら実行してよい範囲:
 
 **判定ルール**: 「ファイルシステムやリポジトリに副作用を与える操作」は全て Worker 委譲。Anima は read-only + 会話 + メタ操作のみ。
 
-#### Internal Worker read-only closed loop（Phase 2実装済）
+#### Internal Worker read-only closed loop（Phase 3実装済）
 
 OpenCode代替内製化の最初の実用経路として、既存PTY Workerとは分離した **Internal Worker Job** を追加する。
 この経路は「Animaが提案し、ユーザー承認後にread-only toolだけを実行し、結果をAnima説明へ戻す」閉ループである。
 
-**実装済み（2026-06-16 / `integration/action-platform-foundation` commit `ceba8f5`）**:
+**実装済み（2026-06-16 / `integration/action-platform-foundation` commit `ade1f2c`）**:
 
 | 領域 | 実装内容 |
 |------|----------|
@@ -90,8 +90,9 @@ OpenCode代替内製化の最初の実用経路として、既存PTY Workerと�
 | Anima Dispatch | `anima_propose_dispatch` / `anima_approve_and_run_readonly_dispatch` / reject/list。proposal/job/correlation/approval metadataを追跡 |
 | Context Selector | Job/Event/Artifactをbyte/priority上限つきで抽出。artifact excerpt取得対応 |
 | Explanation | deterministic `anima_generate_explanation` と `anima_check_proposal_scope`。危険語・confirm/write/shell/network/secret系はscope checkで拒否 |
-| Permission/Audit | internal worker Tauri commandsをAction Router評価に通す土台を追加。ただしwrite/shell等は未開放 |
-| UI | Jobsタブに `AnimaDispatchPanel` と `TaskJobView` を同居。提案カード→承認→read-only実行→Job詳細/Event/Artifact→Anima説明を実GUIで確認 |
+| Permission/Audit | internal worker Tauri commandsをAction Router評価に通す土台を追加。Anima intentをread-only capabilityへ分類し、FileRead/Audit/Ui以外を拒否 |
+| Approval Decision | `approval_decisions.jsonl` に承認判断をappend-only保存。`policyDecision`/`idempotencyKey`必須、idempotency replay、expiry、deny終端化、proposal/workspace不一致key拒否 |
+| UI | Jobsタブに `AnimaDispatchPanel` / `TaskJobView` / `ActionAuditPanel` を同居。提案カード→policy判定→承認→read-only実行→Job詳細/Event/Artifact→Anima説明を実GUIで確認 |
 
 **安全境界**:
 
@@ -100,6 +101,10 @@ OpenCode代替内製化の最初の実用経路として、既存PTY Workerと�
 - `workerProviderMode` は `useAnima` をデフォルトにし、オンボード済みAnima ProviderをWorker側でも参照できる
 - credentialRefやsecret値はJob/Event/Artifact/UIに平文保存・表示しない
 - UIはbackend生errorを表示せず、汎用エラー文言に丸める
+- backendは `policyDecision` 未指定を拒否し、UI fail-closedをTauri直呼びで迂回できないようにする
+- deny/expiredはproposalを終端状態にし、同じproposalの後続承認を防ぐ
+- idempotency replayは同一proposal + 同一workspaceの既存approved decisionに限定し、異なるproposal/workspaceでは拒否する
+- Event/Artifactのapproval snapshotにはpolicyDecision/riskLevel/idempotencyKey/expiresAt/approvalDecisionIdを含め、Job metadataと監査情報を揃える
 - WDIO実行時、別worktreeのVite dev serverを誤再利用しないよう `scripts/run-wdio-tests.sh` でport所有プロセスのcwdを確認する
 
 **未実装（後続Phase）**:
@@ -107,7 +112,7 @@ OpenCode代替内製化の最初の実用経路として、既存PTY Workerと�
 - fs write / git write / shell exec / MCP write
 - sidecar/WASM plugin runtimeの実起動
 - exe hash/署名検証、OS sandbox
-- approval expiry / idempotency / artifact integrityの本番運用強化
+- artifact integrityの本番運用強化
 
 ### Worker
 
@@ -808,7 +813,7 @@ narration.rs のバッチ処理ループ:
 - P1 完了 ✅: Worker の手動 spawn/管理/PTY 操作 + イベントフィード表示 + Anima ナレーション（重要情報選別読み上げ）が稼働。コミット `5c8b0f8`。品質修正エピック（kill統合/per-worker cursor/MCP session identity）進行中
 - P2 完了時点: Department の GUI 設定・パイプライン可視化が可能
 - P3 完了時点: Anima による自動タスクルーティング・スケジューラが稼働
-- ACT-P2 完了時点: Anima提案→ユーザー承認→read-only Internal Worker Job実行→Job詳細/Event/Artifact→Anima説明の閉ループが稼働。write/shell/MCP-writeは未開放
+- ACT-P2 完了時点: Anima提案→policy/audit評価→ユーザー承認→承認判断永続化→read-only Internal Worker Job実行→Job詳細/Event/Artifact→Anima説明の閉ループが稼働。write/shell/MCP-writeは未開放
 
 ---
 

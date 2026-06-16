@@ -24,7 +24,7 @@ Oribis のテスト基盤は **3層構成**:
 | E2E (Browser) | Playwright | UIフロー（Tauri IPC mock 環境） | `cd e2e && pnpm test` |
 | E2E (Node) | Vitest (node) | VRM ボーンリグレッション | `cd e2e && pnpm test:node` |
 
-**現在のテスト数**: Vitest 892件PASS / E2Eシナリオ 23件以上 / WDIO実GUI 7シナリオPASS / Rust targeted 21+27件PASS（2026-06-16更新）
+**現在のテスト数**: Vitest 918件PASS（3 skipped） / E2Eシナリオ 23件以上 / WDIO実GUI 10シナリオPASS / Rust targeted 83件PASS（2026-06-16更新）
 
 ---
 

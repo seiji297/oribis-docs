@@ -170,6 +170,10 @@ docs/projects/oribis/
 | cli_adapters.rs | spec/core/pipeline.md（実アダプタ実装） |
 | action_router.rs | spec/core/anima-orchestrator-architecture.md（Action Router policy/audit boundary） |
 | internal_worker.rs | spec/core/anima-orchestrator-architecture.md（Internal Worker JSONL store/API/read-only runtime/tool registry） |
+| anima/anima_dispatch.rs | spec/core/anima-orchestrator-architecture.md（Anima dispatch proposal/approval decision store/closed loop） |
+| anima/anima_policy.rs | spec/core/anima-orchestrator-architecture.md（Anima intent classification / read-only policy boundary） |
+| anima/anima_explainer.rs | spec/core/anima-orchestrator-architecture.md（deterministic Anima explanation / scope check） |
+| anima/job_selector.rs | spec/core/anima-orchestrator-architecture.md（Job/Event/Artifact context selector） |
 | lib.rs | spec/core/pipeline.md（Tauriコマンドハブ） |
 | mcp/mod.rs | spec/core/mcp-server.md |
 | mcp/server.rs | spec/core/mcp-server.md（§4 Broker + tool dispatch） |
@@ -232,6 +236,7 @@ docs/projects/oribis/
 | components/EventInspector.tsx | spec/core/anima-orchestrator-architecture.md（Event Feed詳細表示） |
 | components/TaskJobView.tsx | spec/core/anima-orchestrator-architecture.md（Internal Worker Job一覧/詳細/Event/Artifact） |
 | components/AnimaDispatchPanel.tsx | spec/ui/anima-ui.md（Anima dispatch proposal/approval/explanation UI） |
+| components/ActionAuditPanel.tsx | spec/ui/anima-ui.md（Action Router audit metadata UI） |
 | hooks/useDispatchProposal.ts | spec/ui/anima-ui.md（Anima dispatch proposal hook） |
 | action-router/index.ts | spec/ui/anima-ui.md（frontend Action Router registry） |
 | action-router/types.ts | spec/ui/anima-ui.md（frontend Action Router types） |
@@ -274,6 +279,7 @@ docs/projects/oribis/
 | e2e/scenarios/t-25-action-smoke.scenario.json | spec/core/test-infrastructure.md（Action Platform scenario smoke） |
 | e2e/wdio/tests/action-platform.spec.ts | spec/core/test-infrastructure.md（Action Platform実GUI: Commands/Console/Events/Jobs） |
 | e2e/wdio/tests/anima-approval.spec.ts | spec/core/test-infrastructure.md（Anima dispatch approval read-only closed loop実GUI） |
+| e2e/wdio/tests/anima-approval-policy.spec.ts | spec/core/test-infrastructure.md（Anima approval policy/audit実GUI） |
 | scripts/run-wdio-tests.sh | spec/core/test-infrastructure.md（WDIO実行スクリプト / worktree別Vite誤再利用防止） |
 
 ### CI/CD（.github/workflows/）
