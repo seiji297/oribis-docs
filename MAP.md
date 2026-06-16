@@ -123,6 +123,9 @@ docs/projects/oribis/
 | anima/providers/mod.rs | spec/core/pipeline.md（§8.7 HTTP provider factory） |
 | anima/providers/anthropic.rs | spec/core/pipeline.md（§8.7 Anthropic Messages API provider） |
 | anima/providers/openai_compat.rs | spec/core/pipeline.md（§8.7 OpenAI互換 Chat Completions provider） |
+| anima/anima_dispatch.rs | spec/core/anima-orchestrator-architecture.md（Internal Worker dispatch proposal / approval / read-only run） |
+| anima/anima_explainer.rs | spec/core/anima-orchestrator-architecture.md（deterministic Anima explanation / scope check）+ spec/ui/anima-ui.md（説明表示） |
+| anima/job_selector.rs | spec/core/anima-orchestrator-architecture.md（Job/Event/Artifact context selector） |
 | anima/affinity.rs | spec/core/affinity.md |
 | anima/memory.rs | spec/core/memory.md |
 | anima/counter.rs | spec/core/event-counter.md |
@@ -165,6 +168,8 @@ docs/projects/oribis/
 | skill.rs | spec/ui/plugin-api.md |
 | pty_commands.rs | spec/core/anima-orchestrator-architecture.md |
 | cli_adapters.rs | spec/core/pipeline.md（実アダプタ実装） |
+| action_router.rs | spec/core/anima-orchestrator-architecture.md（Action Router policy/audit boundary） |
+| internal_worker.rs | spec/core/anima-orchestrator-architecture.md（Internal Worker JSONL store/API/read-only runtime/tool registry） |
 | lib.rs | spec/core/pipeline.md（Tauriコマンドハブ） |
 | mcp/mod.rs | spec/core/mcp-server.md |
 | mcp/server.rs | spec/core/mcp-server.md（§4 Broker + tool dispatch） |
@@ -188,6 +193,11 @@ docs/projects/oribis/
 | github/update_check.rs | —（商用化: GitHub Releases APIバージョンチェック） |
 | error.rs | —（OribisError: i18nキー化済み） |
 | remote/web_remote_state.rs | spec/ui/web-remote.md |
+| plugin/access.rs | spec/ui/plugin-api.md（Plugin Host API access layer） |
+| plugin/permission.rs | spec/ui/plugin-api.md（Permission Manager / capability policy） |
+| plugin/router.rs | spec/ui/plugin-api.md（Plugin Action Router / secret placeholder boundary） |
+| plugin/secrets.rs | spec/ui/plugin-api.md（Secrets Store / encrypted secret persistence） |
+| plugin/manifest.rs | spec/ui/plugin-api.md（runtime=webview/sidecar manifest schema） |
 
 ### フロントエンド（src/）
 
@@ -217,6 +227,19 @@ docs/projects/oribis/
 | components/DrawerAnima.tsx | spec/core/anima-orchestrator-architecture.md（Animaドロワー） |
 | components/DrawerDepartment.tsx | spec/core/anima-orchestrator-architecture.md（Departmentドロワー） |
 | components/DrawerEventFeed.tsx | spec/core/anima-orchestrator-architecture.md（EventFeedドロワー） |
+| components/CommandPalette.tsx | spec/ui/anima-ui.md（Action Platform Commandsタブ） |
+| components/DeveloperConsole.tsx | spec/ui/anima-ui.md（JS/TS Console request UI） |
+| components/EventInspector.tsx | spec/core/anima-orchestrator-architecture.md（Event Feed詳細表示） |
+| components/TaskJobView.tsx | spec/core/anima-orchestrator-architecture.md（Internal Worker Job一覧/詳細/Event/Artifact） |
+| components/AnimaDispatchPanel.tsx | spec/ui/anima-ui.md（Anima dispatch proposal/approval/explanation UI） |
+| hooks/useDispatchProposal.ts | spec/ui/anima-ui.md（Anima dispatch proposal hook） |
+| action-router/index.ts | spec/ui/anima-ui.md（frontend Action Router registry） |
+| action-router/types.ts | spec/ui/anima-ui.md（frontend Action Router types） |
+| command/CommandRegistry.ts | spec/ui/anima-ui.md（Command Registry / Command Palette foundation） |
+| command/actionRouterAdapter.ts | spec/ui/anima-ui.md（Action Router adapter） |
+| command/internalWorkerRouter.ts | spec/core/anima-orchestrator-architecture.md（Internal Worker frontend action types）+ spec/ui/anima-ui.md |
+| command/permissions.ts | spec/ui/plugin-api.md（frontend permission action types） |
+| command/types.ts | spec/ui/anima-ui.md（Command request types） |
 | plugin/types.ts | spec/core/anima-orchestrator-architecture.md（WorkerInfo/DepartmentConfig/EventFeedItem/SpeechQueueItem型） |
 | components/AnimationAssignPanel.tsx | spec/ui/motion-anim-assign.md, spec/ui/unity-fbx-retarget.md |
 | plugin/usePluginLoader.ts | spec/ui/plugin-api.md |
@@ -248,6 +271,10 @@ docs/projects/oribis/
 | plugins-v2/chat-mode/index.ts | spec/ui/app-system-v2.md |
 | plugins-v2/chat-mode/chat-logic.ts | spec/ui/app-system-v2.md |
 | e2e/scenarios/t-23-chat-mode-plugin.scenario.json | spec/ui/app-system-v2.md |
+| e2e/scenarios/t-25-action-smoke.scenario.json | spec/core/test-infrastructure.md（Action Platform scenario smoke） |
+| e2e/wdio/tests/action-platform.spec.ts | spec/core/test-infrastructure.md（Action Platform実GUI: Commands/Console/Events/Jobs） |
+| e2e/wdio/tests/anima-approval.spec.ts | spec/core/test-infrastructure.md（Anima dispatch approval read-only closed loop実GUI） |
+| scripts/run-wdio-tests.sh | spec/core/test-infrastructure.md（WDIO実行スクリプト / worktree別Vite誤再利用防止） |
 
 ### CI/CD（.github/workflows/）
 

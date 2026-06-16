@@ -1,10 +1,10 @@
 <!-- AUTO-DOC-GEN:STATUS-START -->
 | 項目 | 値 |
 |------|-----|
-| ブランチ | `develop` |
-| コミット | `f942c61` |
-| 日時 | 2026-06-14 03:40:54 +0900 |
-| サマリー | feat(anima): connect backend providers to chat pipeline |
+| ブランチ | `integration/action-platform-foundation` |
+| コミット | `ceba8f5` |
+| 日時 | 2026-06-16 12:00:00 +0900 |
+| サマリー | fix: stabilize anima readonly closed loop integration |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
@@ -16,7 +16,7 @@
 - ✅ **実GUI表示確認必須** — テキスト入力→送信後、GUI上にメッセージが表示されることを確認
 - ✅ **GUIイベントと同じ流れ** — `__setChatInput`（textarea表示確認）→ `__sendChatMessage`（送信）→ GUI応答確認
 
-**最終更新**: 2026-06-14
+**最終更新**: 2026-06-16
 
 ---
 
@@ -43,6 +43,7 @@
 - **KokoroTTS英語チャットE2E**: 完了（2026-06-02）— fake_claude英語応答→Kokoroルーティング→WAV生成→5秒以内検証→`/tmp/oribis-kokoro-test.wav`
 - **Live Mode実装**: 完了（2026-06-09）— Silero VAD連続録音→自動STT→AIダイレクト送信。常時音声入力状態。テキスト入力欄バイパス
 - **AIバックエンド配線**: 完了（2026-06-14）— `anthropic` / `openai_compat` を保存済みprovider設定から実HTTP providerへ接続。`cargo test --lib` 1433 PASS / `npm test` 796 PASS
+- **Action Platform / Internal Worker read-only closed loop**: Phase 2 完了（2026-06-16）— Anima提案→承認→read-only Job実行→Job詳細/Event/Artifact→Anima説明。`integration/action-platform-foundation` commit `ceba8f5`。Vitest 892 PASS / Rust targeted 21+27 PASS / WDIO 7シナリオPASS
 - **その他**: pending-tasks.md に移動済み。Producer指示があれば復帰
 
 ### 実装フロー（codex-adviser レビュー済 2026-05-07）
@@ -235,6 +236,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | HIGH | ORCH-P1 | オーケストレーター P1 | anima-orchestrator-architecture.md | 実装済 | 9タスク完了。types.ts/Rust基盤/narration/MCP統合/Tauriコマンド/フロントエンド5コンポ/App.tsx統合/テスト/Onboarding |
 | HIGH | ORCH-P2 | オーケストレーター P2 | anima-orchestrator-architecture.md | 実装済 | 12タスク完了+追加実装。CRUD API/PipelineView+DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御 + DrawerAnima内部タブ(Status/Prompt/Memory/Console/Settings) + Deep Reasoning delegation。vitest 568/cargo test 1036 PASS（2026-05-12） |
 | HIGH | ORCH-P3 | オーケストレーター P3 | anima-orchestrator-architecture.md | 実装済 | P3-A: scheduler engine / P3-B: DELEGATE_TO自動ルーティング。commits 6254a02, f7ab1a7（2026-05-12） |
+| HIGH | ACT-P2 | Action Platform / Internal Worker read-only closed loop | anima-orchestrator-architecture.md / anima-ui.md | 一部実装済 | Phase 0-2完了。Command Palette/JS-TS Console/Permission-Secrets土台/Internal Worker JSONL Store/API/read-only runtime/Anima dispatch proposal/approval UI/Job detail/Event/Artifact/Anima explanation。write/shell/MCP-writeは未実装。commit ceba8f5（2026-06-16） |
 | LOW | G8 | AI応答の軽重モード（一言/詳細 切替） | anima.md | 未着手 | 現状はモデル選択で軽量化のみ。応答自体の簡潔さ制御なし。Producer判断で優先度変更 |
 
 | MEDIUM | — | motion-anim-assign ランタイムマウント | motion-anim-assign.md | 不要 | Animation Editorプラグインで実現済・revert 2b727d4 |
@@ -364,7 +366,8 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | anima.md | Anima + AnimaMode + throttle + キャッシュ | 一部実装済 |
 | anima-plan.md | 開発計画（GAP管理） | — |
 | anima-state.md | AnimaState一覧・カテゴリ | 実装済 |
-| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY | 実装済（P1/P2/P3完了） |
+| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY + Internal Worker read-only closed loop | 一部実装済（P1/P2/P3 + Action Platform Phase 0-2完了、write/shell/MCP-write未実装） |
+| test-infrastructure.md | Unit/Vitest/WDIO/Rust テスト基盤 | 実装済 |
 | affinity.md | 好感度システム | 実装済 |
 | memory.md | 4レイヤー記憶 + 自己進化 + entity linking + self_model | 実装済（Phase 1-3完了、v3.5） |
 | event-counter.md | イベントカウンタ | 実装済 |
@@ -387,7 +390,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | mmd-model.md | MMDモデル対応 | 実装済 |
 | avatar-animation.md | 表情拡張/FBXリターゲット/morphMap | 一部実装済 |
 | motion-anim-assign.md | モーション状態別アニメ割り当てUI | 一部実装済 |
-| anima-ui.md | Anima統合UI（parser/adapter/cache等） | 実装済 |
+| anima-ui.md | Anima統合UI（parser/adapter/cache/dispatch approval UI等） | 一部実装済（Anima dispatch approval UI完了、後続orchestration UI未実装） |
 | dual-session.md | デュアルセッション（Theater Mode） | 実装済 |
 | cli-status-pane.md | CLIステータスペイン | 実装済 |
 | output-viewer.md | 出力ビューア | 未着手 |

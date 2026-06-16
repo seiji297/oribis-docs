@@ -1,8 +1,8 @@
 # Oribis: Anima オーケストレーターアーキテクチャ設計
 
 > 策定日: 2026-05-03
-> 最終更新: 2026-05-07
-> ステータス: 一部実装済（P1完了・P1品質修正中・P2/P3未着手）
+> 最終更新: 2026-06-16
+> ステータス: 一部実装済（P1/P2/P3完了・Action Platform Phase 0-2完了・write/shell/MCP-write未実装）
 
 ---
 
@@ -75,6 +75,39 @@ Anima が Worker を介さず自ら実行してよい範囲:
 | 部門設定の GUI 経由変更 | インフラ・デプロイ操作 |
 
 **判定ルール**: 「ファイルシステムやリポジトリに副作用を与える操作」は全て Worker 委譲。Anima は read-only + 会話 + メタ操作のみ。
+
+#### Internal Worker read-only closed loop（Phase 2実装済）
+
+OpenCode代替内製化の最初の実用経路として、既存PTY Workerとは分離した **Internal Worker Job** を追加する。
+この経路は「Animaが提案し、ユーザー承認後にread-only toolだけを実行し、結果をAnima説明へ戻す」閉ループである。
+
+**実装済み（2026-06-16 / `integration/action-platform-foundation` commit `ceba8f5`）**:
+
+| 領域 | 実装内容 |
+|------|----------|
+| Schema/Store | `InternalWorkerJob` / Event / Artifact / ToolCall。`state/internal-worker/jobs.jsonl` と `events/{job_id}.jsonl` にappend-only保存。破損JSONL skip、payload上限、large output artifact spill |
+| Runtime | pending→running→completed/failed/cancelled/timeout。read-only built-in toolsのみ許可（echo/context_summary/workspace_search_readonly/file_read_excerpt/git_status_readonly） |
+| Anima Dispatch | `anima_propose_dispatch` / `anima_approve_and_run_readonly_dispatch` / reject/list。proposal/job/correlation/approval metadataを追跡 |
+| Context Selector | Job/Event/Artifactをbyte/priority上限つきで抽出。artifact excerpt取得対応 |
+| Explanation | deterministic `anima_generate_explanation` と `anima_check_proposal_scope`。危険語・confirm/write/shell/network/secret系はscope checkで拒否 |
+| Permission/Audit | internal worker Tauri commandsをAction Router評価に通す土台を追加。ただしwrite/shell等は未開放 |
+| UI | Jobsタブに `AnimaDispatchPanel` と `TaskJobView` を同居。提案カード→承認→read-only実行→Job詳細/Event/Artifact→Anima説明を実GUIで確認 |
+
+**安全境界**:
+
+- Phase 2はread-only限定。write / shell / network / MCP writeは追加しない
+- 既存PTY Worker / TaskQueue / `list_tasks` / `cancel_task` とは混ぜない
+- `workerProviderMode` は `useAnima` をデフォルトにし、オンボード済みAnima ProviderをWorker側でも参照できる
+- credentialRefやsecret値はJob/Event/Artifact/UIに平文保存・表示しない
+- UIはbackend生errorを表示せず、汎用エラー文言に丸める
+- WDIO実行時、別worktreeのVite dev serverを誤再利用しないよう `scripts/run-wdio-tests.sh` でport所有プロセスのcwdを確認する
+
+**未実装（後続Phase）**:
+
+- fs write / git write / shell exec / MCP write
+- sidecar/WASM plugin runtimeの実起動
+- exe hash/署名検証、OS sandbox
+- approval expiry / idempotency / artifact integrityの本番運用強化
 
 ### Worker
 
@@ -768,12 +801,14 @@ narration.rs のバッチ処理ループ:
 | **P1** ✅ | **ドロワー再編 + 下部 PTY パネル + Worker 手動管理 + イベントフィード + ナレーション + Worker 協調（MCP）** | 大 | 完了 5c8b0f8（品質修正エピック進行中） |
 | **P2** | **Orchestrator Editor 全画面（レーンパイプライン + Department 設定）** | 中 | P1 |
 | **P3** | **Anima 常駐 + 自動ルーティング + スケジューラ** | 中 | P1 + P2 |
+| **ACT-P2** ✅ | **Action Platform / Internal Worker read-only closed loop** | 大 | Anima Provider分離 + Worker CLI維持 |
 | 将来 | Lead Mode（複数 Worker 並列）+ ノードエディタサブビュー | 大 | P3 |
 
 各 Phase は独立して動作する設計:
 - P1 完了 ✅: Worker の手動 spawn/管理/PTY 操作 + イベントフィード表示 + Anima ナレーション（重要情報選別読み上げ）が稼働。コミット `5c8b0f8`。品質修正エピック（kill統合/per-worker cursor/MCP session identity）進行中
 - P2 完了時点: Department の GUI 設定・パイプライン可視化が可能
 - P3 完了時点: Anima による自動タスクルーティング・スケジューラが稼働
+- ACT-P2 完了時点: Anima提案→ユーザー承認→read-only Internal Worker Job実行→Job詳細/Event/Artifact→Anima説明の閉ループが稼働。write/shell/MCP-writeは未開放
 
 ---
 

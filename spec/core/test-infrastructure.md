@@ -24,7 +24,7 @@ Oribis のテスト基盤は **3層構成**:
 | E2E (Browser) | Playwright | UIフロー（Tauri IPC mock 環境） | `cd e2e && pnpm test` |
 | E2E (Node) | Vitest (node) | VRM ボーンリグレッション | `cd e2e && pnpm test:node` |
 
-**現在のテスト数**: Unit 822件 / E2E シナリオ 22件 / Rust 1500件（2026-05-27更新）
+**現在のテスト数**: Vitest 892件PASS / E2Eシナリオ 23件以上 / WDIO実GUI 7シナリオPASS / Rust targeted 21+27件PASS（2026-06-16更新）
 
 ---
 
@@ -623,6 +623,10 @@ Windows + Linux マトリクスで:
 - 実 Tauri バイナリを使用する E2E テスト（`pnpm test:wdio`）
 - CI 対象外（バイナリビルド + GPU 必要）
 - ローカル実行のみ
+- `scripts/run-wdio-tests.sh` はport 1420のVite dev serverを使う前に、port所有プロセスのcwdが現在のrepo rootか確認する。別worktree（例: `sysdev-4/oribis`）のViteを誤再利用する場合は停止してから現在repoのViteを起動する。
+- 2026-06-16時点の追加実GUIシナリオ:
+  - `e2e/wdio/tests/action-platform.spec.ts`: Command Palette / Developer Console / Events / Jobs / Job detail の5シナリオ
+  - `e2e/wdio/tests/anima-approval.spec.ts`: Anima dispatch approval read-only closed loop の2シナリオ
 
 ---
 
