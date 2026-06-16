@@ -257,12 +257,12 @@ AnimaがWorker実行を提案し、policy/audit評価を表示し、ユーザー
 - WDIO `anima-approval-policy`: 3 scenarios PASS
 - WDIO `action-platform`: 5 scenarios PASS
 
-## 2026-06-16 — Write Proposal Preview（Phase 4 P1 / display-only）
+## 2026-06-16 — Write Diff Proposal Preview（Phase 4 P2 / display-only）
 
 ### 目的
 
 Internal Workerのwrite系をすぐ実行可能にせず、まず「どのファイルに何を書き込む予定か」「承認がどのdiff/hashに紐づくか」を安全に見せる表示専用UIを追加する。
-Phase 4 P1では write apply / shell / MCP write は実装しない。
+Phase 4 P2では write apply / shell / MCP write は実装しない。UIは実WritePlan生成とpreview/binding表示までに限定する。
 
 ### UI構成
 
@@ -271,12 +271,19 @@ Phase 4 P1では write apply / shell / MCP write は実装しない。
 | `WriteProposalPreview.tsx` | operation/path/unified diff/rollback方針を表示する。diffは行数・長行をtruncateし、secret-like値をmaskする |
 | `ApprovalBinding.tsx` | `proposalHash` と `approvedHash` の一致/不一致を表示し、承認が特定proposalに束縛されているかを可視化する |
 | `writeProposal.types.ts` | write proposal preview / approval binding のフロント型契約 |
+| `WriteDiffProposalView.tsx` | Jobsタブで `internal_worker_create_write_diff_proposal` を呼び、実WritePlanを生成してpreview/bindingへ配線する。`internal_worker_get_write_plan` によるread-only再読込も行う |
+| `writePlanAdapter.ts` | 実WritePlanを既存preview/binding表示用型へ変換する。大規模diffは200行capし、複数operationの内訳を集計する |
+| `writePlan.types.ts` | backend WritePlan / WriteOperation / WriteDiffPreview / CreateWriteDiffProposalRequest のフロント型契約 |
 
 ### 表示・安全仕様
 
 - write/apply実行ボタンは表示しない
+- invokeは `internal_worker_create_write_diff_proposal` と `internal_worker_get_write_plan` に限定し、apply/write/execute/commit系invokeは置かない
+- mock常時表示は禁止。初期状態はempty、表示は実WritePlan生成結果または拒否/失敗表示に限定する
 - path/diff/note/denialReasonのsecret-like値はmaskする
 - large diffは行数制限と長行truncateで表示する
+- rejected/failed/denialReasonありのWritePlanは成功previewに見せず、denied状態として表示する
+- `proposalHash` / `requestFingerprint` / `status` / `revision` / `artifactIds` / operation内訳を表示し、同一planを再読込で追跡できる
 - approval bindingはUI側でも再計算し、backend由来の`bound`値と矛盾する場合は安全側でmismatch表示にする
 - hashの未設定値は`unknown`として表示し、平文secretやcredentialRefは表示しない
 
@@ -285,11 +292,16 @@ Phase 4 P1では write apply / shell / MCP write は実装しない。
 - `e2e/wdio/tests/write-proposal-preview.spec.ts`
   - preview UIが未マウントの場合はskipし、型契約と危険ボタン不在を検証する
   - 実API配線後は、proposal取得→preview表示→approval hash binding→applyボタン不在を同specで確認する
+- `e2e/wdio/tests/write-diff-proposal.spec.ts`
+  - 実GUIでJobsタブを開き、targetPath/afterContentを入力して差分生成previewを実行する
+  - preview/error/empty/deniedのいずれかへ収束することを確認し、denied時は成功previewを同時に出さない
+  - `apply` / `write+execute/run/apply` 系testidが存在しないことを確認する
 
 ### テスト結果（2026-06-16）
 
 - `pnpm run typecheck`: PASS
-- `pnpm vitest run`: 950 PASS / 3 skipped
-- `cargo test --manifest-path src-tauri/Cargo.toml internal_worker_write_plan`: 12 PASS
+- `pnpm vitest run`: 997 PASS / 3 skipped
+- `cargo test --manifest-path src-tauri/Cargo.toml internal_worker_write_plan`: 24 PASS
+- `cargo test --manifest-path src-tauri/Cargo.toml anima_dispatch`: 12 PASS
 - `cargo check --manifest-path src-tauri/Cargo.toml --no-default-features --features tauri-backend`: PASS
-- WDIO `write-proposal-preview`: 1 spec PASS（2 skipped）
+- WDIO `write-diff-proposal`: 1 spec / 2 scenarios PASS

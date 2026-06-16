@@ -241,6 +241,9 @@ docs/projects/oribis/
 | components/WriteProposalPreview.tsx | spec/ui/anima-ui.md（write proposal preview / unified diff安全表示） |
 | components/ApprovalBinding.tsx | spec/ui/anima-ui.md（approval hash binding表示） |
 | components/writeProposal.types.ts | spec/ui/anima-ui.md（write proposal preview型契約） |
+| components/WriteDiffProposalView.tsx | spec/ui/anima-ui.md（write diff proposal実WritePlan生成/preview配線） |
+| components/writePlanAdapter.ts | spec/ui/anima-ui.md（WritePlan→preview/binding adapter） |
+| components/writePlan.types.ts | spec/ui/anima-ui.md（WritePlan frontend型契約） |
 | hooks/useDispatchProposal.ts | spec/ui/anima-ui.md（Anima dispatch proposal hook） |
 | action-router/index.ts | spec/ui/anima-ui.md（frontend Action Router registry） |
 | action-router/types.ts | spec/ui/anima-ui.md（frontend Action Router types） |
@@ -284,6 +287,7 @@ docs/projects/oribis/
 | e2e/wdio/tests/action-platform.spec.ts | spec/core/test-infrastructure.md（Action Platform実GUI: Commands/Console/Events/Jobs） |
 | e2e/wdio/tests/anima-approval.spec.ts | spec/core/test-infrastructure.md（Anima dispatch approval read-only closed loop実GUI） |
 | e2e/wdio/tests/anima-approval-policy.spec.ts | spec/core/test-infrastructure.md（Anima approval policy/audit実GUI） |
+| e2e/wdio/tests/write-diff-proposal.spec.ts | spec/core/test-infrastructure.md（Write diff proposal preview / 危険ボタン不在 実GUI） |
 | scripts/run-wdio-tests.sh | spec/core/test-infrastructure.md（WDIO実行スクリプト / worktree別Vite誤再利用防止） |
 
 ### CI/CD（.github/workflows/）

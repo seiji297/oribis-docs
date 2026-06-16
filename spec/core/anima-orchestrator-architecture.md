@@ -2,7 +2,7 @@
 
 > 策定日: 2026-05-03
 > 最終更新: 2026-06-16
-> ステータス: 一部実装済（P1/P2/P3完了・Action Platform Phase 0-3完了・write/shell/MCP-write未実装）
+> ステータス: 一部実装済（P1/P2/P3完了・Action Platform Phase 0-4 P2完了・write/shell/MCP-write未実装）
 
 ---
 
@@ -76,12 +76,12 @@ Anima が Worker を介さず自ら実行してよい範囲:
 
 **判定ルール**: 「ファイルシステムやリポジトリに副作用を与える操作」は全て Worker 委譲。Anima は read-only + 会話 + メタ操作のみ。
 
-#### Internal Worker read-only closed loop + write proposal preview（Phase 4 P1実装済）
+#### Internal Worker read-only closed loop + write diff proposal preview（Phase 4 P2実装済）
 
 OpenCode代替内製化の最初の実用経路として、既存PTY Workerとは分離した **Internal Worker Job** を追加する。
 この経路は「Animaが提案し、ユーザー承認後にread-only toolだけを実行し、結果をAnima説明へ戻す」閉ループである。
 
-**実装済み（2026-06-16 / `integration/action-platform-foundation` commit `d7ef3e9`）**:
+**実装済み（2026-06-16 / `integration/action-platform-foundation` commit `9a91b55`）**:
 
 | 領域 | 実装内容 |
 |------|----------|
@@ -95,10 +95,11 @@ OpenCode代替内製化の最初の実用経路として、既存PTY Workerと�
 | UI | Jobsタブに `AnimaDispatchPanel` / `TaskJobView` / `ActionAuditPanel` を同居。提案カード→policy判定→承認→read-only実行→Job詳細/Event/Artifact→Anima説明を実GUIで確認 |
 | Write Plan Store/API | `internal_worker_write_plan.rs` を追加。write proposal/operationをJSONL保存し、`proposalHash` / `requestFingerprint` / operation fingerprint / idempotency replay / pathScope検証 / secret-like path拒否 / symlink escape拒否を実装 |
 | Write Proposal Preview | write適用前の表示専用UIとして `WriteProposalPreview` / `ApprovalBinding` を追加。unified diffを安全表示し、approval hash bindingを可視化する。実write/applyボタンは出さない |
+| Write Diff Proposal UI | `internal_worker_create_write_diff_proposal` で実WritePlanを生成し、`WriteDiffProposalView` + `writePlanAdapter` でpreview/bindingへ配線する。`internal_worker_get_write_plan` で同一planをread-only再読込できる |
 
 **安全境界**:
 
-- Phase 4 P1時点でも実行はread-only限定。write planとproposal previewは保存・表示のみで、write / shell / network / MCP writeは実行しない
+- Phase 4 P2時点でも実行はread-only限定。write planとproposal previewは保存・表示のみで、write / shell / network / MCP writeは実行しない
 - 既存PTY Worker / TaskQueue / `list_tasks` / `cancel_task` とは混ぜない
 - `workerProviderMode` は `useAnima` をデフォルトにし、オンボード済みAnima ProviderをWorker側でも参照できる
 - credentialRefやsecret値はJob/Event/Artifact/UIに平文保存・表示しない
@@ -108,17 +109,19 @@ OpenCode代替内製化の最初の実用経路として、既存PTY Workerと�
 - idempotency replayは同一proposal + 同一workspaceの既存approved decisionに限定し、異なるproposal/workspaceでは拒否する
 - write plan idempotency replayは同一request fingerprint / operation fingerprintに限定し、同じkeyでも内容が異なる場合は拒否する
 - write planのpathScopeはworkspace配下に正規化し、absolute path、`..`、scope外path、secret-like path、既存symlink escapeを拒否する
-- approval hash bindingは表示専用。write適用を有効化する前にapply直前TOCTOU再検証、operation種別別検証、承認後append禁止またはrevision hash設計が必要
+- write diff proposal生成UIは `internal_worker_create_write_diff_proposal` と `internal_worker_get_write_plan` のみ呼び出す。apply/write/execute/commitボタンやinvokeは置かない
+- approval hash bindingは表示専用。write適用を有効化する前にapproval decisionと`proposalHash`/`requestFingerprint`のbinding、apply直前TOCTOU再検証、operation種別別検証、承認後append禁止またはrevision hash設計が必要
 - Event/Artifactのapproval snapshotにはpolicyDecision/riskLevel/idempotencyKey/expiresAt/approvalDecisionIdを含め、Job metadataと監査情報を揃える
 - WDIO実行時、別worktreeのVite dev serverを誤再利用しないよう `scripts/run-wdio-tests.sh` でport所有プロセスのcwdを確認する
 
-**テスト結果（Phase 4 P1 / 2026-06-16）**:
+**テスト結果（Phase 4 P2 / 2026-06-16）**:
 
 - `pnpm run typecheck`: PASS
-- `pnpm vitest run`: 950 PASS / 3 skipped
-- `cargo test --manifest-path src-tauri/Cargo.toml internal_worker_write_plan`: 12 PASS
+- `pnpm vitest run`: 997 PASS / 3 skipped
+- `cargo test --manifest-path src-tauri/Cargo.toml internal_worker_write_plan`: 24 PASS
+- `cargo test --manifest-path src-tauri/Cargo.toml anima_dispatch`: 12 PASS
 - `cargo check --manifest-path src-tauri/Cargo.toml --no-default-features --features tauri-backend`: PASS
-- WDIO `write-proposal-preview`: 1 spec PASS（2 skipped。preview UI未マウント時は型契約・危険ボタン不在のみ検証）
+- WDIO `write-diff-proposal`: 1 spec / 2 scenarios PASS。実GUIでJobsタブ→差分生成preview→binding表示または拒否表示→危険ボタン不在を確認
 
 **未実装（後続Phase）**:
 
@@ -820,14 +823,14 @@ narration.rs のバッチ処理ループ:
 | **P1** ✅ | **ドロワー再編 + 下部 PTY パネル + Worker 手動管理 + イベントフィード + ナレーション + Worker 協調（MCP）** | 大 | 完了 5c8b0f8（品質修正エピック進行中） |
 | **P2** | **Orchestrator Editor 全画面（レーンパイプライン + Department 設定）** | 中 | P1 |
 | **P3** | **Anima 常駐 + 自動ルーティング + スケジューラ** | 中 | P1 + P2 |
-| **ACT-P2** ✅ | **Action Platform / Internal Worker read-only closed loop** | 大 | Anima Provider分離 + Worker CLI維持 |
+| **ACT-P2** ✅ | **Action Platform / Internal Worker read-only closed loop + write diff proposal preview** | 大 | Anima Provider分離 + Worker CLI維持 |
 | 将来 | Lead Mode（複数 Worker 並列）+ ノードエディタサブビュー | 大 | P3 |
 
 各 Phase は独立して動作する設計:
 - P1 完了 ✅: Worker の手動 spawn/管理/PTY 操作 + イベントフィード表示 + Anima ナレーション（重要情報選別読み上げ）が稼働。コミット `5c8b0f8`。品質修正エピック（kill統合/per-worker cursor/MCP session identity）進行中
 - P2 完了時点: Department の GUI 設定・パイプライン可視化が可能
 - P3 完了時点: Anima による自動タスクルーティング・スケジューラが稼働
-- ACT-P2 完了時点: Anima提案→policy/audit評価→ユーザー承認→承認判断永続化→read-only Internal Worker Job実行→Job詳細/Event/Artifact→Anima説明の閉ループが稼働。write/shell/MCP-writeは未開放
+- ACT-P2 完了時点: Anima提案→policy/audit評価→ユーザー承認→承認判断永続化→read-only Internal Worker Job実行→Job詳細/Event/Artifact→Anima説明の閉ループと、write diff proposalの実WritePlan生成・preview表示・approval hash binding表示が稼働。write/shell/MCP-writeは未開放
 
 ---
 

@@ -2,9 +2,9 @@
 | 項目 | 値 |
 |------|-----|
 | ブランチ | `integration/action-platform-foundation` |
-| コミット | `ade1f2c` |
-| 日時 | 2026-06-16 14:35:00 +0900 |
-| サマリー | feat: persist anima approval decisions |
+| コミット | `9a91b55` |
+| 日時 | 2026-06-16 20:34:00 +0900 |
+| サマリー | merge: wire internal worker write diff proposal UI |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
@@ -43,7 +43,7 @@
 - **KokoroTTS英語チャットE2E**: 完了（2026-06-02）— fake_claude英語応答→Kokoroルーティング→WAV生成→5秒以内検証→`/tmp/oribis-kokoro-test.wav`
 - **Live Mode実装**: 完了（2026-06-09）— Silero VAD連続録音→自動STT→AIダイレクト送信。常時音声入力状態。テキスト入力欄バイパス
 - **AIバックエンド配線**: 完了（2026-06-14）— `anthropic` / `openai_compat` を保存済みprovider設定から実HTTP providerへ接続。`cargo test --lib` 1433 PASS / `npm test` 796 PASS
-- **Action Platform / Internal Worker read-only + write proposal preview**: Phase 4 P1 完了（2026-06-16）— Anima提案→policy/audit評価→承認判断永続化→read-only Job実行→Job詳細/Event/Artifact→Anima説明に加え、write plan JSONL Store/API、pathScope/secret-like path/idempotency hardening、write proposal preview UI、approval hash bindingを追加。write適用は未実装・禁止。`integration/action-platform-foundation` commit `d7ef3e9`。Vitest 950 PASS / 3 skipped、Rust targeted write_plan 12 PASS、typecheck PASS、WDIO write-proposal-preview 1 spec PASS（2 skipped）
+- **Action Platform / Internal Worker read-only + write diff proposal preview**: Phase 4 P2 完了（2026-06-16）— Anima提案→policy/audit評価→承認判断永続化→read-only Job実行→Job詳細/Event/Artifact→Anima説明に加え、write plan JSONL Store/API、pathScope/secret-like path/idempotency hardening、write diff proposal生成API、実WritePlan preview UI、approval hash bindingを追加。write適用は未実装・禁止。`integration/action-platform-foundation` commit `9a91b55`。Vitest 997 PASS / 3 skipped、Rust targeted write_plan 24 PASS、anima_dispatch 12 PASS、typecheck PASS、cargo check PASS、WDIO write-diff-proposal 1 spec / 2 scenarios PASS
 - **その他**: pending-tasks.md に移動済み。Producer指示があれば復帰
 
 ### 実装フロー（codex-adviser レビュー済 2026-05-07）
@@ -236,7 +236,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | HIGH | ORCH-P1 | オーケストレーター P1 | anima-orchestrator-architecture.md | 実装済 | 9タスク完了。types.ts/Rust基盤/narration/MCP統合/Tauriコマンド/フロントエンド5コンポ/App.tsx統合/テスト/Onboarding |
 | HIGH | ORCH-P2 | オーケストレーター P2 | anima-orchestrator-architecture.md | 実装済 | 12タスク完了+追加実装。CRUD API/PipelineView+DepartmentLane/OrchestratorEditor 5タブ/PromptsTabセキュリティ/Delete&Rename制御 + DrawerAnima内部タブ(Status/Prompt/Memory/Console/Settings) + Deep Reasoning delegation。vitest 568/cargo test 1036 PASS（2026-05-12） |
 | HIGH | ORCH-P3 | オーケストレーター P3 | anima-orchestrator-architecture.md | 実装済 | P3-A: scheduler engine / P3-B: DELEGATE_TO自動ルーティング。commits 6254a02, f7ab1a7（2026-05-12） |
-| HIGH | ACT-P2 | Action Platform / Internal Worker read-only closed loop + write proposal preview | anima-orchestrator-architecture.md / anima-ui.md | 一部実装済 | Phase 0-4 P1完了。Command Palette/JS-TS Console/Permission-Secrets土台/Internal Worker JSONL Store/API/read-only runtime/Anima dispatch proposal/approval UI/Job detail/Event/Artifact/Anima explanation、policy/audit boundary、approval decision JSONL永続化/idempotency/expiry/deny終端化、write plan Store/API、write proposal preview UI、approval hash binding。write適用/shell/MCP-writeは未実装。commit d7ef3e9（2026-06-16） |
+| HIGH | ACT-P2 | Action Platform / Internal Worker read-only closed loop + write diff proposal preview | anima-orchestrator-architecture.md / anima-ui.md | 一部実装済 | Phase 0-4 P2完了。Command Palette/JS-TS Console/Permission-Secrets土台/Internal Worker JSONL Store/API/read-only runtime/Anima dispatch proposal/approval UI/Job detail/Event/Artifact/Anima explanation、policy/audit boundary、approval decision JSONL永続化/idempotency/expiry/deny終端化、write plan Store/API、write diff proposal生成API、実WritePlan preview UI、approval hash binding。write適用/shell/MCP-writeは未実装。commit 9a91b55（2026-06-16） |
 | LOW | G8 | AI応答の軽重モード（一言/詳細 切替） | anima.md | 未着手 | 現状はモデル選択で軽量化のみ。応答自体の簡潔さ制御なし。Producer判断で優先度変更 |
 
 | MEDIUM | — | motion-anim-assign ランタイムマウント | motion-anim-assign.md | 不要 | Animation Editorプラグインで実現済・revert 2b727d4 |
@@ -366,7 +366,7 @@ Track 4: MCP Server（G9） — mcp-server.md v3.1
 | anima.md | Anima + AnimaMode + throttle + キャッシュ | 一部実装済 |
 | anima-plan.md | 開発計画（GAP管理） | — |
 | anima-state.md | AnimaState一覧・カテゴリ | 実装済 |
-| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY + Internal Worker read-only closed loop + write proposal preview | 一部実装済（P1/P2/P3 + Action Platform Phase 0-4 P1完了、write適用/shell/MCP-write未実装） |
+| anima-orchestrator-architecture.md | オーケストレーター + Worker PTY + Internal Worker read-only closed loop + write diff proposal preview | 一部実装済（P1/P2/P3 + Action Platform Phase 0-4 P2完了、write適用/shell/MCP-write未実装） |
 | test-infrastructure.md | Unit/Vitest/WDIO/Rust テスト基盤 | 実装済 |
 | affinity.md | 好感度システム | 実装済 |
 | memory.md | 4レイヤー記憶 + 自己進化 + entity linking + self_model | 実装済（Phase 1-3完了、v3.5） |
