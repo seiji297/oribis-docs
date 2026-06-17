@@ -36,14 +36,15 @@ Oribisは当初の「CLI WorkerをUIで包む」段階から、Animaが構造化
 | P6 | 完了 | rollback preview / validation / rollback proposal generation |
 | P7 | 完了 | rollback proposal UI接続。rollback executorは作らない方針 |
 | P11-A | 完了 | 最小Router enforcement。危険なdirect invoke経路を封鎖 |
+| P12 | 完了 | sidecar実spawn前のmanifest / Router / DTO安全境界固定 |
 
 意図的に未実装のもの:
 
 - rollback executor
 - shell / network / MCP write executor
 - multi-operation write apply
-- updateFile apply UI解禁
 - plugin sidecarの本格spawn /署名検証
+- 自己改善の自動適用
 
 これらは未着手ではなく、安全境界が揃うまで実行系を出さない方針。
 
@@ -53,7 +54,7 @@ Oribisは当初の「CLI WorkerをUIで包む」段階から、Animaが構造化
 
 危険操作は直接実行しない。
 
-標準経路:
+最終形の標準経路:
 
 1. proposal生成
 2. preview
@@ -102,6 +103,44 @@ ActionRouter / Permission / Secrets / Audit を中核に置く。
 - preview / proposal生成
 - approvedかつbinding一致の限定apply
 - audit可能なRouter経由実行
+
+### 3.4 自己改善は証拠駆動・承認駆動にする
+
+Oribisの最終目標には、Anima / Worker / Plugin / Virtual Studioが使うほど改善される自己進化システムを含める。
+
+ただし、AIがOribis本体・プロンプト・権限・Worker policyを自動で直接書き換える設計は禁止する。
+
+標準経路:
+
+1. 実行ログ、会話ログ、テスト結果、ユーザー訂正、承認/拒否履歴を収集する。
+2. 失敗/成功パターンを分類する。
+3. 改善提案を生成する。
+4. 根拠、影響範囲、差分、rollback方法を表示する。
+5. ユーザー承認後に限定Adapterで反映する。
+6. 反映後に評価し、改善効果が弱ければ撤回または再提案する。
+
+初回リリースでは 1〜4 までに限定する。つまり、自己改善は「自動で賢くなる」機能ではなく、「作業履歴から改善点を見つけて、次に何を直すべきかを分かりやすく提示する」機能として提供する。
+
+ユーザー向け名称は期待値を抑える。内部名は `SelfImprovementEngine` でよいが、初回UIでは「改善候補」「作業品質メモ」「再発防止提案」のように、自己改変を連想させない表現を使う。
+
+自己改善の反映先は段階的に制限する。
+
+初回リリースで許可:
+
+- 失敗/成功/ユーザー訂正/テスト結果の記録
+- Workerごとの再発失敗検出
+- テスト不足・手順漏れの改善提案
+- Anima/Workerの使い勝手を良くする提案カード表示
+- 再利用できそうなWorker手順の候補提示
+
+初回リリースで禁止:
+
+- Oribis本体コードの自動改変
+- tool / sidecar / plugin権限の自動昇格
+- approvalなしのprompt適用
+- prompt / settings / worker policy の自動適用
+- 失敗1回だけを根拠にした恒久変更
+- 反省文を無制限にcontext投入する設計
 
 ## 4. OpenCode代替を超える価値
 
@@ -271,20 +310,124 @@ Oribisの価値は「OpenCodeを内製した」ことではない。OpenCode相�
 - 初期はイベント駆動・低頻度snapshot・ユーザー明示トリガーを基本にする。
 - リアルタイム監視は後段の高付加価値機能として扱う。
 
+### Phase 10: Self-Improvement / Self-Learning / Self-Evolution
+
+目的:
+
+- Oribisを「使うほど作業環境に適応するAI OS」へ進化させる。
+- Anima / Worker / Plugin / Virtual Studioの失敗と成功を構造化し、改善提案へ変換する。
+- 自己進化を最終目標に置くが、初回リリースは改善提案レイヤーに限定する。自動適用や本体改変は入れない。
+
+構成:
+
+```text
+SelfImprovementEngine
+  input/
+    conversation_traces
+    worker_jobs
+    tool_calls
+    test_results
+    user_feedback
+    approval_reject_history
+
+  memory/
+    episodic_memory      過去の成功/失敗事例
+    semantic_memory      ユーザー・プロジェクト・設定の事実
+    procedural_memory    改善された手順・ルール・プロンプト候補
+    skill_library        再利用可能なWorker手順
+
+  analyzer/
+    failure_classifier
+    success_pattern_extractor
+    regression_detector
+    cost_latency_analyzer
+
+  proposer/
+    prompt_patch_proposal
+    worker_policy_proposal
+    test_gap_proposal
+    ui_workflow_proposal
+    skill_proposal
+
+  gate/
+    evidence_required
+    human_approval
+    diff_preview
+    rollback_plan
+    eval_before_apply
+
+  applier/
+    prompt_adapter
+    worker_policy_adapter
+    test_adapter
+    settings_adapter
+    skill_adapter
+```
+
+初回リリース実装:
+
+0. `Improvement taxonomy / retention policy`
+   - event kind、scope、severity、cause category、evidence、source、user visibility、retentionを定義する。
+   - 却下、後で見る、手動対応済み、再表示条件、重複抑止のstate machineを固定する。
+   - 初回から「再提案スパム」を防ぐ。
+1. `ImprovementEventStore`
+   - 成功、失敗、ユーザー訂正、テスト結果、承認/拒否をSQLiteへ保存する。
+   - Anima記憶DBへ混ぜず、同じOribisHome配下の別DBまたは別schema/tableとして分離する。
+   - Workerごと、Projectごと、Anima会話ごとの参照キーを持つ。
+2. `ImprovementAnalyzer`
+   - 再発失敗、テスト不足、手戻り、ユーザー訂正を分類する。
+3. `ImprovementProposal`
+   - 何を、なぜ、どの証拠で、どこへ反映するかを構造化する。
+   - 根拠となったJob/Event/Artifact/Test/User feedbackを追跡できる。
+   - dedupe / suppression ruleを持ち、同じ改善候補を繰り返し出さない。
+4. `Improvement UI`
+   - 改善提案、根拠、関連Job/Event/Artifact、再発回数、推奨アクションを表示する。
+   - 初回は「提案を確認」「後で見る」「却下」「手動で対応済み」までに限定する。
+5. `Context-aware retrieval (limited)`
+   - 初回はfeature flagまたはconfirmed-onlyに限定する。
+   - 改善ログをAnima/Worker promptへ無制限注入しない。
+   - 人間確認済みの改善提案、または提案カード表示の補助だけに使う。
+
+後段実装:
+
+6. `Approval UI`
+   - diff preview、適用先、影響範囲、rollbackを表示する。
+7. `Safe Applier`
+   - prompt / settings / test-plan / skill候補だけを承認後に反映可能にする。
+
+商業価値:
+
+- 「AIが作業する」だけでなく「作業から学ぶ」体験になる。
+- Animaがユーザーごとの癖、プロジェクト固有の手順、過去の失敗を説明可能な形で扱える。
+- Workerの成功手順をskill library化でき、チーム/プロジェクト単位で再利用できる。
+- OpenCodeや一般的なCLI agentとの差別化として、UI・承認・記憶・自己改善が一体化する。
+
+安全制約:
+
+- 自己改善提案は必ず証拠を要求する。
+- 初回リリースでは自動適用しない。
+- 適用はAdapter経由に限定し、直接ファイル編集を禁止する。
+- 反映後は評価し、効果がない場合は撤回可能にする。
+- tool権限、sidecar権限、plugin権限は自己改善の自動適用対象外にする。
+- 改善ログは事実として保存し、提案は説明可能にし、反映は人間承認を越えない。
+
 ## 6. 今後の優先順位
 
-codex-adviserレビューを踏まえた実装順。
+codex-adviserレビューと自己進化方針を踏まえた実装順。
 
 | 優先 | 内容 | 理由 |
 |---|---|---|
-| 1 | P8-A `updateFile` backend safety gate | createFile後の最重要実用拡張 |
-| 2 | P8-B `updateFile` UI解禁 | 実用的なコード修正に必要 |
-| 3 | P9 rollback proposal approval/apply path確認 | rollbackをproposal経由で完結させる |
-| 4 | P10 rollback executorを作らない判断の正式化 | 危険系の分岐増殖を防ぐ |
-| 5 | P12 sidecar/plugin runtime | Oribis内でアプリを作れるPlugin構想の土台 |
-| 6 | P13 Anima/Worker context compaction | token消費と長期会話の制御 |
-| 7 | P14 WDIO実GUI gate安定化 | 商用品質の自動検証 |
-| 8 | P15 docsまとめ更新 | 実装完了後にSTATUS/MAP/specをまとめて同期 |
+| 1 | P13 sidecar executor threat model / skeleton | plugin runtimeを実spawn前に安全化する |
+| 2 | P14 Anima/Worker context compaction | token消費と長期会話の制御 |
+| 3 | P15a Improvement taxonomy / retention policy | 保存前に分類・保持・削除・重複抑止を固定する |
+| 4 | P15 SelfImprovementEventStore | 自己改善の観測基盤。SQLite分離storeで記録する |
+| 5 | P16a Proposal evidence / dedupe / feedback state | 提案根拠と却下/後回し/手動対応済みの状態遷移を固定する |
+| 6 | P16 ImprovementProposal Lite / UI | 初回リリース向け。改善提案表示までで自動適用しない |
+| 7 | P17 Context-aware Improvement Retrieval | feature flagまたはconfirmed-onlyで限定導入する |
+| 8 | P18 WDIO実GUI gate安定化 | 商用品質の自動検証 |
+| 9 | P19 Virtual Studio MVP連携 | Anima/Worker/Plugin/3D空間を体験として統合 |
+| 10 | P20 Safe Applier adapters | 初回リリース後。prompt/settings/test-plan/skill候補だけ承認適用 |
+| 11 | P21 docsまとめ更新 | 実装完了後にSTATUS/MAP/specをまとめて同期 |
 
 ## 7. 商業価値の見立て
 
@@ -322,11 +465,14 @@ codex-adviserレビューを踏まえた実装順。
 | テスト不能化 | WDIO実GUIを主要ゲート化。手動前提を禁止 |
 | CLI依存の復活 | CLI Workerは互換層。中核はInternal Workerへ寄せる |
 | 常時監視のプライバシー問題 | 明示許可・範囲指定・イベント駆動・低頻度snapshotから開始 |
+| 自己改善の暴走 | 証拠必須、人間承認必須、Adapter限定、自動権限昇格禁止 |
+| プロンプト肥大化 | episodic/semantic/procedural memoryを分離し、必要分だけ検索注入 |
+| 改善効果不明 | 適用前後のテスト結果、手戻り回数、遅延、成功率を記録 |
 
 ## 9. 結論
 
 アプリ名は `Oribis` を維持する。製品体験として `Oribis Virtual Studio` を前面に出し、将来構想として `Oribis Virtual World` を掲げる。
 
-OpenCode代替は中間地点であり、最終価値ではない。最終価値は、Animaがユーザーの作業・制作・承認・成果物を理解し、3D/音声/UI/Plugin/Workerを通じて一緒に作業できることにある。
+OpenCode代替は中間地点であり、最終価値ではない。最終価値は、Animaがユーザーの作業・制作・承認・成果物を理解し、3D/音声/UI/Plugin/Workerを通じて一緒に作業し、さらにその作業結果から改善提案を出してOribis自身を進化させられることにある。
 
-直近は `updateFile` apply安全化、Router enforcementの継続、rollback proposal経路の固定、Plugin runtimeの安全化を優先する。
+直近は sidecar/plugin runtimeの安全化、Anima/Worker context compaction、SelfImprovementEventStoreの順で進める。自己進化は最終目標だが、初回リリースでは「証拠に基づく改善提案」と「改善storeをAnima/Workerが参照できること」までに留める。承認適用や自動適用は初回リリース後に段階導入する。
