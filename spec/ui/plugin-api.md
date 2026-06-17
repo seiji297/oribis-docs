@@ -4,13 +4,33 @@
 > 新しいApp System v2の設計書: [app-system-v2.md](./app-system-v2.md)
 > v1の5プラグイン（XP/ポモドーロ/シーン/デバッグ/アニメーションエディタ）は全て削除済み。
 
-最終更新: 2026-05-04（初版）/ 2026-05-15（廃止注記追加）
+最終更新: 2026-05-04（初版）/ 2026-05-15（廃止注記追加）/ 2026-06-17（sidecar安全境界メモ追加）
 
 ---
 
 ## 概要
 
 oribis プラグインシステムの API 仕様。外部 JS プラグインが `api` オブジェクト経由でコアアプリと連携する。
+
+## 2026-06-17 Sidecar安全境界メモ
+
+App System v2へ移行中のため、本章は旧v1 APIの追記ではなく現行実装の安全境界メモとして扱う。
+
+実装済み:
+
+- `plugin/manifest.rs`: `runtime=webview|sidecar`、bundle-relative `entry/cmd/args`、絶対パス・UNC・`..`・シェル演算子拒否。
+- `plugin/sidecar.rs`: prepared-only manager、verification preflight、lifecycle audit。実spawnは未解禁。
+- `SidecarPreflight.tsx`: `plugin_prepare_sidecar` のverification結果を表示。`verified` でもRun/Spawn/Executeボタンは出さない。
+- `plugin/router.rs` / `plugin/permission.rs` / `plugin/secrets.rs`: Permission / secret placeholder / deny-by-default境界。
+- HostAPI経由の `plugin_*` dangerous direct invoke と `internal_worker_apply_write_plan` 直叩きは拒否する。
+
+未解禁:
+
+- sidecar実spawn。
+- stdout/stderr生ログ表示。
+- 任意cmd/env/cwd指定。
+- secret平文のsidecarプロセス注入。
+- shell / network / MCP write executor。
 
 ---
 

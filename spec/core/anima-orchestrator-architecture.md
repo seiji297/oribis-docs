@@ -1,8 +1,8 @@
 # Oribis: Anima オーケストレーターアーキテクチャ設計
 
 > 策定日: 2026-05-03
-> 最終更新: 2026-06-16
-> ステータス: 一部実装済（P1/P2/P3完了・Action Platform Phase 0-4 P2完了・write/shell/MCP-write未実装）
+> 最終更新: 2026-06-17
+> ステータス: 一部実装済（P1/P2/P3完了・Action Platform初回リリース対象P1-P16ほぼ完了・shell/network/MCP-write/rollback executor/sidecar実spawn未解禁）
 
 ---
 
@@ -76,12 +76,12 @@ Anima が Worker を介さず自ら実行してよい範囲:
 
 **判定ルール**: 「ファイルシステムやリポジトリに副作用を与える操作」は全て Worker 委譲。Anima は read-only + 会話 + メタ操作のみ。
 
-#### Internal Worker read-only closed loop + write diff proposal preview（Phase 4 P2実装済）
+#### Internal Worker / Action Platform（初回リリース対象P1-P16実装済）
 
 OpenCode代替内製化の最初の実用経路として、既存PTY Workerとは分離した **Internal Worker Job** を追加する。
 この経路は「Animaが提案し、ユーザー承認後にread-only toolだけを実行し、結果をAnima説明へ戻す」閉ループである。
 
-**実装済み（2026-06-16 / `integration/action-platform-foundation` commit `9a91b55`）**:
+**実装済み（2026-06-17 / `integration/action-platform-foundation` commit `b30b2aa`）**:
 
 | 領域 | 実装内容 |
 |------|----------|
@@ -96,10 +96,15 @@ OpenCode代替内製化の最初の実用経路として、既存PTY Workerと�
 | Write Plan Store/API | `internal_worker_write_plan.rs` を追加。write proposal/operationをJSONL保存し、`proposalHash` / `requestFingerprint` / operation fingerprint / idempotency replay / pathScope検証 / secret-like path拒否 / symlink escape拒否を実装 |
 | Write Proposal Preview | write適用前の表示専用UIとして `WriteProposalPreview` / `ApprovalBinding` を追加。unified diffを安全表示し、approval hash bindingを可視化する。実write/applyボタンは出さない |
 | Write Diff Proposal UI | `internal_worker_create_write_diff_proposal` で実WritePlanを生成し、`WriteDiffProposalView` + `writePlanAdapter` でpreview/bindingへ配線する。`internal_worker_get_write_plan` で同一planをread-only再読込できる |
+| Safe Apply | single-operation `createFile` / `updateFile` のみapply可能。approval binding、operationId keyed expected hash、構造化beforeHash/currentHash、TOCTOU再検証、secret/redacted/spilled拒否を必須にする |
+| Rollback Proposal | rollback executorは作らず、Archived applied planから逆方向WritePlan proposalを生成し、通常のpreview/approval/apply境界へ戻す |
+| Router Enforcement | `plugin_*` と `internal_worker_apply_write_plan` のdirect dangerous invokeをHostAPI経由で拒否し、危険操作をRouter/policy/audit境界へ寄せる |
+| Self-Improvement Lite | Anima memory DBとは分離したSQLite storeにObservation/Evaluation/Suggestion/Decisionを保存。Worker JobからObservationを生成し、採否は記録のみで自動適用しない |
 
 **安全境界**:
 
-- Phase 4 P2時点でも実行はread-only限定。write planとproposal previewは保存・表示のみで、write / shell / network / MCP writeは実行しない
+- 実writeはsingle-operation `createFile` / `updateFile` に限定する。shell / network / MCP write / multi-operation applyは実行しない
+- rollbackはexecutorではなく逆方向WritePlan proposalとして生成し、同じpreview / approval / apply境界を通す
 - 既存PTY Worker / TaskQueue / `list_tasks` / `cancel_task` とは混ぜない
 - `workerProviderMode` は `useAnima` をデフォルトにし、オンボード済みAnima ProviderをWorker側でも参照できる
 - credentialRefやsecret値はJob/Event/Artifact/UIに平文保存・表示しない
@@ -112,21 +117,21 @@ OpenCode代替内製化の最初の実用経路として、既存PTY Workerと�
 - write diff proposal生成UIは `internal_worker_create_write_diff_proposal` と `internal_worker_get_write_plan` のみ呼び出す。apply/write/execute/commitボタンやinvokeは置かない
 - approval hash bindingは表示専用。write適用を有効化する前にapproval decisionと`proposalHash`/`requestFingerprint`のbinding、apply直前TOCTOU再検証、operation種別別検証、承認後append禁止またはrevision hash設計が必要
 - Event/Artifactのapproval snapshotにはpolicyDecision/riskLevel/idempotencyKey/expiresAt/approvalDecisionIdを含め、Job metadataと監査情報を揃える
+- Self-Improvementは観測・評価・提案・採否記録まで。Oribis本体コード、prompt、権限、Worker policyの自動適用は禁止
 - WDIO実行時、別worktreeのVite dev serverを誤再利用しないよう `scripts/run-wdio-tests.sh` でport所有プロセスのcwdを確認する
 
-**テスト結果（Phase 4 P2 / 2026-06-16）**:
+**テスト結果（初回リリース対象仕上げ / 2026-06-17）**:
 
 - `pnpm run typecheck`: PASS
-- `pnpm vitest run`: 997 PASS / 3 skipped
-- `cargo test --manifest-path src-tauri/Cargo.toml internal_worker_write_plan`: 24 PASS
-- `cargo test --manifest-path src-tauri/Cargo.toml anima_dispatch`: 12 PASS
+- `pnpm vitest run`: 1153 PASS / 3 skipped
+- `cargo test --manifest-path src-tauri/Cargo.toml internal_worker_write_plan`: 91 PASS
 - `cargo check --manifest-path src-tauri/Cargo.toml --no-default-features --features tauri-backend`: PASS
-- WDIO `write-diff-proposal`: 1 spec / 2 scenarios PASS。実GUIでJobsタブ→差分生成preview→binding表示または拒否表示→危険ボタン不在を確認
+- WDIO: `app-launch` 5 PASS、`write-plan-apply` 3 PASS、`write-diff-proposal` 3 PASS、`action-platform` 5 PASS。`sidecar-preflight` はspec PASSだが1 skipped（マウント条件未成立）
 
 **未実装（後続Phase）**:
 
 - fs write / git write / shell exec / MCP write
-- write apply executor
+- rollback executor
 - sidecar/WASM plugin runtimeの実起動
 - exe hash/署名検証、OS sandbox
 - artifact integrityの本番運用強化

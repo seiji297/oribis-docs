@@ -203,6 +203,8 @@ docs/projects/oribis/
 | plugin/router.rs | spec/ui/plugin-api.md（Plugin Action Router / secret placeholder boundary） |
 | plugin/secrets.rs | spec/ui/plugin-api.md（Secrets Store / encrypted secret persistence） |
 | plugin/manifest.rs | spec/ui/plugin-api.md（runtime=webview/sidecar manifest schema） |
+| plugin/sidecar.rs | spec/ui/plugin-api.md（sidecar prepared-only manager / verification preflight / lifecycle audit） |
+| self_improvement.rs | spec/core/anima-orchestrator-architecture.md（Self-Improvement Lite observation/evaluation/suggestion/decision store/API） |
 
 ### フロントエンド（src/）
 
@@ -244,6 +246,8 @@ docs/projects/oribis/
 | components/WriteDiffProposalView.tsx | spec/ui/anima-ui.md（write diff proposal実WritePlan生成/preview配線） |
 | components/writePlanAdapter.ts | spec/ui/anima-ui.md（WritePlan→preview/binding adapter） |
 | components/writePlan.types.ts | spec/ui/anima-ui.md（WritePlan frontend型契約） |
+| components/SidecarPreflight.tsx | spec/ui/plugin-api.md（sidecar verification preflight表示UI） |
+| components/SelfImprovementPanel.tsx | spec/ui/anima-ui.md（自己改善Observation/Suggestion表示・採否UI） |
 | hooks/useDispatchProposal.ts | spec/ui/anima-ui.md（Anima dispatch proposal hook） |
 | action-router/index.ts | spec/ui/anima-ui.md（frontend Action Router registry） |
 | action-router/types.ts | spec/ui/anima-ui.md（frontend Action Router types） |

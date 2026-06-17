@@ -2,6 +2,26 @@
 
 ## Overview
 
+## 2026-06-17 Action Platform / Self-Improvement UI 現状
+
+Jobsタブは、既存PTY Workerとは分離したAction Platform表示面として以下を持つ。
+
+| UI | 役割 |
+|---|---|
+| `AnimaDispatchPanel` | Anima提案、policy/audit判定、承認/拒否、read-only Job実行、Anima説明 |
+| `TaskJobView` | Internal Worker Job一覧/詳細、Event timeline、Artifact表示 |
+| `ActionAuditPanel` | Action Router audit metadata表示 |
+| `WriteDiffProposalView` | WritePlan生成、diff preview、approval binding、single-op safe apply、rollback proposal表示 |
+| `SelfImprovementPanel` | Observation/Suggestionの要約表示、採用/却下の記録 |
+
+UI安全境界:
+
+- `WriteDiffProposalView` は `createFile` / `updateFile` single-operationのみapply可能。confirm必須。
+- `updateFile` applyは構造化 `beforeHash/currentHash` のみを使い、rollback note regex fallbackを実apply requestに使わない。
+- rollbackはexecutorではなく逆方向WritePlan proposalとして表示する。
+- `SelfImprovementPanel` は改善候補の採否記録だけを行い、自動実行・自動コード改変・権限昇格ボタンを出さない。
+- detailsやsecret-like値は生dumpせず、summary/source ref中心に表示する。
+
 # Anima 仕様サマリ
 
 ## 参照 spec

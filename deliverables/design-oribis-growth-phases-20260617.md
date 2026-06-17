@@ -35,8 +35,13 @@ Oribisは当初の「CLI WorkerをUIで包む」段階から、Animaが構造化
 | P5 | 完了 | single-operation `createFile` apply / hardening / UI |
 | P6 | 完了 | rollback preview / validation / rollback proposal generation |
 | P7 | 完了 | rollback proposal UI接続。rollback executorは作らない方針 |
+| P8 | 完了 | `updateFile` safe apply。構造化beforeHash/currentHash、operationId keyed expected hash、TOCTOU再検証 |
+| P9 | 完了 | rollback proposal safe path補強。source Archived plan不変、逆proposalは既存preview/approval/apply境界へ流す |
 | P11-A | 完了 | 最小Router enforcement。危険なdirect invoke経路を封鎖 |
-| P12 | 完了 | sidecar実spawn前のmanifest / Router / DTO安全境界固定 |
+| P13 | 完了 | sidecar実spawn前のprepared-only manager / verification preflight / lifecycle audit / UI |
+| P14 | 完了 | Self-Improvement Lite store/API。Anima memory DBとは分離したSQLite台帳 |
+| P15 | 完了 | Worker Job→Observation記録導線。生payload/secretを落として自己改善に接続 |
+| P16 | 完了 | Self-Improvement APIのAction Router/Audit gate。監査payloadは要約化し副作用前にdeny |
 
 意図的に未実装のもの:
 
@@ -388,6 +393,14 @@ SelfImprovementEngine
    - 改善ログをAnima/Worker promptへ無制限注入しない。
    - 人間確認済みの改善提案、または提案カード表示の補助だけに使う。
 
+2026-06-17時点の到達状態:
+
+- `SelfImprovementEventStore` は `internal/self-improvement/self-improvement.sqlite` としてAnima memory SQLiteから分離した。
+- Observation / Evaluation / Suggestion / Decision のStore/APIとUIを追加した。
+- Worker JobからObservationを生成できる。ただしraw event payloadやsecret-like値は保存・表示しない。
+- Suggestionの採用/却下は「記録」だけで、自動修正・自動実行・権限昇格は行わない。
+- self-improvement系Tauri commandはAction Router/Audit gateへ接続済み。監査payloadはIDやdetailsを生保存せず、byte数・有無・固定target中心に制限する。
+
 後段実装:
 
 6. `Approval UI`
@@ -418,16 +431,12 @@ codex-adviserレビューと自己進化方針を踏まえた実装順。
 | 優先 | 内容 | 理由 |
 |---|---|---|
 | 1 | P13 sidecar executor threat model / skeleton | plugin runtimeを実spawn前に安全化する |
-| 2 | P14 Anima/Worker context compaction | token消費と長期会話の制御 |
-| 3 | P15a Improvement taxonomy / retention policy | 保存前に分類・保持・削除・重複抑止を固定する |
-| 4 | P15 SelfImprovementEventStore | 自己改善の観測基盤。SQLite分離storeで記録する |
-| 5 | P16a Proposal evidence / dedupe / feedback state | 提案根拠と却下/後回し/手動対応済みの状態遷移を固定する |
-| 6 | P16 ImprovementProposal Lite / UI | 初回リリース向け。改善提案表示までで自動適用しない |
-| 7 | P17 Context-aware Improvement Retrieval | feature flagまたはconfirmed-onlyで限定導入する |
-| 8 | P18 WDIO実GUI gate安定化 | 商用品質の自動検証 |
-| 9 | P19 Virtual Studio MVP連携 | Anima/Worker/Plugin/3D空間を体験として統合 |
-| 10 | P20 Safe Applier adapters | 初回リリース後。prompt/settings/test-plan/skill候補だけ承認適用 |
-| 11 | P21 docsまとめ更新 | 実装完了後にSTATUS/MAP/specをまとめて同期 |
+| 2 | P14-P16 SelfImprovement Lite | 初回リリース向けの観測・評価・提案・採否記録まで |
+| 3 | P17 Context-aware Improvement Retrieval | feature flagまたはconfirmed-onlyで限定導入する |
+| 4 | P18 WDIO実GUI gate安定化 | 商用品質の自動検証 |
+| 5 | P19 Virtual Studio MVP連携 | Anima/Worker/Plugin/3D空間を体験として統合 |
+| 6 | P20 Safe Applier adapters | 初回リリース後。prompt/settings/test-plan/skill候補だけ承認適用 |
+| 7 | P21 release readiness / docs sync | STATUS/MAP/specをまとめて同期し、初回リリース判定へ進む |
 
 ## 7. 商業価値の見立て
 

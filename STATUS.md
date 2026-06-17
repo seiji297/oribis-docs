@@ -2,9 +2,9 @@
 | 項目 | 値 |
 |------|-----|
 | ブランチ | `integration/action-platform-foundation` |
-| コミット | `9a91b55` |
-| 日時 | 2026-06-16 20:34:00 +0900 |
-| サマリー | merge: wire internal worker write diff proposal UI |
+| コミット | `b30b2aa` |
+| 日時 | 2026-06-17 23:59:00 +0900 |
+| サマリー | test: stabilize action platform jobs smoke |
 <!-- AUTO-DOC-GEN:STATUS-END -->
 
 # Oribis 進捗管理
@@ -16,7 +16,7 @@
 - ✅ **実GUI表示確認必須** — テキスト入力→送信後、GUI上にメッセージが表示されることを確認
 - ✅ **GUIイベントと同じ流れ** — `__setChatInput`（textarea表示確認）→ `__sendChatMessage`（送信）→ GUI応答確認
 
-**最終更新**: 2026-06-16
+**最終更新**: 2026-06-17
 
 ---
 
@@ -43,7 +43,8 @@
 - **KokoroTTS英語チャットE2E**: 完了（2026-06-02）— fake_claude英語応答→Kokoroルーティング→WAV生成→5秒以内検証→`/tmp/oribis-kokoro-test.wav`
 - **Live Mode実装**: 完了（2026-06-09）— Silero VAD連続録音→自動STT→AIダイレクト送信。常時音声入力状態。テキスト入力欄バイパス
 - **AIバックエンド配線**: 完了（2026-06-14）— `anthropic` / `openai_compat` を保存済みprovider設定から実HTTP providerへ接続。`cargo test --lib` 1433 PASS / `npm test` 796 PASS
-- **Action Platform / Internal Worker read-only + write diff proposal preview**: Phase 4 P2 完了（2026-06-16）— Anima提案→policy/audit評価→承認判断永続化→read-only Job実行→Job詳細/Event/Artifact→Anima説明に加え、write plan JSONL Store/API、pathScope/secret-like path/idempotency hardening、write diff proposal生成API、実WritePlan preview UI、approval hash bindingを追加。write適用は未実装・禁止。`integration/action-platform-foundation` commit `9a91b55`。Vitest 997 PASS / 3 skipped、Rust targeted write_plan 24 PASS、anima_dispatch 12 PASS、typecheck PASS、cargo check PASS、WDIO write-diff-proposal 1 spec / 2 scenarios PASS
+- **Action Platform / Internal Worker / Self-Improvement Lite**: 初回リリース対象機能ほぼ完了（2026-06-17）— Anima提案→policy/audit評価→read-only Job→Job詳細/Event/Artifact→Anima説明、WritePlan/diff preview/hash binding、single-op `createFile`/`updateFile` safe apply、rollback proposal safe path、Router enforcement、sidecar prepared-only/preflight UI、自己改善Observation/Evaluation/Suggestion/Decision store/UI/audit gateまで到達。rollback executor、sidecar実spawn、shell/network/MCP write、multi-operation apply、自己改善の自動適用は意図的に未解禁。`integration/action-platform-foundation` commit `b30b2aa`。
+- **Action Platform 最終検証**: 完了（2026-06-17）— `pnpm run typecheck` PASS、`pnpm vitest run` 1153 PASS / 3 skipped、`cargo check --manifest-path src-tauri/Cargo.toml` PASS、`cargo test --manifest-path src-tauri/Cargo.toml internal_worker_write_plan` 91 PASS、WDIO `app-launch` 5 PASS / `write-plan-apply` 3 PASS / `write-diff-proposal` 3 PASS / `action-platform` 5 PASS。`sidecar-preflight` はspec PASSだが1 skipped（マウント条件未成立）。`npx tsc -p e2e/wdio/tsconfig.json --noEmit` は既存 `BASE_URL` 再宣言でFAIL（今回変更外）。
 - **その他**: pending-tasks.md に移動済み。Producer指示があれば復帰
 
 ### 実装フロー（codex-adviser レビュー済 2026-05-07）
