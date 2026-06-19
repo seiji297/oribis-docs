@@ -234,6 +234,59 @@ scp -i ~/.ssh/oribis_windows_qa -o IdentitiesOnly=yes admin@<tailscale-ip>:'C:/o
 
 ## 9. 今回詰まった点と対策
 
+## 9. OpenCode QA Agent
+
+Windows QAマシン上で、修正権限を持たない調査専用Agentを動かす場合は `opencode` を使う。
+現時点の想定は OpenCode + Kimi Code OAuth 2.7。
+
+開発機側から配置する。
+
+```bash
+cd /home/mnadmin/agent-projects/sysdev/sysdev-1/oribis
+scripts/qa/setup-windows-opencode-qa-agent.sh \
+  --host admin@<tailscale-ip> \
+  --identity-file ~/.ssh/oribis_windows_qa
+```
+
+Windows側に以下が作成される。
+
+```text
+C:\oribis-qa\qa-agent\start-qa-opencode.ps1
+C:\oribis-qa\qa-agent\check-qa-agent.ps1
+C:\oribis-qa\qa-agent\guard-bin\git.cmd
+C:\oribis-qa\oribis\AGENTS.md
+```
+
+QA Agentはコード修正・commit・pushを禁止する。
+`start-qa-opencode.ps1` は `guard-bin\git.cmd` をPATH先頭に置くため、通常の `git commit` / `git push` はブロックされる。
+`.git` が存在する環境では `pre-commit` / `pre-push` hookも配置される。
+
+確認例。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\oribis-qa\qa-agent\check-qa-agent.ps1
+$env:Path = "C:\oribis-qa\qa-agent\guard-bin;$env:Path"
+git commit --allow-empty -m qa-guard-test
+git push
+```
+
+期待値。
+
+```text
+QA Agent git guard blocked: git commit is forbidden in Windows QA environment.
+QA Agent git guard blocked: git push is forbidden in Windows QA environment.
+```
+
+起動例。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\oribis-qa\qa-agent\start-qa-opencode.ps1
+```
+
+Kimi Code OAuthの認証が未完了の場合は、Windows実デスクトップ上でOpenCodeの認証フローを完了してから使う。
+
+## 10. 今回詰まった点と対策
+
 ### SSH接続タイムアウト
 
 原因候補。
@@ -313,7 +366,7 @@ scp -i ~/.ssh/oribis_windows_qa -o IdentitiesOnly=yes admin@<tailscale-ip>:'C:/o
 
 - Edge/WebView2のversionに合う `msedgedriver.exe` を `C:\oribis-qa\tools\msedgedriver\` に置く。
 
-## 10. 最短チェックリスト
+## 11. 最短チェックリスト
 
 - [ ] Tailscale IPがonline
 - [ ] `sshd` Running
@@ -326,3 +379,5 @@ scp -i ~/.ssh/oribis_windows_qa -o IdentitiesOnly=yes admin@<tailscale-ip>:'C:/o
 - [ ] `cargo build --manifest-path src-tauri/Cargo.toml --bin oribis` PASS
 - [ ] Windows smoke runnerでWDIO PASS
 - [ ] 対話キャプチャで実画面確認
+- [ ] OpenCode QA Agentのhealth check PASS
+- [ ] QA Agentのgit commit/pushガード確認済み
