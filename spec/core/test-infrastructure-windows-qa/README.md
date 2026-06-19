@@ -148,6 +148,32 @@ C:\oribis-qa\oribis
 
 ## 7. Windows smoke / WDIO実行
 
+WSL/開発機側から一発実行する場合は `scripts/qa/invoke-windows-qa.sh` を使う。
+このラッパーは実行前にローカルの `run-windows-smoke.ps1` をWindows側へ同期するため、`.git` がない転送スナップショット環境でもrunnerだけは最新化できる。
+
+```bash
+cd /home/mnadmin/agent-projects/sysdev/sysdev-1/oribis
+scripts/qa/invoke-windows-qa.sh \
+  --host admin@<tailscale-ip> \
+  --identity-file ~/.ssh/oribis_windows_qa \
+  --skip-git-update \
+  --skip-install \
+  --skip-frontend-build \
+  --skip-screenshot \
+  --wdio-spec e2e/wdio/tests/babylon-renderer.spec.ts \
+  --pull-artifacts /tmp/oribis-windows-qa-latest
+```
+
+`--pull-artifacts` を指定すると以下を開発機側へ回収する。
+
+```text
+latest-summary.json
+latest-windows-smoke.zip
+```
+
+ZIPには `windows-smoke.log`, `summary.json`, `system.json`, `diagnostics/` が含まれる。
+`diagnostics/` にはプロセス一覧、netstat、tasklist、GPU情報、Tailscale状態などが保存される。
+
 代表例。
 
 ```powershell
