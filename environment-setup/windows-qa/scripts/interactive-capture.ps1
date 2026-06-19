@@ -1,0 +1,23 @@
+#Requires -Version 5.1
+param(
+    [string]$OutputPath = "C:\oribis-qa\artifacts\interactive-capture.png"
+)
+
+$ErrorActionPreference = "Stop"
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$dir = Split-Path -Parent $OutputPath
+New-Item -ItemType Directory -Force -Path $dir | Out-Null
+
+$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+$bitmap = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
+$graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+try {
+    $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+    $bitmap.Save($OutputPath, [System.Drawing.Imaging.ImageFormat]::Png)
+} finally {
+    $graphics.Dispose()
+    $bitmap.Dispose()
+}
+
