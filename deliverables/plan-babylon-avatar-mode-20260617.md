@@ -116,6 +116,31 @@
 - VRM表情/モーフ/リップシンク比較。
 - BabylonをVirtual World本体候補にするか判断。
 
+### P-BAB-7: SceneRuntime authoritative + Babylon physics MVP
+
+裁定:
+
+- Rust/Tauri側のSceneRuntimeは正本状態を持つ。object registry、revision、command validation、idempotency、diagnosticsを担当する。
+- Babylon側は描画、入力、debug、local predictive/visual physicsを担当する。
+- Babylon physics結果はvalidated scene commandでcommitされるまで正本状態ではない。
+- per-frame全量IPCは避ける。dirty delta、tick budget、snapshot resyncで同期する。
+
+MVP範囲:
+
+- `SceneObject.physics` を正本schemaへ追加する。
+- dynamic cube、床衝突、重力、friction/restitution、回転visualをBabylon側で確認できるようにする。
+- runtime object破棄時にmesh/material/physics stateを破棄する。
+- RTL/WDIOから読めるphysics diagnosticsを出す。
+
+MVP対象外:
+
+- Rust側の物理step。
+- deterministic replay。
+- network replication。
+- full ECS archetype/job scheduler。
+- plugin script system。
+- constraint/joint/raycastを含む高度な物理。
+
 ## 8. 参考情報
 
 Babylon.js公式/関連:
