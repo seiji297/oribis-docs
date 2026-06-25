@@ -360,6 +360,11 @@ Producer指示により、実装はステージから着手する。
 - Settingsで `studio` へ切替可能
 - 切替時に不要rendererがdisposeされる
 
+進捗:
+
+- 2026-06-25: Settings > General に `シーンモード` selectorを追加し、`stage` / `studio` の選択を `oribis_scene_kind` / `oribis_avatar_render_engine` へ保存する導線を追加。
+- 2026-06-25: `T-W-STAGE-03` でSettings導線が表示され、Stage状態のままStudio/BabylonをロードしないことをWDIOで確認。
+
 ## 受け入れ条件
 
 ### ステージ
