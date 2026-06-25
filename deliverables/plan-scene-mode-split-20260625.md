@@ -257,7 +257,7 @@ Producer指示により、実装はステージから着手する。
 - WDIOを並列実行すると `tauri-driver` / app sessionが衝突するため直列で実行する。
 - runner cleanupで既知の `ELIFECYCLE Command failed` 表示が出る場合があるが、上記直列実行はexit code 0かつspec PASS。
 - P4のWDIO「家具生成後に机が出て終了後消える」は `T-W-STAGE-02` で確認済み。
-- RuntimeでStage表示中にBabylon/Havok/Recast script URLが未ロードであることのネットワーク実測は未完了。現状はDOM上Babylon viewer不在とbuild chunk分離の確認まで。
+- RuntimeでStage表示中にBabylon/Havok/Recast script URLが未ロードであることは `T-W-STAGE-01` のresource/script URL検査で確認済み。
 
 ### P0: 現状調査
 
