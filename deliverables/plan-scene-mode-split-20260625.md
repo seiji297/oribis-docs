@@ -237,7 +237,7 @@ Producer指示により、実装はステージから着手する。
 - P2: `SceneViewer` 境界を追加し、`stage` は `StageSceneViewer`、`studio` は既存 `BabylonAvatarViewer` をdynamic importする形へ変更済み。`world` は予約placeholder。
 - P3: `StageSceneViewer` を新規追加。three.jsをStage側だけでlazy loadし、円形床、静止Anima/Worker placeholder、SceneRuntime renderable Entityの最小投影を実装済み。
 - P4: `scene.stage.activity.start` / `scene.stage.activity.end` をAnima Tool Catalog / CommandRegistry / App adapterへ追加済み。Stageの作業/休憩/睡眠用一時家具Entityをmetadata付きで生成し、該当temporary家具だけ削除できる。
-- P5: 初期sceneKindは実アプリで `stage`、Vitest互換fallbackは `studio`。互換toggleから `stage` / `studio` を切替可能。Scene Editor / Scene Builderの詳細UIは後続。
+- P5: 初期sceneKindは実アプリで `stage`、Vitest互換fallbackは `studio`。互換toggleから `stage` / `studio` を切替可能。Settings > Generalのscene mode selector、Scene EditorのsceneKind表示、Scene BuilderのsceneKind選択、Studio初期表示時のStage/three系resource未ロード検査までWDIOで確認済み。
 
 検証:
 
@@ -247,10 +247,15 @@ Producer指示により、実装はステージから着手する。
 - `rtk cargo test --manifest-path src-tauri/Cargo.toml scene_authoring --lib` 10 PASS
 - `rtk cargo test --manifest-path src-tauri/Cargo.toml scene_runtime --lib` 20 PASS
 - `rtk pnpm exec vite build` PASS。`StageSceneViewer-*.js` と `BabylonAvatarViewer-*.js` の別chunk出力を確認。
-- WDIO `ORIBIS_SKIP_TEST_AUTH_CLEAN=1 rtk bash scripts/run-wdio-tests.sh --spec tests/stage-renderer.spec.ts --grep "T-W-STAGE"` 2 PASS
+- WDIO `ORIBIS_SKIP_TEST_AUTH_CLEAN=1 rtk bash scripts/run-wdio-tests.sh --spec tests/stage-renderer.spec.ts --grep "T-W-STAGE"` 3 PASS
   - `T-W-STAGE-01`: Stage rendererの軽量renderer / Babylon初期非表示確認
   - `T-W-STAGE-02`: `scene.stage.activity.start/end` で作業机・椅子を生成し、終了後に消えることを確認
+  - `T-W-STAGE-03`: Settings > Generalでscene mode selectorを表示し、Stage/Studio切替設定を保存できることを確認
 - WDIO `ORIBIS_SKIP_TEST_AUTH_CLEAN=1 rtk bash scripts/run-wdio-tests.sh --spec tests/babylon-renderer.spec.ts --grep "T-W-BAB-01"` 1 PASS
+  - Studio初期表示時にStage renderer DOMが存在せず、Stage/three系resource URLがロードされないことを確認
+- WDIO `ORIBIS_SKIP_TEST_AUTH_CLEAN=1 rtk bash scripts/run-wdio-tests.sh --spec tests/babylon-renderer.spec.ts --grep "T-W-BAB-(SE-01|SB-01)"` 2 PASS
+  - `T-W-BAB-SE-01`: Scene Editor sample loadが `stage` sceneとして扱われ、cube追加と選択診断が動くことを確認
+  - `T-W-BAB-SB-01`: Scene Builder workspace room生成が `studio` sceneとして扱われることを確認
 
 注意:
 
@@ -258,6 +263,7 @@ Producer指示により、実装はステージから着手する。
 - runner cleanupで既知の `ELIFECYCLE Command failed` 表示が出る場合があるが、上記直列実行はexit code 0かつspec PASS。
 - P4のWDIO「家具生成後に机が出て終了後消える」は `T-W-STAGE-02` で確認済み。
 - RuntimeでStage表示中にBabylon/Havok/Recast script URLが未ロードであることは `T-W-STAGE-01` のresource/script URL検査で確認済み。
+- RuntimeでStudio表示中にStage/three系resource URLが未ロードであることは `T-W-BAB-01` のresource/script URL検査で確認済み。
 
 ### P0: 現状調査
 
