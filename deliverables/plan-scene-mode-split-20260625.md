@@ -364,6 +364,7 @@ Producer指示により、実装はステージから着手する。
 
 - 2026-06-25: Settings > General に `シーンモード` selectorを追加し、`stage` / `studio` の選択を `oribis_scene_kind` / `oribis_avatar_render_engine` へ保存する導線を追加。
 - 2026-06-25: `T-W-STAGE-03` でSettings導線が表示され、Stage状態のままStudio/BabylonをロードしないことをWDIOで確認。
+- 2026-06-25: `T-W-BAB-SE-01` / `T-W-BAB-SB-01` でScene EditorのsceneKind表示、Scene BuilderのsceneKind選択、sample Stage scene load、Scene Editor cube選択、Studio room buildをWDIOで確認。
 
 ## 受け入れ条件
 
