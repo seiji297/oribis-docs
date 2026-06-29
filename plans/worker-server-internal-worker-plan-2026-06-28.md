@@ -446,6 +446,17 @@ Rules:
 - OpenCode/Codex/Claude interactive TUI use requires `ptyCli`; non-interactive process execution uses the corresponding CLI backend.
 - Local/Remote AgentServer configuration must allowlist backends explicitly. PTY should remain explicit opt-in.
 
+PTY Session Control contract:
+
+- PTY session output reads are observation only. `worker_pty_read_session` must not mark a job idle or complete.
+- Job dispatch writes use `session_id + job_id` ownership. A busy session rejects another job with `WORKER_PTY_SESSION_BUSY`.
+- Manual session writes are preserved for compatibility, but they are rejected while the session is busy.
+- `worker_pty_release_job(session_id, job_id)` is the only normal path from `Busy` to `Idle`.
+- Release with a non-owning job returns `WORKER_PTY_SESSION_JOB_MISMATCH`.
+- Terminal states (`Failed`, `Exited`, `Killed`) are not converted back to `Idle` by release.
+- PTY write/flush failures clear the active owner and move the session to `Failed`; this is an abnormal recovery path, not a normal release.
+- Prompt parsing, auto-idle timeouts, stream completion detection, and session queues are deferred until a backend-specific adapter layer exists.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
