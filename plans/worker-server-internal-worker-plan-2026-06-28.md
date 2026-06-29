@@ -484,6 +484,15 @@ Anima web-remote route mount, 2026-06-29:
 - If Oribis home resolution fails, the web-remote Anima host uses a temp fallback and logs the fallback path for observability.
 - Route tests cover auth, Anima Session plan creation, provider Job plan creation, event replay, run-route absence, Worker-role rejection, and unchanged Worker `/agent` job creation.
 
+Anima runtime request boundary, 2026-06-29:
+
+- `AnimaRuntimeRequest` is the next serverization seam between `AnimaCoordinatorPlan` and the current embedded `anima_chat_inner` execution path.
+- It carries request/session/conversation ids, project/anima identity, collaboration workspace id, backend, context mode, invocation, mode, memory scope, side-effect policy, and the raw user message for execution.
+- `AnimaRuntimePublicSummary` is the log/event-safe projection and intentionally excludes prompt text, raw project/anima ids, request/session/conversation/collaboration ids, and memory-scope identifiers; it exposes only the memory scope kind.
+- Runtime modes distinguish normal stateful chat sessions, slash bypass sessions, and read-only provider jobs without adding backend-specific test shortcuts.
+- This phase does not move model execution, memory access, AnimaState, journal, UI emission, animation, Worker delegation, or provider adapter ownership out of `lib.rs`; it only adds a typed boundary used by the live chat path.
+- The boundary must not contain `AppHandle`, live state locks, database handles, provider/CLI adapters, or other non-serializable runtime dependencies.
+
 AgentCollaboration inbox acknowledgement, 2026-06-29:
 
 - AgentCollaboration now has in-memory per-agent/per-conversation inbox cursors for resident-agent cooperation.
