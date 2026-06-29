@@ -457,6 +457,15 @@ PTY Session Control contract:
 - PTY write/flush failures clear the active owner and move the session to `Failed`; this is an abnormal recovery path, not a normal release.
 - Prompt parsing, auto-idle timeouts, stream completion detection, and session queues are deferred until a backend-specific adapter layer exists.
 
+AnimaCoordinator server-boundary prep:
+
+- `AnimaAgentServerPlan` defines the future Anima AgentServer boundary without moving `anima_chat_inner` yet.
+- The plan carries `AgentRole::Anima`, invocation, placement, project/anima identity, request/session/conversation ids, collaboration session id, backend, memory scope, and side-effect policy.
+- Memory, AnimaState, journal, UI, animation, Worker delegation, and agent-collaboration write capabilities are explicit plan fields.
+- Normal chat remains a stateful `Session`; provider requests are read-only `Job`; slash bypass remains `Session` with memory and persistent writes blocked.
+- `collaboration_session_id` remains the resident agent workspace id and must not be confused with user-visible conversation history boundaries.
+- Host/server execution remains a follow-up phase after the boundary contract is stable.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
