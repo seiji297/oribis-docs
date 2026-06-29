@@ -1,7 +1,7 @@
 # Worker Server / InternalWorker Plan
 
 Date: 2026-06-28
-Status: Draft for architecture review
+Status: Phase 1 partially implemented
 Owner: sysdev
 
 ## Scope
@@ -28,17 +28,23 @@ Those features depend on this WorkerServer/InternalWorker contract being stable 
 The current Worker chat path has improved from the old direct `worker.instant.run` path:
 
 - DOM chat submit creates an `InternalWorkerJob`.
-- `internal_worker_run_job` executes readonly tool requests.
-- `internal_worker_generate_answer` creates `finalAnswer` with a Worker-specific provider prompt.
+- `internal_worker_run_job` runs the WorkerServer chat lifecycle.
+- WorkerServer runs readonly tool requests, `answer_generate`, `finalAnswer` persistence, and completion.
 - `anima_chat` is no longer responsible for the Worker final answer.
+
+Completed in Phase 1 so far:
+
+- Normal main-chat and Worker-chat UI paths create and run one Worker job, then render `job.finalAnswer`.
+- `finalAnswer` generation is owned by the WorkerServer chat job lifecycle in the normal path.
+- Worker job lifecycle owns `answer_generate` as a step.
+- AgentServer `Full` Worker Job execution uses the same `run_chat_job` lifecycle.
+- `answer_generate` failure marks the job failed.
 
 Remaining problem:
 
-- `finalAnswer` generation is still a separate UI-driven Tauri command.
-- Worker job lifecycle does not own `answer_generate` as a step.
 - Worker terminal evidence still centers on `workspace_plan_readonly`.
-- `completed` semantics are not strict enough for Worker-owned final answer.
-- The future WorkerServer boundary is not explicit.
+- The future external WorkerServer process boundary still needs its concrete runner/server split.
+- CLI backend, PTY backend, and remote WorkerServer integration still need follow-up validation.
 
 ## Target Outcome
 
@@ -379,11 +385,11 @@ Required validity checks:
 
 Required:
 
-- `answer_generate` step is part of run lifecycle.
-- completed chat-facing job has finalAnswer.
-- answer generation failure marks job failed.
-- retry with existing finalAnswer is idempotent.
-- UI chat path does not call `internal_worker_generate_answer` directly.
+- `answer_generate` step is part of run lifecycle. Implemented for WorkerServer and AgentServer `Full`.
+- completed chat-facing job has finalAnswer. Implemented for WorkerServer and AgentServer `Full`.
+- answer generation failure marks job failed. Implemented for WorkerServer and AgentServer `Full`.
+- retry with existing finalAnswer is idempotent. Implemented in WorkerServer/InternalWorker tests.
+- UI chat path does not call `internal_worker_generate_answer` directly. Implemented in Worker chat hook tests.
 
 ## Migration Steps
 
@@ -400,17 +406,18 @@ Required:
 
 ### Step 2: Add answer_generate to InternalWorker run lifecycle
 
-- Add internal answer-generation function callable from `run_internal_worker_job_in`.
-- Add `answer_generate` step.
-- Persist `finalAnswer`.
-- Emit start/completed/failed events.
-- Enforce failure semantics.
+- Add internal answer-generation function callable from WorkerServer `run_chat_job`. Done.
+- Add `answer_generate` step. Done.
+- Persist `finalAnswer`. Done.
+- Emit start/completed/failed events. Done.
+- Enforce failure semantics. Done.
+- Route AgentServer `Full` Worker Job execution through the same `run_chat_job` lifecycle. Done.
 
 ### Step 3: Simplify UI normal path
 
-- Main chat explicit Worker path calls only job create/run.
-- Worker chat path calls only job create/run.
-- Both read `job.finalAnswer`.
+- Main chat explicit Worker path calls only job create/run. Done.
+- Worker chat path calls only job create/run. Done.
+- Both read `job.finalAnswer`. Done.
 - Keep compatibility command only if needed, not normal path.
 
 ### Step 4: Update terminal extraction and harness validity
@@ -447,6 +454,12 @@ Minimum test assertions:
 - Chat output is `finalAnswer`.
 - Chat input clears after submit.
 - No test-only path is introduced.
+
+Phase 1 implementation note, 2026-06-29:
+
+- Normal UI paths already call `internal_worker_create_job` then `internal_worker_run_job`; the Tauri command delegates to WorkerServer `run_chat_job`.
+- AgentServer `Full` now also delegates to `run_chat_job`, while `ToolSteps` remains the lower-level tool-only mode.
+- The live-stage harness no longer contains `add` / `subtract` / `multiply` / `divide` special operator expectations; it validates submitted function shape generically.
 
 ## Deferred
 
