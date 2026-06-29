@@ -205,6 +205,11 @@ docs/projects/oribis/
 | plugin/manifest.rs | spec/ui/plugin-api.md（runtime=webview/sidecar manifest schema） |
 | plugin/sidecar.rs | spec/ui/plugin-api.md（sidecar prepared-only manager / verification preflight / lifecycle audit） |
 | self_improvement.rs | spec/core/anima-orchestrator-architecture.md（Self-Improvement Lite observation/evaluation/suggestion/decision store/API） |
+| agent_discord_routing.rs | spec/core/oribis-worker-core-protocol.md（Agent/Conversation/Default Discord route resolution。AI推論ではなく設定済みrouteで送信先を決定） |
+| agent_discord_route_store.rs | spec/core/oribis-worker-core-protocol.md（Agent Discord route config versioned JSON store / validation / atomic write） |
+| agent_discord_commands.rs | spec/ui/anima-ui.md（Settings向けAgent Discord route config CRUD Tauri commands） |
+| agent_discord_delivery.rs | spec/core/oribis-worker-core-protocol.md（Agent collaboration message -> configured Discord route delivery adapter。bridge config fallback禁止） |
+| agent_discord_outbound.rs | spec/core/oribis-worker-core-protocol.md（Agent Discord outbound sender abstraction） |
 
 ### フロントエンド（src/）
 
@@ -236,6 +241,7 @@ docs/projects/oribis/
 | components/DrawerEventFeed.tsx | spec/core/anima-orchestrator-architecture.md（EventFeedドロワー） |
 | components/CommandPalette.tsx | spec/ui/anima-ui.md（Action Platform Commandsタブ） |
 | components/DeveloperConsole.tsx | spec/ui/anima-ui.md（JS/TS Console request UI） |
+| components/AgentDiscordRoutingSettings.tsx | spec/ui/anima-ui.md（Settings > General のAgent/Conversation/Default Discord route config UI。送信ではなく設定CRUDのみ） |
 | components/EventInspector.tsx | spec/core/anima-orchestrator-architecture.md（Event Feed詳細表示） |
 | components/TaskJobView.tsx | spec/core/anima-orchestrator-architecture.md（Internal Worker Job一覧/詳細/Event/Artifact） |
 | components/AnimaDispatchPanel.tsx | spec/ui/anima-ui.md（Anima dispatch proposal/approval/explanation UI） |
@@ -292,6 +298,7 @@ docs/projects/oribis/
 | e2e/wdio/tests/anima-approval.spec.ts | spec/core/test-infrastructure.md（Anima dispatch approval read-only closed loop実GUI） |
 | e2e/wdio/tests/anima-approval-policy.spec.ts | spec/core/test-infrastructure.md（Anima approval policy/audit実GUI） |
 | e2e/wdio/tests/write-diff-proposal.spec.ts | spec/core/test-infrastructure.md（Write diff proposal preview / 危険ボタン不在 実GUI） |
+| e2e/wdio/tests/agent-discord-routing-settings.spec.ts | spec/core/test-infrastructure.md（Agent Discord Routing settings実GUI CRUD / UI保存・再表示・消去・validation確認） |
 | scripts/run-wdio-tests.sh | spec/core/test-infrastructure.md（WDIO実行スクリプト / worktree別Vite誤再利用防止） |
 
 ### CI/CD（.github/workflows/）

@@ -33,6 +33,7 @@
 
 ### 現在地
 - **アクティブトラック**: 商用化準備（COM）— 残P0: リリースページ公開のみ、GTM戦略（GTM）— Kawaii-Agent後出し勝利計画（新規）
+- **Agent Discord Routing / 常駐Agent間通知設定**: 実装済（2026-06-29）— Agent/Conversation/Default channel route configをOribisHome stateへversioned JSON保存するstore、Tauri設定CRUD command、Agent collaboration replyのDiscord delivery接続、Settings > Generalの `Agent Discord Routing` UI、WDIO実GUICRUD確認を追加。Discord bridge configへfallbackせず、送信先はAgent route configだけで決まる。常駐Anima/WorkerごとにチャンネルIDを設定して返信を送れる基盤であり、AI推論に送信先選択を任せない。検証: `rtk cargo test agent_discord --lib` 35 PASS、`rtk cargo test agent_collaboration --lib` 52 PASS、`rtk pnpm exec vitest run src/components/AgentDiscordRoutingSettings.test.tsx` 8 PASS、`rtk pnpm exec tsc -p e2e/wdio/tsconfig.json --noEmit` PASS、`rtk cargo build --manifest-path src-tauri/Cargo.toml --bin oribis` PASS（既存warningのみ）、WDIO `rtk ./node_modules/.bin/wdio run wdio.conf.ts --spec tests/agent-discord-routing-settings.spec.ts` 2 PASS。commits: `dd2bc79` / `9abec6d` / `5607e2e` / `a06fcec` / `61e6215` / `84a1168`。
 - **完了トラック**: 記憶システム（G1）、MCP Server（G9）、オーケストレーター、Web Remote P1/P2、商用化P1全件、chat-mode-plugin（Task 1〜6 全完了）
 - **Phase 0（表情）**: 完了
 - **Phase 1（記憶基盤）**: 完了
