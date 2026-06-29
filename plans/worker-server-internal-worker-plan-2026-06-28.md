@@ -513,6 +513,13 @@ Anima live chat parts boundary, 2026-06-29:
 - `LiveChatRuntimeParts` is a named, crate-local bridge for the current embedded live chat path, not a wire schema or reusable AgentServer payload.
 - This keeps the preparation object from becoming a generic bag of execution internals while preserving the existing execution order.
 
+Anima runtime routing validation, 2026-06-29:
+
+- `build_anima_runtime_routing_hint` returns a structured routing validation result instead of silently trusting mismatched plan/runtime inputs.
+- Validation is local to routing inputs: safe ids, pipeline backend, context mode, and runtime mode must match the prepared plan.
+- Validation does not check provider availability, model availability, session state, UI permissions, trace policy, or external I/O readiness.
+- Routing errors are structured and must not include prompt text or raw runtime ids.
+
 AgentCollaboration inbox acknowledgement, 2026-06-29:
 
 - AgentCollaboration now has in-memory per-agent/per-conversation inbox cursors for resident-agent cooperation.
