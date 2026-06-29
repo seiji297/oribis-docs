@@ -526,6 +526,13 @@ Anima routing job semantics split, 2026-06-29:
 - `ProviderJob` no longer implies `ConfiguredProvider`; configured-provider routing is limited to explicit Anima provider requests.
 - Stateless non-provider runtime jobs remain on their selected backend route so provider-only side effects such as provider TTS are not enabled by job shape alone.
 
+Anima live chat execution policy boundary, 2026-06-29:
+
+- `AnimaLiveChatExecutionPolicy` is a read-only execution-judgement contract derived from `AnimaRuntimeRequest` and `AnimaRuntimeRoutingHint`.
+- The policy exposes route summary, slash raw bypass, provider TTS eligibility, runtime job shape, stateless context, and runtime side-effect permissions.
+- The policy intentionally does not contain adapters, provider configs, UI payloads, session writes, trace bodies, memory writes, or backend secrets.
+- `lib.rs` still owns adapter construction and pipeline execution, but live-chat branch conditions now read the policy instead of reinterpreting routing hints directly.
+
 AgentCollaboration inbox acknowledgement, 2026-06-29:
 
 - AgentCollaboration now has in-memory per-agent/per-conversation inbox cursors for resident-agent cooperation.
