@@ -493,6 +493,13 @@ Anima runtime request boundary, 2026-06-29:
 - This phase does not move model execution, memory access, AnimaState, journal, UI emission, animation, Worker delegation, or provider adapter ownership out of `lib.rs`; it only adds a typed boundary used by the live chat path.
 - The boundary must not contain `AppHandle`, live state locks, database handles, provider/CLI adapters, or other non-serializable runtime dependencies.
 
+Anima runtime preparation boundary, 2026-06-29:
+
+- `prepare_anima_runtime` groups the live chat pre-execution preparation into a single boundary: execution plan, execution request, execution context, and runtime request.
+- Provider adapter selection, pipeline execution, slash bypass execution, session updates, UI emits, trace recording, and Worker delegation remain in the existing `anima_chat_inner` execution path.
+- `PreparedAnimaRuntime` keeps raw execution objects internal and redacts them in `Debug`; it must not become a wire contract or external AgentServer request.
+- This phase stabilizes preparation/routing classification for future Anima serverization without making `/anima-agent` runnable.
+
 AgentCollaboration inbox acknowledgement, 2026-06-29:
 
 - AgentCollaboration now has in-memory per-agent/per-conversation inbox cursors for resident-agent cooperation.
