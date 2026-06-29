@@ -493,6 +493,18 @@ AgentCollaboration inbox acknowledgement, 2026-06-29:
 - `list_inbox_after` remains caller-cursor based; `list_unread_inbox` is stored-cursor based; `acknowledge_inbox` only updates seen cursor state.
 - Tauri commands expose acknowledge/get-cursor/list-unread operations for trusted UI/runtime use; command-level agent ownership authorization remains a future phase.
 
+AgentCollaboration runnable claim/dedupe foundation, 2026-06-29:
+
+- A runnable request is one structured collaboration message that a Worker can process and answer, currently `TaskRequest`, `Question`, or `ReviewRequest`.
+- AgentCollaboration now has an in-memory runnable claim ledger keyed by `(source_message_id, worker_agent_id)` with `Claimed`, `Completed`, and `Failed` status.
+- `idempotency_key` is stored as request metadata for audit/debug continuity, but the primary dedupe key is the source message plus worker agent.
+- A claim target must be visible in that Worker's inbox and must be a runnable message kind; status, channel-only, self-authored, unknown, and non-Worker claims are rejected.
+- The runtime claims before creating the Worker job. `AlreadyClaimed` is treated as a normal skip and does not create a second job or Discord delivery.
+- Successful Worker execution marks the claim `Completed` with job/reply ids. Create/run/event/append failures mark the claim `Failed` with sanitized error text.
+- `Failed` means the source message is consumed for this Worker and should not be retried implicitly in this phase; explicit retry policy remains future work.
+- This is not a durable scheduler, retry queue, delivery guarantee, lock lease, or ownership authorization layer. Restart-time dedupe and multi-process leases remain future work.
+- Inbox cursors and runnable claims are intentionally separate: a seen cursor means "this agent saw up to sequence N"; a runnable claim means "this Worker accepted this source message for execution."
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
