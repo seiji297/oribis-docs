@@ -530,6 +530,15 @@ Worker CLI backend metadata boundary, 2026-06-29:
 - Metadata `model` and `sandbox` are bounded token-like strings. Whitespace, control characters, and oversized values are rejected.
 - This phase does not change the Embedded default, does not add Remote routing, and does not convert PTY output into final answers. PTY remains the persistent interactive TUI path; CLI process backends remain final-answer-producing process runs.
 
+Worker PTY launch options boundary, 2026-06-29:
+
+- `WorkerPtyLaunchOptions` records PTY launch metadata before spawning OpenCode/Codex/Claude interactive TUI sessions.
+- PTY keeps the current local interactive behavior: `WorkerPtyEnvPolicy::InheritParent` is explicit and no additional env keys are injected by job metadata.
+- This phase intentionally does not restrict inherited parent environment because interactive TUI auth, config directories, terminal settings, proxies, and shell/PATH behavior are backend- and machine-dependent.
+- `InheritParent` is the serde default for older snapshots. Future env policies must not write env values to snapshots, logs, events, or serialized launch metadata; interactive TUI auth/config stays implicit through the local inherited environment unless a later policy explicitly changes it.
+- Existing PTY boundaries remain active: tokenized session/worker/job ids, backend enum, canonical workspace root, canonical executable, session ownership checks, busy-session ownership, bounded output buffer, and raw write payload excluded from serialized audit data.
+- Future phases may add restricted/sanitized env policies for remote or explicitly configured local WorkerServer placement, but the current Embedded/local PTY path remains compatibility-first.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
