@@ -426,6 +426,26 @@ Required:
 - Harness validates actual values, not only object existence.
 - Reset/session guard remains required.
 
+### Backend Mode Matrix
+
+Phase 1 distinguishes answer-producing backends from session dispatch backends:
+
+| Backend | Full | ToolSteps | Session | Final answer source |
+|---------|------|-----------|---------|---------------------|
+| `internal` | supported | supported | deferred | WorkerServer `answer_generate` provider step |
+| `codexCli` | supported | supported | deferred | CLI process output |
+| `claudeCli` | supported | supported | deferred | CLI process output |
+| `openCodeCli` | supported | supported | deferred | CLI process output |
+| `ptyCli` | rejected | supported | planned | persistent PTY/TUI session, not `finalAnswer` |
+
+Rules:
+
+- CLI backends are final-answer-producing backends. They run `worker_cli_run`, persist `job.finalAnswer`, and skip WorkerServer provider `answer_generate` idempotently.
+- `ptyCli` is dispatch-only in Phase 1. It sends input to a persistent CLI/TUI session and returns a running job with `worker_pty_dispatched`.
+- `ptyCli` must not flow into provider `answer_generate` during `Full`, because raw PTY output is not a reliable final answer.
+- OpenCode/Codex/Claude interactive TUI use requires `ptyCli`; non-interactive process execution uses the corresponding CLI backend.
+- Local/Remote AgentServer configuration must allowlist backends explicitly. PTY should remain explicit opt-in.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
@@ -460,6 +480,8 @@ Phase 1 implementation note, 2026-06-29:
 - Normal UI paths already call `internal_worker_create_job` then `internal_worker_run_job`; the Tauri command delegates to WorkerServer `run_chat_job`.
 - AgentServer `Full` now also delegates to `run_chat_job`, while `ToolSteps` remains the lower-level tool-only mode.
 - The live-stage harness no longer contains `add` / `subtract` / `multiply` / `divide` special operator expectations; it validates submitted function shape generically.
+- CLI backends are documented as final-answer-producing backends, so `answer_generate` is skipped when `worker_cli_run` already persisted `finalAnswer`.
+- PTY backend `Full` is rejected; PTY remains dispatch/session-oriented and does not produce `finalAnswer` from raw terminal output.
 
 ## Deferred
 
