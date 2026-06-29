@@ -520,6 +520,12 @@ Anima runtime routing validation, 2026-06-29:
 - Validation does not check provider availability, model availability, session state, UI permissions, trace policy, or external I/O readiness.
 - Routing errors are structured and must not include prompt text or raw runtime ids.
 
+Anima routing job semantics split, 2026-06-29:
+
+- `AnimaRuntimeRoutingHint` now separates provider intent (`is_anima_provider_request`) from runtime job shape (`is_provider_runtime_job`) and context policy (`is_stateless_runtime_job`).
+- `ProviderJob` no longer implies `ConfiguredProvider`; configured-provider routing is limited to explicit Anima provider requests.
+- Stateless non-provider runtime jobs remain on their selected backend route so provider-only side effects such as provider TTS are not enabled by job shape alone.
+
 AgentCollaboration inbox acknowledgement, 2026-06-29:
 
 - AgentCollaboration now has in-memory per-agent/per-conversation inbox cursors for resident-agent cooperation.
