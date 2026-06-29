@@ -466,6 +466,16 @@ AnimaCoordinator server-boundary prep:
 - `collaboration_session_id` remains the resident agent workspace id and must not be confused with user-visible conversation history boundaries.
 - Host/server execution remains a follow-up phase after the boundary contract is stable.
 
+Anima AgentServerHost thin adapter, 2026-06-29:
+
+- `AnimaAgentServerHost` implements the common `AgentServerHost` trait for Anima `Job` and `Session` requests.
+- This adapter is plan-only: it creates `anima.plan.created` events and keeps jobs `queued`; it does not call `anima_chat_inner` or execute Anima responses yet.
+- `backendType` is required metadata and unsupported backends are rejected before plan creation.
+- Public event metadata stores `planOnly`, `executionSupported=false`, `jobStatusReason=planOnlyQueuedNoExecution`, and a redacted `planSummary` instead of exposing the full execution plan object.
+- `planSummary` excludes prompt text and request/session/conversation/collaboration ids; it only carries role, invocation, placement, backend, context mode, capabilities, and policy fields.
+- Plan-only queued jobs are not counted as active sessions or running jobs in health snapshots.
+- Worker requests, `Instant` invocation, and missing backend metadata are rejected at the Host boundary.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
