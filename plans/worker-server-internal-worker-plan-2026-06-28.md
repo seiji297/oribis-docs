@@ -507,6 +507,12 @@ Anima runtime routing hint, 2026-06-29:
 - Slash bypass requests stay on the selected session backend and do not become provider jobs, even when a conversation provider is present.
 - The live path still constructs adapters in `anima_chat_inner`; the hint only moves adapter-selection decisions out of ad-hoc inline conditionals.
 
+Anima live chat parts boundary, 2026-06-29:
+
+- `PreparedAnimaRuntime` fields are private; the live chat path consumes it through `into_live_chat_parts`.
+- `LiveChatRuntimeParts` is a named, crate-local bridge for the current embedded live chat path, not a wire schema or reusable AgentServer payload.
+- This keeps the preparation object from becoming a generic bag of execution internals while preserving the existing execution order.
+
 AgentCollaboration inbox acknowledgement, 2026-06-29:
 
 - AgentCollaboration now has in-memory per-agent/per-conversation inbox cursors for resident-agent cooperation.
