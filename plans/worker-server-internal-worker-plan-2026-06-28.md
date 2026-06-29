@@ -513,6 +513,15 @@ WorkerServer client/factory boundary, 2026-06-29:
 - Tauri Worker commands and the web-remote default AgentServer host now create the embedded Worker through the WorkerServer client factory instead of directly constructing the server at the call site.
 - Backend choice remains separate from placement: `internal`, CLI, and PTY remain Worker backend decisions inside the embedded Worker lifecycle; `Embedded`/`LocalServer`/`RemoteServer` are placement decisions.
 
+Local WorkerServer runner boundary, 2026-06-29:
+
+- `WorkerServerRunnerRequest`, `WorkerServerRunnerOperation`, and `WorkerServerRunnerResponse` define the first serializable runner envelope for a future local WorkerServer process.
+- This is a typed contract only. It does not start a process, open IPC, enable LocalServer routing, or change the current Embedded app path.
+- The runner envelope carries only protocol version, request id, operation kind, and operation metadata for create/get/list/run. It intentionally excludes raw instructions, tool input payloads, CLI paths, env maps, tokens, API keys, stdin, stdout, stderr, and PTY stream content.
+- Runner errors are classified with explicit codes such as unsupported placement/transport, invalid request, worker not found, and execution unavailable.
+- Runner boundary inputs are bounded: request/job ids and metadata fields are length-limited, worker/department metadata reuses InternalWorker component validation, job kind is token-like, list limits use the existing InternalWorker max list limit, and run timeouts use the existing InternalWorker max timeout range.
+- Local/Remote placement still must not silently fall back to Embedded. Actual local transport, process supervision, streaming, cancellation, and PTY bridge behavior remain future phases.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
