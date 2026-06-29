@@ -500,6 +500,13 @@ Anima runtime preparation boundary, 2026-06-29:
 - `PreparedAnimaRuntime` keeps raw execution objects internal and redacts them in `Debug`; it must not become a wire contract or external AgentServer request.
 - This phase stabilizes preparation/routing classification for future Anima serverization without making `/anima-agent` runnable.
 
+Anima runtime routing hint, 2026-06-29:
+
+- `AnimaRuntimeRoutingHint` classifies the prepared runtime request before adapter construction; it is a routing classification, not an adapter instance or execution owner.
+- Route kinds cover OpenAI subscription, configured provider requests, local OpenClaw, Codex CLI, OpenCode CLI, legacy provider backends (`anthropic`/`openai_compat`), and ChatCore fallback.
+- Slash bypass requests stay on the selected session backend and do not become provider jobs, even when a conversation provider is present.
+- The live path still constructs adapters in `anima_chat_inner`; the hint only moves adapter-selection decisions out of ad-hoc inline conditionals.
+
 AgentCollaboration inbox acknowledgement, 2026-06-29:
 
 - AgentCollaboration now has in-memory per-agent/per-conversation inbox cursors for resident-agent cooperation.
