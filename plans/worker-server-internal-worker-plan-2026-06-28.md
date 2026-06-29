@@ -522,6 +522,14 @@ Local WorkerServer runner boundary, 2026-06-29:
 - Runner boundary inputs are bounded: request/job ids and metadata fields are length-limited, worker/department metadata reuses InternalWorker component validation, job kind is token-like, list limits use the existing InternalWorker max list limit, and run timeouts use the existing InternalWorker max timeout range.
 - Local/Remote placement still must not silently fall back to Embedded. Actual local transport, process supervision, streaming, cancellation, and PTY bridge behavior remain future phases.
 
+Worker CLI backend metadata boundary, 2026-06-29:
+
+- `WorkerCliOptions` centralizes Worker CLI execution options before spawning Codex/Claude/OpenCode process backends.
+- CLI metadata is treated as a trust boundary. Metadata `cliPath` is accepted only under trusted-local policy and must be an absolute canonical file. Default binary lookup and local process env overrides remain separate local configuration paths.
+- Metadata `env` is accepted only under trusted-local policy and only for bounded uppercase `ORIBIS_WORKER_*` keys. Arbitrary keys such as provider tokens, shell/home/path controls, and other unprefixed env names are rejected before process spawn.
+- Metadata `model` and `sandbox` are bounded token-like strings. Whitespace, control characters, and oversized values are rejected.
+- This phase does not change the Embedded default, does not add Remote routing, and does not convert PTY output into final answers. PTY remains the persistent interactive TUI path; CLI process backends remain final-answer-producing process runs.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
