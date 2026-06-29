@@ -505,6 +505,14 @@ AgentCollaboration runnable claim/dedupe foundation, 2026-06-29:
 - This is not a durable scheduler, retry queue, delivery guarantee, lock lease, or ownership authorization layer. Restart-time dedupe and multi-process leases remain future work.
 - Inbox cursors and runnable claims are intentionally separate: a seen cursor means "this agent saw up to sequence N"; a runnable claim means "this Worker accepted this source message for execution."
 
+WorkerServer client/factory boundary, 2026-06-29:
+
+- `WorkerServerPlacement`, `WorkerServerEndpoint`, and `WorkerServerClient` define the placement/client boundary for future WorkerServer process split.
+- Phase 1 implements only `EmbeddedWorkerServerClient`, which delegates to the existing `InternalWorkerServer`; observable Worker behavior is unchanged.
+- `LocalServer` and `RemoteServer` placement values exist only as explicit future-work states and return clear unsupported-transport errors.
+- Tauri Worker commands and the web-remote default AgentServer host now create the embedded Worker through the WorkerServer client factory instead of directly constructing the server at the call site.
+- Backend choice remains separate from placement: `internal`, CLI, and PTY remain Worker backend decisions inside the embedded Worker lifecycle; `Embedded`/`LocalServer`/`RemoteServer` are placement decisions.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
