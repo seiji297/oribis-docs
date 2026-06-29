@@ -476,6 +476,14 @@ Anima AgentServerHost thin adapter, 2026-06-29:
 - Plan-only queued jobs are not counted as active sessions or running jobs in health snapshots.
 - Worker requests, `Instant` invocation, and missing backend metadata are rejected at the Host boundary.
 
+Anima web-remote route mount, 2026-06-29:
+
+- Web-remote mounts the Worker runnable AgentServer at `/agent` and the Anima plan-only AgentServer at `/anima-agent`.
+- `/anima-agent` uses the non-runnable `agent_server_router`, so `/anima-agent/jobs/:id/run` is not mounted while Anima execution is not supported.
+- `/anima-agent` is under the same web-remote auth middleware as `/agent`; health, job creation, and event replay reject unauthenticated requests.
+- If Oribis home resolution fails, the web-remote Anima host uses a temp fallback and logs the fallback path for observability.
+- Route tests cover auth, Anima Session plan creation, provider Job plan creation, event replay, run-route absence, Worker-role rejection, and unchanged Worker `/agent` job creation.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
