@@ -484,6 +484,15 @@ Anima web-remote route mount, 2026-06-29:
 - If Oribis home resolution fails, the web-remote Anima host uses a temp fallback and logs the fallback path for observability.
 - Route tests cover auth, Anima Session plan creation, provider Job plan creation, event replay, run-route absence, Worker-role rejection, and unchanged Worker `/agent` job creation.
 
+AgentCollaboration inbox acknowledgement, 2026-06-29:
+
+- AgentCollaboration now has in-memory per-agent/per-conversation inbox cursors for resident-agent cooperation.
+- `AgentInboxCursor.last_seen_sequence` is a global message sequence acknowledged as seen for one conversation; it is not Worker execution dedupe, delivery confirmation, retry guarantee, or persistence.
+- `acknowledge_inbox(agent_id, conversation_id, sequence)` validates agent existence, conversation membership, monotonic cursor movement, and that the sequence is visible to that agent through the existing inbox filter.
+- `list_unread_inbox(agent_id, limit)` applies the stored per-conversation cursors, preserves existing inbox filtering, sorts by global sequence, and then applies the limit.
+- `list_inbox_after` remains caller-cursor based; `list_unread_inbox` is stored-cursor based; `acknowledge_inbox` only updates seen cursor state.
+- Tauri commands expose acknowledge/get-cursor/list-unread operations for trusted UI/runtime use; command-level agent ownership authorization remains a future phase.
+
 ### Step 5: Focused tests
 
 - Rust InternalWorker tests.
