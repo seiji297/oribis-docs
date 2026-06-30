@@ -167,7 +167,19 @@ AppAction
 
 ```text
 HumanSurface
-  slot: settings | dock | overlay | fullPage | launcher
+  slot: workbenchPane | overlay | launcher
+  defaultEntry: appLauncher
+  defaultPlacement: center | left | right | bottom | tab
+  dockable
+  closable
+  floatable
+  popoutAllowed
+  minWidth
+  preferredWidth
+  maxWidth
+  resizable
+  tabs
+  layoutMode
   schema
   stateBinding
   actions
@@ -176,6 +188,65 @@ HumanSurface
 AI は `AppAction` を選ぶ。
 UI は同じ `AppAction` をボタン/フォームとして呼ぶ。
 手動 UI と AI 実行で別経路を作らない。
+
+### Dockable App Workbench Policy
+
+人間向け UI は固定サイドバーではなく Dockable App Workbench に載せる。
+Visual Studio / Unity 型の pane / tab / split / dock / layout restore を標準にする。
+
+原則:
+
+- App は `workbenchPane` として開く。
+- 3D View も中央 `workbenchPane` の1つとして扱う。
+- Pane は left / right / bottom / center / tab へ dock できる。
+- Pane は drag move / resize / tab grouping / layout save / layout restore を持つ。
+- タイトルバーの App アイコンは公式入口。ただし唯一の入口ではない。
+- 開いている pane/tab、command palette、shortcut、AI action routing からも App を open/focus できる。
+- App ごとに titlebar click の挙動を変えない。
+- App が勝手に modal / overlay へ直接遷移しない。
+- Floating / popout / multi-window は後段。Tauri WebView 制約を検証してから有効化する。
+
+Workbench sizing:
+
+- `minWidth`: 360px。これ未満にはしない。
+- `preferredWidth`: 420px〜480px。通常の App 操作。
+- `expandedWidth`: 560px〜720px。フォーム、一覧、編集、履歴。
+- `workspace`: 中央または大きめの tab group。Settings、Worker履歴、Scene編集などの広い操作。
+- 3D View 側にも最小幅を持たせる。
+- 狭い画面では drawer/full-height panel 扱いへ切り替える。
+
+表示の優先順:
+
+1. titlebar App icon -> App launcher / open/focus existing pane
+2. App launcher / command palette / shortcut -> open/focus `workbenchPane`
+3. pane の共通 dock/resize/tab 操作 -> layout update
+4. App が補助表示を必要とする場合のみ `overlay`
+
+Overlay policy:
+
+- 常用 App UI には使わない。
+- 通知、状態、ミニコントロールだけに使う。
+- Settings/Worker/Scene/Anima詳細は `workbenchPane` を使う。
+
+タブ方針:
+
+- App 切替は titlebar App icon / App launcher / command palette / open tab が担当。
+- App 内の分類だけ `tabs` で表現する。
+- 全 App を1つの巨大タブUIへ押し込まない。
+- タブの有無・タブ名は App 定義に持てるが、titlebarからの初期挙動は変えない。
+
+Layout persistence:
+
+- 保存するのは layout version / pane id / app id / placement / minimal params のみ。
+- React component state を layout に混ぜない。
+- 不明 app id、削除済み App、古い version は migration または破棄する。
+- AppAction 実行は UI 表示状態に依存しない。必要なら action 後に open/focus を副作用として行う。
+
+Implementation preference:
+
+- 第一候補は React 側の `dockview-react`。
+- Tauri 側は基本不要。別Window / OS popout / native window integration が必要になった時だけ使う。
+- 3D / xterm / iframe sandbox は直接 dock pane に入れず、専用 adapter pane を通す。
 
 ### Core App vs User App
 
@@ -276,30 +347,40 @@ RootShell が直接各機能の設定・操作ロジックを持つ状態を減�
 
 | Core App | Current Location | Primary AI Actions | Human UI Surface |
 | --- | --- | --- | --- |
-| Settings | `RootShell` settings modal | read/update settings, list providers, validate config | settings/fullPage |
-| Anima | `RootShell`, `hooks/useAnima`, `src-tauri/src/anima` | chat, memory query/update, state inspect, journal, expression/motion | dock/settings |
-| Worker | `worker-core`, `internal_worker`, `RootShell` | create job, run job, inspect events/artifacts, cancel | dock/fullPage |
-| Scene | `scene-runtime`, scene apps | get snapshot, mutate scene, save/load scene, build scene | dock/overlay |
-| Audio/TTS | TTS hooks/components/Rust commands | speak, stop, list voices, set voice, BGM control | settings/dock |
-| Discord | `apps/discord`, routing settings | send message, configure route, poll, inspect status | settings/dock |
-| Google/GitHub integrations | existing apps/components | auth status, query, sync, send/read | settings/dock |
-| Appearance/Avatar | avatar material/settings panels | set appearance, load avatar, inspect model | settings/dock |
-| Audit/Approvals | approval/write proposal panels | list decisions, approve/deny, inspect proposal | dock/fullPage |
+| Settings | `RootShell` settings modal | read/update settings, list providers, validate config | dockable workbench pane |
+| Anima | `RootShell`, `hooks/useAnima`, `src-tauri/src/anima` | chat, memory query/update, state inspect, journal, expression/motion | dockable workbench pane |
+| Worker | `worker-core`, `internal_worker`, `RootShell` | create job, run job, inspect events/artifacts, cancel | dockable workbench pane |
+| Scene | `scene-runtime`, scene apps | get snapshot, mutate scene, save/load scene, build scene | center/secondary workbench pane |
+| Audio/TTS | TTS hooks/components/Rust commands | speak, stop, list voices, set voice, BGM control | dockable workbench pane |
+| Discord | `apps/discord`, routing settings | send message, configure route, poll, inspect status | dockable workbench pane |
+| Google/GitHub integrations | existing apps/components | auth status, query, sync, send/read | dockable workbench pane |
+| Appearance/Avatar | avatar material/settings panels | set appearance, load avatar, inspect model | dockable workbench pane |
+| Audit/Approvals | approval/write proposal panels | list decisions, approve/deny, inspect proposal | dockable workbench pane |
 
 ## Sidebar Migration Map
 
-初期対応表。実装前に RootShell の実項目へ合わせて詳細化する。
+RootShell の現行タブを基準にした初期対応表。
 
 | Existing Area | Core App | Required Actions | Delete Condition |
 | --- | --- | --- | --- |
-| Settings modal general | Settings | `settings.read`, `settings.update`, `settings.validate` | AI/UI両方で全項目到達可能 |
-| Settings apps tab | App Manager | `apps.list`, `apps.enable`, `apps.disable`, `apps.permissions.update` | permission UI と app list がApp surface化 |
-| Anima tab | Anima | `anima.chat`, `anima.getState`, `anima.memory.search`, `anima.motion.play` | チャット/状態/記憶/モーションがAction経由 |
-| Worker tab | Worker | `worker.createJob`, `worker.runJob`, `worker.listEvents`, `worker.cancel` | DOMチャット/Worker UIが同一job action経由 |
-| Scene tools | Scene | `scene.snapshot`, `scene.mutate`, `scene.save`, `scene.load` | Scene UIとAI生成が同一Action経由 |
-| Audio/TTS settings | Audio | `audio.listVoices`, `audio.setVoice`, `audio.speak`, `audio.stop` | 設定/発話が同一Action経由 |
-| Discord routing | Discord | `discord.sendMessage`, `discord.routes.read`, `discord.routes.update` | 送信先がstateで固定されAI推定に依存しない |
-| Approval panels | Audit/Approval | `approval.list`, `approval.decide`, `audit.list` | 承認/監査の表示と操作がAction経由 |
+| Anima / Project | Project App | `project.list`, `project.open`, `project.switch`, `project.tabs.save` | Workbench起点でProject選択/切替がAction経由 |
+| Anima / Model | Model App | `model.getCurrent`, `model.listAvailable`, `model.setProvider`, `model.setModel` | Workbench起点でモデル管理、3D overlayは短い現在モデル表示のみ |
+| Anima / Log | Log App | `logs.list`, `logs.filter`, `logs.export` | Workbench paneでログ閲覧、長い履歴は大きめのtab group |
+| Anima / Console | Developer Console App | `console.runTypingScript`, `console.history`, `console.clear` | Console操作がAction/approval/audit経由 |
+| Anima / Tasks | Task App | `task.list`, `task.open`, `task.create`, `task.update` | タスク一覧/編集がWorkbench paneへ移行 |
+| Anima / Memory | Anima App | `anima.memory.search`, `anima.memory.read`, `anima.memory.write`, `anima.memory.consolidate` | Anima App内Memory tabへ移行 |
+| Anima / Prompt | Prompt App | `prompt.read`, `prompt.update`, `prompt.validate`, `prompt.reload` | Prompt編集がWorkbench paneへ移行 |
+| Anima / Debug Console | Developer App | `developer.runDiagnostic`, `workerCore.smoke`, `anima.debug.*` | Debug系は通常Appから分離しDeveloper Appへ隔離 |
+| Anima / Remote | Remote App | `remote.status`, `remote.start`, `remote.stop`, `remote.config.update` | Remote制御がWorkbench paneへ移行 |
+| Anima / Dashboard | Dashboard App | `dashboard.summary`, `dashboard.refresh` | DashboardはWorkbench pane、3D overlayは短い状態HUDのみ |
+| Anima / Events | Events/Audit App | `events.list`, `events.filter`, `events.replay` | Events閲覧がWorkbench paneへ移行 |
+| Anima / Jobs | Worker App | `worker.jobs.list`, `worker.jobs.open`, `worker.events.list`, `worker.artifacts.get`, `worker.cancel` | Jobs閲覧/操作がWorker Appへ移行 |
+| Worker / Department | Worker Manager App | `worker.list`, `worker.create`, `worker.update`, `worker.delete`, `department.configure` | Worker/Department設定がWorkbench paneへ移行 |
+| Settings / General | Settings App | `settings.read`, `settings.update`, `settings.validate` | Settings一般項目がWorkbench paneへ移行 |
+| Settings / Apps | App Manager App | `apps.list`, `apps.enable`, `apps.disable`, `apps.permissions.update`, `apps.sidecar.preflight` | App管理/権限/sidecar preflightがApp Managerへ移行 |
+| Agent Discord Routing | Discord App | `discord.routes.read`, `discord.routes.update`, `discord.sendMessage` | 送信先はstate固定、AI推定に依存しない |
+| Approval / Write Proposal | Approval App | `approval.list`, `approval.decide`, `writeProposal.inspect` | 承認/提案確認がAction経由 |
+| Self Improvement | Developer App | `developer.selfImprove.inspect`, `developer.selfImprove.run` | 開発者向け機能としてDeveloper Appへ隔離 |
 
 ## Phased Plan
 
@@ -403,7 +484,7 @@ Tasks:
   - `anima.journal.append`
   - `anima.motion.play`
   - `anima.expression.set`
-- UI は dock/fullPage App surface として出す。
+- UI は titlebar App icon -> App launcher -> dockable workbench pane を共通入口にする。
 - 既存チャット導線は action router 経由へ寄せる。
 
 Acceptance:
@@ -427,23 +508,30 @@ Acceptance:
 - 各機能が App action catalog から呼べる。
 - 外部送信先は設定/state による決定で、AI が自由に推定しない。
 
-### Phase 6: Sidebar Removal
+### Phase 6: Legacy Sidebar Replacement
 
-目的: 既存サイドバーを App launcher / command palette / active app surface に置換する。
+目的: 既存サイドバーを、Dockable App Workbench / App launcher / command palette / active app surface に置換する。
 
 Tasks:
 
+- titlebar App icon -> App launcher -> open/focus workbench pane の入口を全 App で統一する。
 - 既存 sidebar tab を Core App launcher へ置換する。
-- Settings は Settings App を開く。
-- Scene/Worker/Anima/Discord は App surface として開く。
+- Settings は Settings App workbench pane を開く。
+- Scene/Worker/Anima/Discord は workbench pane として開く。
+- Pane の dock/resize/tab/layout save/restore を共通UIとして実装する。
+- 初期移行では legacy sidebar と workbench を併存し、切替可能にする。
+- 最初の移行対象は Logs / Jobs / Settings に限定し、3D / xterm / iframe sandbox は adapter 設計後に移す。
 - old sidebar specific state を削除する。
 
 Acceptance:
 
+- titlebar App icon から全 App が同じ手順で App launcher / workbench pane を開く。
 - 旧サイドバーを使わず主要機能へ到達できる。
 - 旧サイドバーの全操作が Core App action 経由で到達できる。
 - AI/UI双方で同じ action 結果になる。
 - 権限・監査・エラー・状態更新が揃っている。
+- Appごとの勝手な初期表示先変更がない。
+- Layout save/restore が versioned schema で壊れない。
 - WDIO GPU 表示テストで主要導線が壊れていない。
 
 ## Non-Goals
