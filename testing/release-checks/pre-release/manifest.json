@@ -2,11 +2,11 @@
   "schemaVersion": 2,
   "target": {
     "repository": "oribis",
-    "commit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
+    "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
     "worktree": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis",
-    "notes": "Current RC candidate SHA includes release manifest gate audit hardening plus WindowsQA logon session diagnostics, TTS asset provisioning, and release packaging guards. Release Gate is not approved: ORB-AT-001, ORB-AT-005, and ORB-GATE-002 remain failing or blocked on official evidence.",
+    "notes": "Current RC candidate SHA includes headless packaging diagnostic hardening without weakening official Release Gate evidence. Release Gate is not approved: ORB-AT-001, ORB-AT-005, and ORB-GATE-002 remain failing or blocked on official evidence.",
     "rcCandidate": true,
-    "previousTrackedCommit": "8a70b3ef0a61fb67889ae15b7ca068b2eff9071f"
+    "previousTrackedCommit": "e366936065ca5a393e69344358047d2f1e1ccf7e"
   },
   "policy": {
     "process": "Feature Intake -> Feature Build -> Feature Done Definition -> Risk-based Test Selection -> Release Gate",
@@ -21,7 +21,7 @@
       "supportingNotSubstitute": "supporting and diagnostic runs cannot substitute required ST/AT evidence.",
       "diagnosticOnly": "PASS_WITH_DIAGNOSTIC_ONLY is never a Release Gate PASS.",
       "secretEvidence": "Evidence containing secrets, tokens, cookies, API keys, or PII is invalid unless redacted.",
-      "officialSummaryFields": "Official WindowsQA evidence requires official=true, sourceMode, requestedCommit, resolvedCommit, cleanChecks, skippedSteps, schemaVersion, qaProfile, and runnerScriptSha256 fields in new summary JSON. Legacy official summaries without the last four compatibility fields are warning-only if official/sourceMode/commit/clean/skippedSteps checks pass.",
+      "officialSummaryFields": "Official WindowsQA evidence requires official=true, mode/executionMode=official, sourceMode=git, requestedCommit, resolvedCommit, cleanChecks, skippedSteps, schemaVersion, qaProfile, runnerScriptSha256, and must not set officialPassEligible=false, officialEvidenceValid=false, headlessDiagnosticAllowed=true, or headlessDetected=true. Legacy official summaries without newer compatibility fields are warning-only if official/sourceMode/commit/clean/skippedSteps checks pass.",
       "exactRevision": "Official WindowsQA must pin an exact commit. Branch-tip-only execution is diagnostic/supporting.",
       "packagingGate": "Release Gate requires packaged release build or installer execution evidence; dev server/debug build evidence cannot substitute it.",
       "qaRefForUncommittedWork": "Uncommitted work should be tested through a pushed refs/qa/<run-id> commit. Source snapshots remain diagnostic/supporting only.",
@@ -90,7 +90,7 @@
         "ORB-BUG-019"
       ],
       "targetCommitAtApproval": "bb6561b3a7602304260d1dbc5cbc2757935081eb",
-      "currentTargetCommit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
+      "currentTargetCommit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
       "releaseGateMeaning": "Scope deferral only. Does not count as PASS for Discord real relay and does not validate Discord send/receive or queue metrics.",
       "recheckCondition": "Before a release that includes Discord relay as in-scope, run ORB-SIT-002 real Discord relay evidence on WindowsQA or a dedicated Discord-ready QA environment."
     }
@@ -1086,23 +1086,26 @@
         "cleanup-result"
       ],
       "lastExecution": {
-        "runId": "20260705-063448",
+        "runId": "20260705-072021",
         "result": "FAIL",
+        "status": "FAIL",
         "environment": "WindowsQA Server",
         "runner": "windows-qa-server + packaging runner",
-        "commit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
-        "requestedCommit": "e366936",
+        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
+        "requestedCommit": "1f4c86a",
         "official": true,
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\summary-20260705-063448.json",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\summary-20260705-063448.json",
-            "sha256": "8e247e35d3731e3363ec2b4c74b193c8ddf45b7c8d69cc07e8e34df6836582d1"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
+            "kind": "packaging-summary-json",
+            "sha256": "05ecddf527b4f6cc614698d6850b0a2ef7d26982a95bf048b3857851708e3a1e"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\latest-windows-packaging.zip",
-            "sha256": "c8dbe21a80e3d24ba799b140ab80995fb587c2e891a17d0814049b58677db026"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\packaging-20260705-072021.zip",
+            "kind": "packaging-artifact-zip",
+            "sha256": "af6f5f692b640fdc307871cc4dc08181d10d092ffab6f62cd77cc94838c87aac"
           }
         ],
         "failedStep": "interactive-desktop-precheck",
@@ -1110,24 +1113,26 @@
         "installStatus": "not-run",
         "uninstallStatus": "not-run",
         "interactiveSessionStatus": "blocked-no-interactive-session",
-        "status": "FAIL"
+        "officialEvidenceValid": false,
+        "officialPassEligible": false,
+        "headlessDetected": true
       },
       "result": "FAIL",
       "waiver": null,
       "blockedReason": "WindowsQA SSH/clean checkoutは成立したが、ログイン済み対話ユーザーsessionが無い。`query user` は `No User exists for *`、`qwinsta` はconsole Connだがusernameなし、explorerProcesses=[]。release build / installer / installed app startup / uninstall へ進めていない。",
       "evidence": [
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\summary-20260705-063448.json",
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
           "kind": "packaging-summary-json",
-          "sha256": "8e247e35d3731e3363ec2b4c74b193c8ddf45b7c8d69cc07e8e34df6836582d1"
+          "sha256": "05ecddf527b4f6cc614698d6850b0a2ef7d26982a95bf048b3857851708e3a1e"
         },
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\latest-windows-packaging.zip",
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\packaging-20260705-072021.zip",
           "kind": "packaging-artifact-zip",
-          "sha256": "c8dbe21a80e3d24ba799b140ab80995fb587c2e891a17d0814049b58677db026"
+          "sha256": "af6f5f692b640fdc307871cc4dc08181d10d092ffab6f62cd77cc94838c87aac"
         }
       ],
-      "notes": "WindowsQA official current-head run failed at interactive-desktop-precheck: no logged-in interactive desktop session. SSH, exact commit checkout, and clean repo checks succeeded, but release build / installer install / installed app startup / uninstall were not reached."
+      "notes": "WindowsQA official head-1f4c86a run failed at interactive-desktop-precheck: no logged-in interactive desktop session. SSH, exact commit checkout, and clean repo checks succeeded, but release build / installer install / installed app startup / uninstall were not reached."
     },
     {
       "test_id": "ORB-SIT-001",
@@ -1374,29 +1379,31 @@
         "date": "2026-07-05",
         "environment": "WindowsQA Server",
         "mode": "official",
-        "commit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
-        "requestedCommit": "e366936",
-        "runId": "20260705-063537",
+        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
+        "requestedCommit": "1f4c86a",
+        "runId": "20260705-072206",
         "official": true,
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-real-llm-official-20260705-current-head\\summary-20260705-063537.json",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-real-llm-official-20260705-current-head\\summary-20260705-063537.json",
-            "sha256": "e0f916956cbb89b6cc9d6970390861251d0d1ebe62304590a2b4275231ff9313"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
+            "sha256": "aadf3c09f353900dafd36d94eccc06ab289ddefb68c7a69397856113c0405d57"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-real-llm-official-20260705-current-head\\20260705-063537.zip",
-            "sha256": "6bb7b134346f3cc8a2ece58b90074b4ba356cf21db0e106d1c17d6adb098d8ed"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\20260705-072206.zip",
+            "sha256": "e42db4ea44af47a77fb5e55fc5f1c464f13dc67ff55a2e01be35d4d393c29092"
           }
         ],
         "failure": "real LLM representative run reached the app and onboarding, but passedCount=0/10 and failed the >=8 threshold because oribisAI requires commercial feature in the QA environment",
         "result": "FAIL",
-        "status": "FAIL"
+        "status": "FAIL",
+        "passedCount": 0,
+        "total": 10
       },
       "result": "FAIL",
       "waiver": null,
-      "notes": "WindowsQA official current-head run reached real-app onboarding and WDIO execution, then failed the real LLM representative threshold: expected passedCount >= 8, received 0. QA environment still lacks real LLM provider/API key or commercial feature, so deterministic mock 30-case PASS cannot substitute this required evidence."
+      "notes": "WindowsQA official head-1f4c86a run reached real-app onboarding and WDIO execution, then failed the real LLM representative threshold: expected passedCount >= 8, received 0. QA environment still lacks real LLM provider/API key or commercial feature, so deterministic mock 30-case PASS cannot substitute this required evidence."
     },
     {
       "test_id": "ORB-AT-002",
@@ -1541,32 +1548,32 @@
         "settings JSON"
       ],
       "lastExecution": {
-        "runId": "20260705-063513",
+        "runId": "20260705-072123",
         "result": "FAIL",
+        "status": "FAIL",
         "environment": "WindowsQA Server",
         "runner": "windows-qa-server + WDIO",
-        "commit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
-        "requestedCommit": "e366936",
+        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
+        "requestedCommit": "1f4c86a",
         "official": true,
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-tts-voice-official-20260705-current-head\\summary-20260705-063513.json",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-tts-official-20260705-head-1f4c86a\\summary-20260705-072123.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-tts-voice-official-20260705-current-head\\summary-20260705-063513.json",
-            "sha256": "1185d4d4d45d51212f4d9152fbc3b10d0c81051ba1d18c8fa0e2bcbd98392aee"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-tts-official-20260705-head-1f4c86a\\summary-20260705-072123.json",
+            "sha256": "b6f819a30500c28626b4c0527e9dc52c66aada1751b98b23833342e3623bf986"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-tts-voice-official-20260705-current-head\\20260705-063513.zip",
-            "sha256": "063bbbc74bc31af02e9bf1b08823203408b217b109528865b9a2da32e3618264"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-tts-official-20260705-head-1f4c86a\\20260705-072123.zip",
+            "sha256": "745f8705783eda87c87601b2db0a66f5b2e7e2d1a042ed0c54fb77a39aa28b86"
           }
         ],
         "failedStep": "tts-assets-provision",
-        "failure": "VOICEVOX runtime assets are missing and ORIBIS_QA_ACCEPT_VOICEVOX_TERMS / ORIBIS_ACCEPT_VOICEVOX_TERMS is not set",
-        "status": "FAIL"
+        "failure": "VOICEVOX runtime assets are missing and ORIBIS_QA_ACCEPT_VOICEVOX_TERMS / ORIBIS_ACCEPT_VOICEVOX_TERMS is not set"
       },
       "result": "FAIL",
       "waiver": null,
-      "notes": "WindowsQA official current-head run stopped at tts-assets-provision because VOICEVOX runtime assets are missing and ORIBIS_QA_ACCEPT_VOICEVOX_TERMS / ORIBIS_ACCEPT_VOICEVOX_TERMS are not set. No audio acceptance was reached."
+      "notes": "WindowsQA official head-1f4c86a run stopped at tts-assets-provision because VOICEVOX runtime assets are missing and ORIBIS_QA_ACCEPT_VOICEVOX_TERMS / ORIBIS_ACCEPT_VOICEVOX_TERMS are not set. No audio acceptance was reached."
     },
     {
       "test_id": "ORB-DIAG-001",
@@ -2409,35 +2416,38 @@
       "result": "FAIL",
       "evidence": [
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\summary-20260705-063448.json",
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
           "kind": "packaging-summary-json",
-          "sha256": "8e247e35d3731e3363ec2b4c74b193c8ddf45b7c8d69cc07e8e34df6836582d1"
+          "sha256": "05ecddf527b4f6cc614698d6850b0a2ef7d26982a95bf048b3857851708e3a1e"
         },
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\latest-windows-packaging.zip",
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\packaging-20260705-072021.zip",
           "kind": "packaging-artifact-zip",
-          "sha256": "c8dbe21a80e3d24ba799b140ab80995fb587c2e891a17d0814049b58677db026"
+          "sha256": "af6f5f692b640fdc307871cc4dc08181d10d092ffab6f62cd77cc94838c87aac"
         }
       ],
       "blockedReason": "WindowsQA SSH/clean checkoutは成立したが、ログイン済み対話ユーザーsessionが無い。`query user` は `No User exists for *`、`qwinsta` はconsole Connだがusernameなし、explorerProcesses=[]。release build / installer / installed app startup / uninstall へ進めていない。",
       "lastExecution": {
-        "runId": "20260705-063448",
+        "runId": "20260705-072021",
         "result": "FAIL",
+        "status": "FAIL",
         "environment": "WindowsQA Server",
         "runner": "windows-qa-server + packaging runner",
-        "commit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
-        "requestedCommit": "e366936",
+        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
+        "requestedCommit": "1f4c86a",
         "official": true,
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\summary-20260705-063448.json",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\summary-20260705-063448.json",
-            "sha256": "8e247e35d3731e3363ec2b4c74b193c8ddf45b7c8d69cc07e8e34df6836582d1"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
+            "kind": "packaging-summary-json",
+            "sha256": "05ecddf527b4f6cc614698d6850b0a2ef7d26982a95bf048b3857851708e3a1e"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-current-head\\latest-windows-packaging.zip",
-            "sha256": "c8dbe21a80e3d24ba799b140ab80995fb587c2e891a17d0814049b58677db026"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\packaging-20260705-072021.zip",
+            "kind": "packaging-artifact-zip",
+            "sha256": "af6f5f692b640fdc307871cc4dc08181d10d092ffab6f62cd77cc94838c87aac"
           }
         ],
         "failedStep": "interactive-desktop-precheck",
@@ -2445,9 +2455,11 @@
         "installStatus": "not-run",
         "uninstallStatus": "not-run",
         "interactiveSessionStatus": "blocked-no-interactive-session",
-        "status": "FAIL"
+        "officialEvidenceValid": false,
+        "officialPassEligible": false,
+        "headlessDetected": true
       },
-      "notes": "WindowsQA official current-head run failed at interactive-desktop-precheck: no logged-in interactive desktop session. SSH, exact commit checkout, and clean repo checks succeeded, but release build / installer install / installed app startup / uninstall were not reached."
+      "notes": "WindowsQA official head-1f4c86a run failed at interactive-desktop-precheck: no logged-in interactive desktop session. SSH, exact commit checkout, and clean repo checks succeeded, but release build / installer install / installed app startup / uninstall were not reached."
     },
     {
       "test_id": "ORB-STATIC-001",
@@ -2898,9 +2910,9 @@
       "guarantee": "実チャット送信からApp tool invokeを通し、代表30件のApp設定/操作がschema/tool catalog経路で実行される。固定語録ルーターではない。実LLM経路では、Anima promptへApp Actions catalog/tool schemaが注入され、自然言語から正しいapp.tool.invokeを生成できることを代表確認する。",
       "result": "FAIL",
       "run": {
-        "runId": "20260705-063537",
-        "commit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
-        "requestedCommit": "e366936",
+        "runId": "20260705-072206",
+        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
+        "requestedCommit": "1f4c86a",
         "official": true,
         "sourceMode": "git",
         "caseCount": 10,
@@ -2911,7 +2923,7 @@
       },
       "commands": [
         "scripts/qa/invoke-windows-qa.sh --official --wdio-spec tests/app-ai-native-route-acceptance.spec.ts",
-        "scripts/qa/invoke-windows-qa.sh --official --commit 9c4062378c2be9077ca5e0b1af2eb74eb0f9f2d3 --wdio-spec e2e/wdio/tests/app-ai-native-real-llm-representative.spec.ts"
+        "scripts/qa/invoke-windows-qa.sh --official --commit 1f4c86a --wdio-spec e2e/wdio/tests/app-ai-native-real-llm-representative.spec.ts"
       ],
       "evidence": [
         {
@@ -2935,40 +2947,42 @@
           "sha256": "21d4c34488830ec092bdf97a210ee603e676a75171b8c6b61fdeb1c665c3fa8b"
         },
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-real-llm-official-20260705-current-head\\summary-20260705-063537.json",
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
           "kind": "summary-json",
-          "sha256": "e0f916956cbb89b6cc9d6970390861251d0d1ebe62304590a2b4275231ff9313"
+          "sha256": "aadf3c09f353900dafd36d94eccc06ab289ddefb68c7a69397856113c0405d57"
         },
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-real-llm-official-20260705-current-head\\20260705-063537.zip",
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\20260705-072206.zip",
           "kind": "artifact-zip",
-          "sha256": "6bb7b134346f3cc8a2ece58b90074b4ba356cf21db0e106d1c17d6adb098d8ed"
+          "sha256": "e42db4ea44af47a77fb5e55fc5f1c464f13dc67ff55a2e01be35d4d393c29092"
         }
       ],
-      "notes": "WindowsQA official current-head run reached real-app onboarding and WDIO execution, then failed the real LLM representative threshold: expected passedCount >= 8, received 0. QA environment still lacks real LLM provider/API key or commercial feature, so deterministic mock 30-case PASS cannot substitute this required evidence.",
+      "notes": "WindowsQA official head-1f4c86a run reached real-app onboarding and WDIO execution, then failed the real LLM representative threshold: expected passedCount >= 8, received 0. QA environment still lacks real LLM provider/API key or commercial feature, so deterministic mock 30-case PASS cannot substitute this required evidence.",
       "lastExecution": {
         "date": "2026-07-05",
         "environment": "WindowsQA Server",
         "mode": "official",
-        "commit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
-        "requestedCommit": "e366936",
-        "runId": "20260705-063537",
+        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
+        "requestedCommit": "1f4c86a",
+        "runId": "20260705-072206",
         "official": true,
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-real-llm-official-20260705-current-head\\summary-20260705-063537.json",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-real-llm-official-20260705-current-head\\summary-20260705-063537.json",
-            "sha256": "e0f916956cbb89b6cc9d6970390861251d0d1ebe62304590a2b4275231ff9313"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
+            "sha256": "aadf3c09f353900dafd36d94eccc06ab289ddefb68c7a69397856113c0405d57"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-real-llm-official-20260705-current-head\\20260705-063537.zip",
-            "sha256": "6bb7b134346f3cc8a2ece58b90074b4ba356cf21db0e106d1c17d6adb098d8ed"
+            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\20260705-072206.zip",
+            "sha256": "e42db4ea44af47a77fb5e55fc5f1c464f13dc67ff55a2e01be35d4d393c29092"
           }
         ],
         "failure": "real LLM representative run reached the app and onboarding, but passedCount=0/10 and failed the >=8 threshold because oribisAI requires commercial feature in the QA environment",
         "result": "FAIL",
-        "status": "FAIL"
+        "status": "FAIL",
+        "passedCount": 0,
+        "total": 10
       }
     }
   ],
