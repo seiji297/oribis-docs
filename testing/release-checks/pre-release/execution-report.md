@@ -1,5 +1,49 @@
 # Pre-release Execution Report
 
+## Release Gate 現在地
+
+現時点の判定: **BLOCKED / Release不可**。
+
+対象RC SHA: `e366936065ca5a393e69344358047d2f1e1ccf7e`。
+
+`manifest.json` の監査処理は動作しているが、required項目に `BLOCKED_ON_WINDOWSQA` / `NOT_RUN` が残っているため、Release Gateは通っていない。
+
+| 状態 | 件数 / 対象 |
+|---|---|
+| Required BLOCKED/FAIL | `ORB-AT-001`, `ORB-AT-005`, `ORB-GATE-002` |
+| Required NOT_RUN | `ORB-GATE-001` |
+| 未verified release-blocking bug | なし |
+| 今回scope外 | `ORB-SIT-002` / `ORB-BUG-019`: Discord環境未準備のためProducer指示で延期。waiver `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` |
+| 代替不可 | Xvfb / CPU fallback / WSLg / local diagnostic は正式PASSにしない |
+
+現時点のFAIL分類:
+
+| test_id | Release Gate上の扱い | 直接原因 | 次のunblock条件 |
+|---|---|---|---|
+| `ORB-AT-001` | `requiredBlocked` | QA環境にreal LLM provider/API keyまたはcommercial featureが無く、real LLM代表10件が `passedCount=0/10` | secretを証跡へ漏らさない手順でQA環境へ実LLM/商用featureを設定し、official rerunで8/10以上PASS |
+| `ORB-AT-005` | `requiredBlocked` | VOICEVOX runtime assets未配置、かつ規約承諾env未設定で `tts-assets-provision` 停止 | Producerの明示承諾後にVOICEVOX assetsとacceptance envを準備し、実音声ATをofficial rerun |
+| `ORB-GATE-002` | `requiredBlocked` | WindowsQAにログイン済み対話デスクトップsessionが無く、packaging/install/startup/uninstall未到達 | WindowsQAでofficialに使うinteractive desktop sessionを確保し、release build / installer / installed app startup / uninstallをofficial rerun |
+| `ORB-GATE-001` | `requiredNotRun` | 上記required blockerが残るためRelease Gate strict auditは承認判定として未実行 | 上記blocker解消後に `--require-release-pass` 付きでstrict auditし、summary/artifact SHAを登録 |
+
+分類ルール:
+
+- `requiredBlocked` はRelease Gateを止める。scope外/waived扱いではない。
+- `requiredBlocked` には、製品不具合だけでなく、official条件の環境・前提未充足でrequired PASSへ到達できないものも含める。原因種別は上の表で分離して読む。
+- `ORB-AT-001` のdeterministic mock 30件PASSは配管確認であり、real LLM代表FAILを代替しない。
+- `ORB-AT-005` はVOICEVOX runtime assets配置と規約承諾envが揃うまで正式ATへ到達していない。
+- `ORB-GATE-002` はSSH/clean checkout成功だけでは進捗証跡に過ぎず、release build / installer install / installed app startup / uninstall が未検証のためrelease-blocking。
+- `ORB-GATE-001` はrequired未完了を理由に意図的に未実行であり、単なる実行漏れではない。
+- Discord waiverは今回scopeからの明示延期であり、Discord real relayのPASSではない。
+- Release承認時は `audit-release-manifest --require-release-pass` を必須にし、`requiredBlocked` / `requiredNotRun` / 未verified blocking bugが1件でもあればFAILにする。
+- Release Gate PASS証跡ではrunId固定summaryとrunId固定artifact zipを必須にする。`latest-*` はFAIL/BLOCKED診断証跡または便利用途に限り、PASS承認根拠にしない。
+
+次に実行する順序:
+
+1. `ORB-AT-005`: VOICEVOX規約承諾とruntime assets配置を明示した上で、Audio/TTS UX official reviewを再実行する。
+2. `ORB-AT-001`: QA環境へreal LLM provider/API keyまたはcommercial feature設定を安全に入れ、real LLM representative AI-native App operationを再実行する。
+3. `ORB-GATE-002`: WindowsQAへ対話デスクトップsessionを作ってからRelease Packaging Gateを再実行する。正式Gateは最終RC SHAでのみ判定する。
+4. `ORB-GATE-001`: strict Release Gate audit。
+
 ## 現状サマリ
 
 テスト体系は新ルールへ移行中。  
@@ -30,40 +74,78 @@
 | Recording / Scheduler supporting | PASS | supporting | `ORB-SIT-010`: recording 7、scheduler 21 passed |
 | AI-native UI supporting | PASS | supporting | `ORB-IT-003`: WDIO real GPU/WSLg route 1 spec / 1 test PASS |
 | Anima chat metadata regression | PASS_WITH_LIMITATION | required bug regression | `ORB-BUG-017`: WindowsQA official / commit `6f08c523c045d82afc8c7a9d45305883e9dcf8ae`。実チャット送信経路で `[好感度: ...]` が表示本文へ漏れないことを確認。音声読み上げの実出力確認は `ORB-AT-005` に残す |
-| AI-native App Operation official | PASS_WITH_LIMITATION | required | `ORB-AT-001` / `ORB-BUG-018`: WindowsQA official / commit `5d5589780b0e571bc2c3038bacef76adbe60b7d4`。実チャット送信から決定的mock Anima応答でApp tool invoke 30件PASS。2026-07-04 localでAnima promptへのAI-native App Actions catalog注入を追加/検証。ただしreal LLM代表確認は未実行のためRelease Gate未達 |
+| AI-native App Operation official | FAIL | required | `ORB-AT-001` / `ORB-BUG-018`: 決定的mock Anima応答でApp tool invoke 30件はPASS。2026-07-05 WindowsQA official run `20260705-063537` / commit `e366936065ca5a393e69344358047d2f1e1ccf7e` のreal LLM代表確認は、実アプリ起動とオンボーディングは通過したが、QA環境に実LLM provider/API keyまたはcommercial feature設定が無く、`passedCount=0/10` でFAIL。Release Gate停止中 |
 | WebViewer AI-native official | PASS | required | `ORB-SIT-003` / `ORB-AT-004`: WindowsQA official / commit `96f5943445452f5988fc7ee7cacc4eef88681150`。実チャット送信からWebViewer URL表示、localhostページ読取、automation結果取得、WDIO個別PNG/JSON保存 |
-| Discord Relay surface closure | PASS_WITH_PENDING_REAL_RELAY | required bug regression | `ORB-BUG-019`: local-linuxで旧Worker Core outbox queue導線をDeveloper Console/CommandRegistry/TypingScript DSL/RootShellから削除確認。実Discord送受信/queue metricsのWindowsQA証跡は `ORB-SIT-002` に残す |
-| Discord Relay supporting recheck | PASS_WITH_PENDING_REAL_RELAY | required supporting | `ORB-SIT-002`: `cargo test agent_discord` 35 passed、Discord/outbox関連Vitest 9 passed。実Discord送受信とqueue metricsはWindowsQA/secret付き公式証跡に残す |
+| Discord Relay surface closure | PASS_WITH_PENDING_REAL_RELAY_DEFERRED_BY_WAIVER | deferred | `ORB-BUG-019`: local-linuxで旧Worker Core outbox queue導線をDeveloper Console/CommandRegistry/TypingScript DSL/RootShellから削除確認。実Discord送受信/queue metricsはDiscord環境未準備のためProducer指示で今回scopeから延期 |
+| Discord Relay supporting recheck | DEFERRED_BY_WAIVER | deferred | `ORB-SIT-002`: `cargo test agent_discord` 35 passed、Discord/outbox関連Vitest 9 passed。実Discord送受信とqueue metricsはwaiver `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` により今回scope外。PASS扱いにはしない |
 | Static smoke | PASS | required | `ORB-STATIC-001`: WindowsQA official / run `20260704-034448`。typecheck / targeted Vitest / cargo-check / frontend-build / tauri-debug-build PASS |
 | WindowsQA official smoke attempt | ABORTED | required attempt | `20260703-184522`: QA-ref `608e1258b14a04a69318a95b8ed83e74351cfbb4`で開始。clean checkout / pnpm install / typecheck / targeted Vitest通過後、cargo check中にProducer指示で中断。公式PASS扱いにしない |
 | Startup/Stage WindowsQA official | PASS_WITH_WARNINGS | required | `ORB-ST-001` / `ORB-ST-003`: WindowsQA official / run `20260704-034448`。cleanChecks/processChecks/WDIO PASS。desktop screenshotのみwarn |
 | Onboarding WindowsQA official | PASS_WITH_WARNINGS | required | `ORB-ST-002`: WindowsQA official / run `20260704-002031`。Anima VRM loaded、idle pose、Workbench/terminal/debug UI非表示。desktop screenshotのみwarn |
 | Workbench/WebViewer UI official | PASS_WITH_WARNINGS | required | `ORB-ST-004` / `ORB-ST-006`: WindowsQA official / run `20260704-004932`。default layout、Scene resize aspect、WebViewer empty-openをWDIO PNG/JSONで確認。desktop screenshotのみwarn |
-| Console/Worker Activity UI prep | BLOCKED_ON_WINDOWSQA | required | `ORB-ST-005`: Workers Appの `Jobs/Tasks/Queue` 分散タブを `Activity` に統合。codex-adviser確認済み。typecheck / targeted Vitest PASS。2026-07-04追加支援確認 43 tests PASS。WindowsQA host SSH timeoutで公式証跡は未取得 |
-| Settings/Anima UX prep | BLOCKED_ON_WINDOWSQA | required | `ORB-AT-002`: OnboardingのAnima/User既定値を確認し、Rust側の旧Ideaログ/テスト文言とLLM smokeのIdea許容を削除。Prompts統合は既存Workbench証跡で確認。2026-07-04追加支援確認 42 tests PASS。WindowsQA host SSH timeoutで公式証跡は未取得 |
-| Worker Chat UX prep | BLOCKED_ON_WINDOWSQA | required | `ORB-SIT-001` / `ORB-AT-003`: fallback本文とWDIO判定を改善。Rust/HookテストPASS。2026-07-04追加支援確認 21 tests PASS / 60 skipped。WindowsQA host `100.64.6.42` SSH timeoutで公式証跡は未取得 |
-| TTS voice acceptance prep | BLOCKED_ON_WINDOWSQA | required | `ORB-AT-005`: readable TTS Vitest 14 tests PASS、Cargo `tts` 80 passed / 21 ignored。Rust側の環境変数干渉を修正。実音声/画面のWindowsQA公式証跡は未取得 |
-| Release Packaging runner prep | BLOCKED_ON_WINDOWSQA | required | `ORB-GATE-002`: codex-adviser確認後、WindowsQA packaging runnerをinstaller必須の公式Gate仕様へ更新。smoke/packaging summary自己記述も更新。PowerShell parser / shell syntax / manifest audit PASS。WindowsQA host SSH timeoutでrelease build / installer実行証跡は未取得 |
+| Console/Worker Activity UI official | PASS_WITH_WARNINGS | required | `ORB-ST-005`: WindowsQA official run `20260704-202324` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Console/Log default layout、Workers Activity表示、不要なJobs/Tasks/Queue分散タブなしを確認。desktop screenshotのみwarn |
+| Settings/Anima UX official | PASS_WITH_WARNINGS | required | `ORB-AT-002`: WindowsQA official runs `20260704-202324`, `20260704-202948` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Settings分割、白パネルなし、Prompts統合、Onboarding保存値 `characterName=anima` / `userName=User` / VRM pathを確認。desktop screenshotのみwarn |
+| Worker Chat UX official | PASS_WITH_WARNINGS | required | `ORB-SIT-001` / `ORB-AT-003`: WindowsQA official run `20260704-200036` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Worker terminal stream、worker_output本文、Anima入力欄非存在、送信後input空を確認。desktop screenshotのみwarn |
+| TTS voice acceptance official | FAIL | required | `ORB-AT-005`: WindowsQA official run `20260705-063513` / commit `e366936065ca5a393e69344358047d2f1e1ccf7e`。TTS資産provisionゲートを追加済み。現状はVOICEVOX runtime assets未配置、かつ `ORIBIS_QA_ACCEPT_VOICEVOX_TERMS` / `ORIBIS_ACCEPT_VOICEVOX_TERMS` 未設定のため `tts-assets-provision` で停止。supporting TTS unit/Cargoは代替にしない |
+| Release Packaging official | FAIL | required | `ORB-GATE-002`: WindowsQA official run `20260705-063448` / commit `e366936065ca5a393e69344358047d2f1e1ccf7e`。SSH/clean checkoutは成立。`interactive-desktop-precheck` が `blocked-no-interactive-session` で停止。`query user` は `No User exists for *`、`qwinsta` はconsole Connだがusernameなし、explorerProcesses=[]。release build / installer / installed app screenshot / uninstall証跡へ進めていない |
 | Frontend full Vitest | PASS | supporting | `vitest.config.ts` でNode専用QA testをVitest対象から除外。`rtk pnpm vitest run --reporter=dot`: 133 files / 1590 tests PASS |
-| WindowsQA Server remaining AT/ST | BLOCKED_ON_WINDOWSQA | required | `ORB-AT-001` real LLM代表確認、`ORB-SIT-001/002`, `ORB-ST-005`, `ORB-AT-002/003/005` は準備済みだがWindowsQA host offlineで実行不可 |
+| WindowsQA Server remaining AT/ST | FAIL | required | Discordを除く残requiredは、公式FAILの `ORB-AT-001` real LLM代表確認、公式FAILの `ORB-AT-005` TTS/audio、公式FAILの `ORB-GATE-002` packaging。`ORB-ST-005` / `ORB-AT-002` / `ORB-SIT-001` / `ORB-AT-003` はWindowsQA officialでPASS_WITH_WARNINGS |
 | local-windows devUrl diagnostic | BLOCKED_DIAGNOSTIC | diagnostic | local-windowsで`localhost:1420` timeout/black screenを確認。AT/STの代替にしない |
 | Release Gate | NOT_RUN | required | required項目未完了。Packaging Gateも未実行 |
 
 WindowsQA connectivity latest:
 
-- `ssh -i ~/.ssh/oribis_windows_qa -o BatchMode=yes -o ConnectTimeout=8 admin@100.64.6.42 "echo windowsqa-ok"`: timeout。
-- latest QA ref for pre-RC diagnostic/supporting run: `e9c0307fc10b6d7f9fb401c89a391418bc88c09e` (`refs/qa/qa-20260704-qa-audit-script-and-blocked-status`)。required公式runは出荷候補RC SHA確定後に、そのRC SHAで実行する。
-- RC candidate SHA: `bb6561b3a7602304260d1dbc5cbc2757935081eb` (`origin/develop`)。WindowsQA公式runはこのSHAで実行する。
+- 2026-07-04 20:00 JST Worker Chat official:
+  - WindowsQA host復旧後、clean clone `C:\oribis-qa\oribis-official` からRC SHA `bb6561b3a7602304260d1dbc5cbc2757935081eb` をcheckoutして実行。
+  - `tests/worker-chat.spec.ts`: 4 tests PASS。
+  - run `20260704-200036`: summary status `pass`, `official=true`, `sourceMode=git`, `requestedCommit=resolvedCommit=bb6561b3a7602304260d1dbc5cbc2757935081eb`, `skippedSteps=[]`。
+  - `desktop-screenshot` stepのみ `warn`。WDIO個別PNG/JSONは保存済み。
+  - `ORB-SIT-001` / `ORB-AT-003` は `PASS_WITH_WARNINGS`、`ORB-BUG-015/016` は `verified` に更新。
+
+- 2026-07-04 19:54 JST recheck:
+  - WSL SSH to `admin@100.64.6.42`: timeout。
+  - Windows `Test-NetConnection 100.64.6.42 -Port 22`: `TcpTestSucceeded=false`, `PingSucceeded=false`, interface `Tailscale`。
+  - 結論: この時点ではWindowsQA host offline。後続の20:00 Worker Chat official runで `ORB-SIT-001` / `ORB-AT-003` は解消済み。
+- 2026-07-04 19:09 JST recheck:
+  - WSL SSH to `admin@100.64.6.42`: timeout。
+  - Windows `Test-NetConnection 100.64.6.42 -Port 22`: `TcpTestSucceeded=false`, `PingSucceeded=false`, interface `Tailscale`。
+  - Windows `tailscale status --json`: peer `DESKTOP-TEST001` / `100.64.6.42` is `Online=false`, `Active=true`, `LastSeen=2026-07-03T18:59:08.1Z`。
+  - 結論: この時点ではWindowsQA host offline。Discord `ORB-SIT-002` は環境未準備のため今回scopeから延期。
+- 19:54時点の `ssh -i ~/.ssh/oribis_windows_qa -o BatchMode=yes -o ConnectTimeout=8 admin@100.64.6.42 "echo windowsqa-ok"`: timeout。20:00のWorker Chat official runでは接続復旧済み。
+- latest QA ref for pre-RC diagnostic/supporting run: `e9c0307fc10b6d7f9fb401c89a391418bc88c09e` (`refs/qa/qa-20260704-qa-audit-script-and-blocked-status`)。required公式runはRC SHA `8a70b3ef0a61fb67889ae15b7ca068b2eff9071f` で実行する。
+- RC candidate SHA: `e366936065ca5a393e69344358047d2f1e1ccf7e` (`origin/develop`)。WindowsQA公式runはこのSHAで実行する。
 - Testing docs commit: `8a99ff386c79994ef065d8881def65fad058830a` (`oribis-docs/main`)。
 - `ip route get 100.64.6.42`: `dev eth0 src 100.121.14.20`。
 - `ping -c 3 -W 2 100.64.6.42`: 0 received / 100% packet loss。
-- TCP 22 probe: timeout。
+- 19:54時点のTCP 22 probe: timeout。20:00のWorker Chat official runでは接続復旧済み。
 - 結論: WindowsQA hostへの到達性がなく、アプリ起動前にBLOCKED。Xvfb/CPU fallbackは使用していない。
 
 Latest local gate audit:
 
+- 2026-07-04 20:00 JST rerun after Worker Chat official evidence update:
+  - `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。
+  - `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: PASS。
+  - `rtk pnpm run test:qa-audit`: PASS。4 Node `node:test` tests。
+  - `nonVerifiedBlockingBugs=[]`。
+  - `requiredBlocked=[ORB-AT-001, ORB-AT-005, ORB-GATE-002]`（20:23 Core Workbench official / 20:29 Onboarding official反映後）。
+  - `requiredNotRun=[ORB-GATE-001]`。
+  - 結論: Manifest/bug evidence auditは通過。Release Gateはrequired未完了項目が残るため未達。
+
+- 2026-07-04 19:54 JST rerun after Discord waiver:
+  - `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。
+  - `rtk pnpm run test:qa-audit`: PASS。4 Node `node:test` tests。
+  - `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: expected FAIL。
+  - 当時のstrict failures: `ORB-BUG-015/016` evidence lacks `path + sha256`; `ORB-BUG-015/016` are still not `verified`。後続の20:00 Worker Chat official runで解消済み。
+  - 当時の`requiredBlocked=[ORB-AT-001, ORB-SIT-001, ORB-ST-005, ORB-AT-002, ORB-AT-003, ORB-AT-005, ORB-GATE-002]`。後続の20:00 Worker Chat official run後は `ORB-SIT-001` / `ORB-AT-003` を除外。
+  - Discord `ORB-SIT-002` / `ORB-BUG-019` はwaiver `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` により今回scope外。PASS扱いではない。
+- 2026-07-04 19:09 JST rerun:
+  - `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。
+  - `rtk pnpm run test:qa-audit`: PASS。4 Node `node:test` tests。
+  - `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: expected FAIL。
+  - strict failures: `ORB-BUG-015/016` evidence lacks `path + sha256`; `ORB-BUG-015/016` are still not `verified`。`ORB-BUG-019` はDiscord環境未準備のwaiverで今回scope外。
+  - 結論: manifest/QA監査処理は正常。Release Gateは未達。
 - `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。
-- `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files` summary now separates `requiredNotRun=["ORB-GATE-001"]` from host-caused `requiredBlocked=[ORB-AT-001, ORB-SIT-001, ORB-SIT-002, ORB-ST-005, ORB-AT-002, ORB-AT-003, ORB-AT-005, ORB-GATE-002]`。
+- `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files` summary now separates `requiredNotRun=["ORB-GATE-001"]` from host-caused `requiredBlocked`。20:23 Core Workbench official / 20:29 Onboarding official反映後の残required blockedは `ORB-AT-001`, `ORB-AT-005`, `ORB-GATE-002`。`ORB-SIT-002` はwaiverにより今回scope外。
 - latest rerun: `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。`testItems=69`, `requiredTestIds=19`, `failures=[]`。
 - 注意: このPASSはmanifest整合性のPASSであり、Release Gate PASSではない。`requiredBlocked` と未verified release-blocking bugが残るため、現状態は「RC候補作成可、Release承認不可」。
 - `rtk pnpm run test:qa-audit`: PASS。4 Node `node:test` QA audit tests。Vitest除外後も監査ツールの回帰テストを明示実行する。
@@ -85,14 +167,12 @@ Latest local gate audit:
 - `bash -n scripts/qa/invoke-windows-qa.sh scripts/qa/push-qa-ref.sh scripts/qa/invoke-windows-interactive-qa.sh scripts/run-live-stage-chat-harness.sh scripts/run-wdio-tests.sh scripts/run-wdio-tests-onboarding.sh`: PASS。
 - PowerShell parser check for `run-windows-smoke.ps1`, `run-windows-packaging.ps1`, `interactive-capture.ps1`, `register-interactive-tasks.ps1`: PASS。
 - `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: expected FAIL。
-- latest strict rerun: `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: expected FAIL。failuresは `ORB-BUG-015/016` evidence path+sha256未取得、`ORB-BUG-015/016/019` 未verifiedのみ。
-- strict failures:
-  - `ORB-BUG-015` / `ORB-BUG-016` のrelease_blocking evidenceが `path + sha256` 未取得。
-  - `ORB-BUG-015` / `ORB-BUG-016` / `ORB-BUG-019` が未verified。
+- latest strict rerun: `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: PASS。`ORB-BUG-015/016` はWorker Chat official evidenceでverified済み。`ORB-BUG-019` は今回scope外。
+- strict failures: なし。Release Gate未達理由はrequired未完了項目のみ。
 - 結論: `ORB-GATE-001` の監査処理自体は動作。Release Gateは未達。
-- latest WindowsQA reachability rerun: `ssh -i ~/.ssh/oribis_windows_qa -o BatchMode=yes -o ConnectTimeout=8 admin@100.64.6.42 "echo windowsqa-ok"`: timeout。WindowsQA公式項目は引き続き `BLOCKED_ON_WINDOWSQA`。
-- Windows host-side check: `Test-NetConnection 100.64.6.42 -Port 22` returned `TcpTestSucceeded=false`, `PingSucceeded=false`, `InterfaceAlias=Tailscale`。`tailscale status --json` では `DESKTOP-TEST001` / `100.64.6.42` が `Online=false`, `Active=true`, `LastSeen=2026-07-03T18:59:08.1Z`。
-- RC SHA確定後の再確認: WSL SSH to `admin@100.64.6.42` はtimeout。WindowsQA公式runは引き続きhost到達性で `BLOCKED_ON_WINDOWSQA`。
+- 19:54時点のWindowsQA reachability rerun: `ssh -i ~/.ssh/oribis_windows_qa -o BatchMode=yes -o ConnectTimeout=8 admin@100.64.6.42 "echo windowsqa-ok"`: timeout。20:00のWorker Chat official runでは接続復旧済み。
+- 19:54時点のWindows host-side check: `Test-NetConnection 100.64.6.42 -Port 22` returned `TcpTestSucceeded=false`, `PingSucceeded=false`, `InterfaceAlias=Tailscale`。`tailscale status --json` では `DESKTOP-TEST001` / `100.64.6.42` が `Online=false`, `Active=true`, `LastSeen=2026-07-03T18:59:08.1Z`。
+- RC SHA確定後のWorker Chat official run: WSL SSH経由でWindowsQAへ接続し、`ORB-SIT-001` / `ORB-AT-003` は実行済み。残るWindowsQA required項目は別途実行が必要。
 - `ORB-STATIC-003` latest source policy check:
   - `rtk rg -n "coreAppNaturalLanguage|naturalLanguageHints|includesAny|NEGATED_ACTION_TERMS|低め|ピッチ|TTSのピッチ|exact example|語録" src e2e scripts src-tauri --glob '!node_modules'`
   - 実装側の固定語録ルーター禁止シンボルは0件。ヒットは `e2e/wdio/tests/app-ai-native-route-acceptance.spec.ts` の受け入れテスト入力文1件のみ。
@@ -160,10 +240,10 @@ sysdev-2第三者確認:
 - `verified` の定義を、バグ自身の再現条件に対する証跡で判定できるように明確化。正本 `test_id` 全体の未達はRelease Gate上で別途残す。
 - 機械検査: `manifest=json ok`, `bugRegressions=22`, `requiredTestIds=19` を確認。2026-07-04更新後は、host起因の未実行を `requiredBlocked`、Release Gate本体未実行を `requiredNotRun` として分離。
 - sysdev-2再確認: must-fix 3件は解消済み。追加指摘として `ORB-BUG-015/016` の台帳要約statusとmanifest statusのドリフトを検出。これに対し、台帳要約表も `fixed_pending_verification` へ更新済み。
-- `bugRegressions.verification_evidence` は、実在する既存証跡について `path + sha256` 形式へpin留め済み。最新Worker official未実行の `ORB-BUG-015/016` はplannedのまま残す。
+- `bugRegressions.verification_evidence` は、実在する既存証跡について `path + sha256` 形式へpin留め済み。`ORB-BUG-015/016` は20:00 Worker Chat official runで `verified` に更新済み。
 - sysdev-2最終確認: bug台帳系のレビュー指摘はクローズ。`test-plan.md` のGATE-001判定ルールに、`bugRegressions` の `release_blocking=true` 全件について `status=verified` と `path + sha256` 証跡pin留めを確認する項目を追加。
 - 2026-07-04 sysdev-2追加確認: Vitestから `scripts/qa/**/*.test.mjs` を除外し、Node専用QA監査テストを `pnpm run test:qa-audit` へ分離する判断は妥当。ただしinventory登録が必須のため、`test-inventory.md` の `ORB-GATE-001` に `pnpm run test:qa-audit` を追加済み。
-- 2026-07-04 sysdev-2追加確認: WindowsQA host起因の実行不可は `NOT_RUN` ではなく `BLOCKED_ON_WINDOWSQA` として記録するのが妥当。`manifest.json` は `requiredNotRun=["ORB-GATE-001"]` と `requiredBlocked=[ORB-AT-001, ORB-SIT-001, ORB-SIT-002, ORB-ST-005, ORB-AT-002, ORB-AT-003, ORB-AT-005, ORB-GATE-002]` に分離済み。
+- 2026-07-04 sysdev-2追加確認: WindowsQA host起因の実行不可は `NOT_RUN` ではなく `BLOCKED_ON_WINDOWSQA` として記録するのが妥当。20:23 Core Workbench official / 20:29 Onboarding official反映後、`manifest.json` は `requiredNotRun=["ORB-GATE-001"]` と `requiredBlocked=[ORB-AT-001, ORB-AT-005, ORB-GATE-002]` に分離済み。Discord `ORB-SIT-002` はwaiverで今回scope外。
 
 追加検証:
 
@@ -178,8 +258,8 @@ sysdev-2第三者確認:
 - `powershell.exe ... Parser::ParseFile("scripts/qa/run-windows-packaging.ps1")`: PASS。
 - `powershell.exe ... Parser::ParseFile("scripts/qa/run-windows-smoke.ps1")`: PASS。
 - `bash -n scripts/qa/invoke-windows-qa.sh scripts/qa/push-qa-ref.sh scripts/qa/invoke-windows-interactive-qa.sh`: PASS。
-- `node scripts/qa/audit-release-manifest.mjs`: PASS。`bugRegressions=22`, `requiredTestIds=19`, `nonVerifiedBlockingBugs=ORB-BUG-015/016/017/019`。
-- `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha`: expected FAIL。残件は `ORB-BUG-015/016` の最新Worker official証跡未取得、および `ORB-BUG-015/016/017/019` の未verified blocker。
+- `node scripts/qa/audit-release-manifest.mjs`: PASS。`bugRegressions=22`, `requiredTestIds=19`, `nonVerifiedBlockingBugs=[]`。
+- `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha`: PASS。Worker Chat official証跡反映後、release-blocking bugの証跡SHA不足はなし。
 - `node --check scripts/qa/audit-release-manifest.mjs`: PASS。
 - `run-windows-smoke.ps1` summaryへ `mode`, `commit`, `systemSnapshot` を追加し、公式証跡の自己記述を強化。
 - `run-windows-packaging.ps1` summaryへ `skippedSteps` を追加し、公式/診断実行の機械判定に必要なfieldを揃えた。
@@ -198,8 +278,8 @@ sysdev-2第三者確認:
 - `powershell.exe ... Parser::ParseFile("scripts/qa/run-windows-packaging.ps1")`: PASS。
 - `node scripts/qa/audit-release-manifest.mjs`: PASS。
 - `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。
-  - `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: expected FAIL。残件は `ORB-BUG-015/016` の証跡未取得と `ORB-BUG-015/016/019` の未verified blockerのみ。
-  - required項目の実効状態確認: `ORB-ST-001` は `PASS_WITH_SCREENSHOT_WARN`、`ORB-ST-003` は `PASS_WITH_PARTIAL_SCENE_SCOPE` として認識。残る未完了は `ORB-GATE-001`、WindowsQA host offlineでBLOCKEDの `ORB-SIT-001`, `ORB-SIT-002` real relay, `ORB-ST-005`, `ORB-AT-001` real LLM, `ORB-AT-002`, `ORB-AT-003`, `ORB-AT-005`, `ORB-GATE-002`。
+  - `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: PASS。
+  - required項目の実効状態確認: `ORB-ST-001` は `PASS_WITH_SCREENSHOT_WARN`、`ORB-ST-003` は `PASS_WITH_PARTIAL_SCENE_SCOPE`、`ORB-SIT-001` / `ORB-AT-003` / `ORB-ST-005` / `ORB-AT-002` は `PASS_WITH_WARNINGS` として認識。残る未完了は `ORB-GATE-001`、WindowsQA公式証跡未完了の `ORB-AT-001` real LLM, `ORB-AT-005`, `ORB-GATE-002`。Discord `ORB-SIT-002` real relayはwaiverで今回scope外。
 - 既存公式summaryの監査:
   - `/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-startup-stage-guards-20260704-0345/latest-summary.json`: PASS。
   - `/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/latest-summary.json`: PASS。
@@ -327,8 +407,8 @@ clean checkout、`pnpm install --frozen-lockfile`、typecheck、targeted Vitest�
 - `rtk cargo test agent_discord --manifest-path src-tauri/Cargo.toml`: 35 passed / 2210 filtered out
 - 旧outbox command参照スキャン: 製品表面の参照なし。残存は低レベル内部実装と拒否検証テストのみ。
 
-結果: PASS_WITH_PENDING_REAL_RELAY。  
-ただし、実Discord送受信、queue metrics、送信失敗時に旧outboxへfallbackしないことのWindowsQA/relay証跡は `ORB-SIT-002` として未完了。
+結果: PASS_WITH_PENDING_REAL_RELAY_DEFERRED_BY_WAIVER。
+ただし、実Discord送受信、queue metrics、送信失敗時に旧outboxへfallbackしないことのWindowsQA/relay証跡は未取得。Discord環境未準備のため、Producer指示により今回scopeからは `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` で延期する。これはPASS扱いではない。
 
 証跡:
 
@@ -707,6 +787,63 @@ clean checkout、`pnpm install --frozen-lockfile`、typecheck、targeted Vitest�
 - WindowsQA host復旧後の予定:
   - `scripts/qa/invoke-windows-qa.sh --official --commit <RC_SHA> --wdio-spec tests/app-ai-native-real-llm-representative.spec.ts`
 
+2026-07-04にreal LLM代表確認をWindowsQA official実行。
+
+実行:
+
+- `scripts/qa/invoke-windows-qa.sh --official --commit 9c4062378c2be9077ca5e0b1af2eb74eb0f9f2d3 --wdio-spec e2e/wdio/tests/app-ai-native-real-llm-representative.spec.ts`
+
+結果:
+
+- summary status: `fail`
+- sourceMode: `git`
+- requestedCommit/resolvedCommit: `9c4062378c2be9077ca5e0b1af2eb74eb0f9f2d3`
+- skippedSteps: `[]`
+- WDIO: `tests/app-ai-native-real-llm-representative.spec.ts` FAIL
+- failure: QA環境に実LLM provider/API keyまたはcommercial feature設定が無く、10件すべて `oribisAI requires commercial feature`
+- Release Gate判定: `FAIL`
+
+証跡:
+
+- `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-app-ai-native-real-llm-official-20260705-0025\summary-20260704-235034.json`
+- `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-app-ai-native-real-llm-official-20260705-0025\20260704-235034.zip`
+
+解釈:
+
+- 実アプリ経路のチャット入力検出までは前回FAILから進んだが、QA環境の実LLM secret/providerが未準備で停止している。
+- 決定的mock経路30件PASSは維持するが、製品上の自然言語App操作としてはこのFAILを修正して再実行する必要がある。
+
+2026-07-05に現HEAD `e366936065ca5a393e69344358047d2f1e1ccf7e` でreal LLM代表確認をWindowsQA official再実行。
+
+実行:
+
+- `scripts/qa/invoke-windows-qa.sh --host admin@100.64.6.42 --identity-file ~/.ssh/oribis_windows_qa --repo-root 'C:\oribis-qa\oribis-official' --official --commit e366936 --wdio-spec e2e/wdio/tests/app-ai-native-real-llm-representative.spec.ts`
+
+結果:
+
+- summary status: `fail`
+- sourceMode: `git`
+- requestedCommit: `e366936`
+- resolvedCommit: `e366936065ca5a393e69344358047d2f1e1ccf7e`
+- skippedSteps: `[]`
+- WDIO: `tests/app-ai-native-real-llm-representative.spec.ts` FAIL
+- evidence JSON: `minPass=8`, `total=10`, `passedCount=0`
+- failure: 実アプリ起動とオンボーディングは通過したが、QA環境に実LLM provider/API keyまたはcommercial feature設定が無く、`oribisAI requires commercial feature` でApp操作が成立しない
+- Release Gate判定: `FAIL`
+
+証跡:
+
+- `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-app-ai-native-real-llm-official-20260705-current-head\summary-20260705-063537.json`
+- `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-app-ai-native-real-llm-official-20260705-current-head\20260705-063537.zip`
+- summary sha256: `e0f916956cbb89b6cc9d6970390861251d0d1ebe62304590a2b4275231ff9313`
+- artifact sha256: `6bb7b134346f3cc8a2ece58b90074b4ba356cf21db0e106d1c17d6adb098d8ed`
+
+解釈:
+
+- 実アプリのチャット経路とオンボーディングは動いている。
+- ただし、製品上の自然言語App操作をRelease Gate PASSにするには、QA環境へ実LLM provider/API keyまたはcommercial featureを安全に設定し、同じ代表10件で8件以上PASSさせる必要がある。
+- 決定的mock経路30件PASSは維持するが、このreal LLM FAILを代替しない。
+
 ### ORB-BUG-020 Startup residual process/window runner guard
 
 2026-07-04にWindowsQA runner側へ、起動前/終了後のOribis QAプロセス残留を検出・掃除・証跡化する処理を追加。
@@ -867,9 +1004,9 @@ run:
 - WebViewer manual JSON sha256: `d547c76713a420dca8a0aa93be9e352d14e52d91c08a7e5d3679bff1ba984647`
 - WebViewer empty PNG sha256: `f6b37140d84b279bc8959bc856621d34a2faf6756465eccc0e6ac2bc5ae7218c`
 
-### ORB-SIT-001 / ORB-AT-003 Worker Chat UX preparation
+### ORB-SIT-001 / ORB-AT-003 Worker Chat UX official
 
-2026-07-04にWorker Chatのfallback本文とWDIO証跡判定を改善。
+2026-07-04にWorker Chatのfallback本文とWDIO証跡判定を改善し、同日20:00にWindowsQA official runで確認した。
 
 codex-adviser結論:
 
@@ -907,23 +1044,28 @@ sysdev-2 third-party review:
 - Release Gate記録上、AT-001を `PASS_WITH_LIMITATION` からhost起因の `BLOCKED_ON_WINDOWSQA` へ戻した扱いは妥当。
 - Worker chat/terminal追加修正のmust-fix残りはなし。
 - 軽微指摘として、`PASS_WITH_LIMITATION` のtaxonomy定義追加とWorker answer generation失敗理由のaudit/log記録を推奨。どちらも2026-07-04に反映済み。
-- WindowsQA復旧後の推奨順序は、2026-07-04のsysdev-2再確認により `worker-chat (ORB-SIT-001 + ORB-AT-003)` → `packaging` → `app-ai-native real LLM representative` → `Discord real relay` → `ST-005/AT-002/AT-005` → `strict gate` へ更新。
+- WindowsQA復旧後の推奨順序は、2026-07-04のsysdev-2再確認と今回のDiscord環境未準備waiverにより `worker-chat (ORB-SIT-001 + ORB-AT-003)` → `ST-005/AT-002/AT-005` → `app-ai-native real LLM representative` → `packaging` → `strict gate` へ更新。Discord real relayは今回scope外。
 - 追加sysdev-2確認: `ORB-AT-003` はWorker Chat runに相乗り可能。ただし `ORB-SIT-001` は配線/4点表示、`ORB-AT-003` はWorker UXの進捗/状態/結果の妥当性として別判定し、同一証跡へ紐づける。
 - 追加sysdev-2確認: strict gate最終証跡はQA-ref一時commitではなく、出荷候補RC SHAで実行する必要がある。WindowsQA復旧後のrequired公式run前にRC SHAを確定する。
 
-WindowsQA:
+WindowsQA official result:
 
-- pre-RC QA ref: `e9c0307fc10b6d7f9fb401c89a391418bc88c09e`
-- planned official command after RC SHA is fixed: `scripts/qa/invoke-windows-qa.sh --official --commit <RC_SHA> --wdio-spec tests/worker-chat.spec.ts`
-- result: BLOCKED before app execution
-- reason: WindowsQA host `100.64.6.42` / `desktop-test001.tail68ea5e.ts.net` SSH timeout
-- local route check: `ip route get 100.64.6.42` resolved via `eth0 src 100.121.14.20`
-- `tailscale` CLI is not installed in this WSL environment.
+- command: `scripts/qa/invoke-windows-qa.sh --official --commit bb6561b3a7602304260d1dbc5cbc2757935081eb --wdio-spec e2e/wdio/tests/worker-chat.spec.ts`
+- clean repo: `C:\oribis-qa\oribis-official`
+- run: `20260704-200036`
+- result: `PASS_WITH_WARNINGS`
+- reason for warning: runner `desktop-screenshot` step failed with `CopyFromScreen` handle warning。WDIO個別PNG/JSONは保存済み。
+- summary: `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-worker-chat-official-20260704-1958\latest-summary.json` sha256=`52d0a406f4012d96fd52b71f075d10783ed50c7a8654088cae2632787254ea5f`
+- artifact zip: `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-worker-chat-official-20260704-1958\20260704-200036.zip` sha256=`3f494925f4aa9661cfdb46010849cb2cad5ed0fad4e06073104fd5af74d43d97`
+- WDIO evidence JSON: `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-worker-chat-official-20260704-1958\extracted\wdio-evidence\worker-chat\worker-chat-answer.json` sha256=`4578bce784d03e17e243aab4ae1d416f89c88a7e4d6e58c8a554919257669eab`
+- WDIO evidence PNG: `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-worker-chat-official-20260704-1958\extracted\wdio-evidence\worker-chat\worker-chat-answer.png` sha256=`526340d413e6ad543525194aea8fb507f481184a7e2ca2abbf011776c4781c48`
 
-残:
+判定:
 
-- WindowsQA host復帰後、RC SHAを確定して `tests/worker-chat.spec.ts` を公式再実行する。
-- PASS後に `ORB-SIT-001` / `ORB-AT-003` と `ORB-BUG-015/016` の証跡を更新する。
+- `ORB-SIT-001`: `PASS_WITH_WARNINGS`。Worker terminal stream、worker_output本文、Anima入力欄非存在、送信後input空を確認。
+- `ORB-AT-003`: `PASS_WITH_WARNINGS`。Worker terminalにcreate/run/completedの進捗があり、チャット出力にworker_output本文が出ることを確認。
+- `ORB-BUG-015`: `verified`。queued/completedだけで終わらず、worker_output本文が出る。
+- `ORB-BUG-016`: `verified`。`animaInputExists=false`, `inputValue=""`。
 
 ### ORB-ST-005 Console / Worker Activity UI preparation
 
@@ -1054,12 +1196,34 @@ WindowsQA:
 - TTS設定・読み上げ文字列・VOICEVOX VVM検出のsupporting testsはPASS。
 - `ORB-AT-005` の正式PASSには、WindowsQA real GPU/real audio routeでチャット音声の実出力、ピッチ/速度設定反映、読み上げ本文から内部メタが除外されることを証跡化する必要がある。
 
-WindowsQA:
+2026-07-05に現HEAD `e366936065ca5a393e69344358047d2f1e1ccf7e` でWindowsQA official再実行。
 
-- pre-RC QA ref: `e9c0307fc10b6d7f9fb401c89a391418bc88c09e`
-- planned command: WindowsQA host復旧後に `ORB-AT-005` 用WDIO/手動QAシナリオを公式実行する。
-- result: BLOCKED before app execution
-- reason: WindowsQA host `100.64.6.42` / `desktop-test001.tail68ea5e.ts.net` SSH timeout
+実行:
+
+- `scripts/qa/invoke-windows-qa.sh --host admin@100.64.6.42 --identity-file ~/.ssh/oribis_windows_qa --repo-root 'C:\oribis-qa\oribis-official' --official --commit e366936 --wdio-spec e2e/wdio/tests/tts-voice-playback.spec.ts`
+
+結果:
+
+- summary status: `fail`
+- sourceMode: `git`
+- requestedCommit: `e366936`
+- resolvedCommit: `e366936065ca5a393e69344358047d2f1e1ccf7e`
+- skippedSteps: `[]`
+- failed step: `tts-assets-provision`
+- failure: VOICEVOX runtime assets未配置、かつ `ORIBIS_QA_ACCEPT_VOICEVOX_TERMS` / `ORIBIS_ACCEPT_VOICEVOX_TERMS` 未設定
+
+証跡:
+
+- `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-tts-voice-official-20260705-current-head\summary-20260705-063513.json`
+- `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-tts-voice-official-20260705-current-head\20260705-063513.zip`
+- summary sha256: `1185d4d4d45d51212f4d9152fbc3b10d0c81051ba1d18c8fa0e2bcbd98392aee`
+- artifact sha256: `063bbbc74bc31af02e9bf1b08823203408b217b109528865b9a2da32e3618264`
+
+解釈:
+
+- TTS資産provisionゲートは機能している。
+- VOICEVOX規約承諾は自動で代行しない。明示承諾envを設定し、runtime assetsをprovisionしてから再実行が必要。
+- Supporting TTS unit/Cargoは正式ATの代替にしない。
 
 ### ORB-GATE-002 Release Packaging runner preparation
 
@@ -1096,14 +1260,37 @@ WindowsQA:
 - pre-RC QA ref: `e9c0307fc10b6d7f9fb401c89a391418bc88c09e`
 - planned command:
   - `scripts/qa/invoke-windows-qa.sh --host admin@100.64.6.42 --identity-file ~/.ssh/oribis_windows_qa --official --commit <RC_SHA> --runner 'C:\oribis-qa\artifacts\incoming\run-windows-packaging.ps1' --local-runner-file scripts/qa/run-windows-packaging.ps1 --remote-summary-name latest-packaging-summary.json --remote-zip-name 'packaging-{runId}.zip' --pull-artifacts /mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-release-packaging-<run-id>`
-- result: BLOCKED before packaging execution
-- reason: WindowsQA host `100.64.6.42` / `desktop-test001.tail68ea5e.ts.net` SSH timeout
-- required official evidence remains BLOCKED_ON_WINDOWSQA until WindowsQA host recovers:
-  - release build
-  - installer detection/hash
-  - installer install
-  - installed app startup screenshot
-  - uninstall/cleanup result
+2026-07-05に最新RC SHA `e366936065ca5a393e69344358047d2f1e1ccf7e` でWindowsQA official再実行。
+
+実行:
+
+- `scripts/qa/invoke-windows-qa.sh --host admin@100.64.6.42 --identity-file ~/.ssh/oribis_windows_qa --repo-root 'C:\oribis-qa\oribis-official' --official --commit e366936 --local-runner-file scripts/qa/run-windows-packaging.ps1 --runner 'C:\oribis-qa\artifacts\incoming\run-windows-packaging.ps1' --remote-summary-name latest-packaging-summary.json --remote-zip-name latest-windows-packaging.zip --pull-artifacts /mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-release-packaging-official-20260705-current-head`
+
+結果:
+
+- summary status: `fail`
+- requestedCommit: `e366936`
+- resolvedCommit: `e366936065ca5a393e69344358047d2f1e1ccf7e`
+- sourceMode: `git`
+- cleanChecks: 2件とも `clean`
+- failed step: `interactive-desktop-precheck`
+- failure: WindowsQA interactive desktop is not logged in; `query user` returned `No User exists for *`
+- session diagnostics: `activeSessionCount=0`; `qwinsta` shows `console Conn` with no username; `explorerProcesses=[]`; `logonUi.lastLoggedOnUser=.\admin`
+- release build / installer detection / install / uninstall: `not-run`
+- Release Gate判定: `FAIL`
+
+証跡:
+
+- `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-release-packaging-official-20260705-current-head\summary-20260705-063448.json`
+- `C:\Users\admin\Pictures\agante-projects\sysdev\oribis-release-packaging-official-20260705-current-head\latest-windows-packaging.zip`
+- summary sha256: `8e247e35d3731e3363ec2b4c74b193c8ddf45b7c8d69cc07e8e34df6836582d1`
+- artifact sha256: `c8dbe21a80e3d24ba799b140ab80995fb587c2e891a17d0814049b58677db026`
+
+解釈:
+
+- SSH接続、exact commit checkout、clean checkは成立している。
+- ただし、official packagingは実GPU/実WebViewのinstalled app screenshotが必要なため、ログイン済み対話デスクトップsessionなしでは開始できない。
+- WindowsQAへconsole/RDP等でユーザーsessionを作ってから再実行が必要。
 
 ### ORB-SIT-002 Discord Relay supporting recheck
 
@@ -1129,18 +1316,14 @@ WindowsQA:
 - 旧Worker Core Discord outbox queue導線の回帰テストはPASS。
 - Agent Discord route/deliveryの単体/統合境界テストはPASS。
 - `ORB-SIT-002` の正式PASSには、設定済みテスト用Discord channelへ実送信し、即時配送/滞留なし/queue metricsをWindowsQA official evidenceとして保存する必要がある。
+- 今回runではDiscord環境未準備のためProducer指示により延期する。waiver `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED`。
 
-## 未実行のrequired項目
+## 残っているrequired blocker
 
-- `ORB-SIT-001`
-- `ORB-SIT-002`
-- `ORB-ST-005`
-- `ORB-AT-001` real LLM representative confirmation
-- `ORB-AT-002`
-- `ORB-AT-003`
-- `ORB-AT-005`
-- `ORB-GATE-001`
-- `ORB-GATE-002`
+- `ORB-AT-001`: official FAIL。実アプリ起動とオンボーディングは通過したが、QA環境に実LLM provider/API keyまたはcommercial feature設定が無く、real LLM代表10件が `passedCount=0/10`。
+- `ORB-AT-005`: official FAIL。VOICEVOX runtime assets未配置、かつ `ORIBIS_QA_ACCEPT_VOICEVOX_TERMS` / `ORIBIS_ACCEPT_VOICEVOX_TERMS` 未設定。
+- `ORB-GATE-002`: official FAIL。WindowsQAにログイン済み対話ユーザーsessionが無く、release build / installer install / installed app startup / uninstallへ進めていない。
+- `ORB-GATE-001`: 上記required blockerが残っているため意図的にNOT_RUN。
 
 ## 未実行のsupporting項目
 
@@ -1164,7 +1347,6 @@ WindowsQA:
 1. WindowsQA host `100.64.6.42` のSSH到達性を復旧確認する。
 2. 復旧直後に軽量host health checkを実行し、clean check / residual process / disk spaceを確認する。
 3. required公式runへ入る前に、出荷候補RC SHAを確定する。QA-ref一時commitの証跡だけでRelease Gateを通さない。
-4. RC SHAで `ORB-SIT-001` / `ORB-AT-003` のWorker Chat公式ST/ATを実行する。同一runの証跡を使う場合も、SITの配線判定とATのUX妥当性判定を分けて記録する。
+4. 公式FAILの `ORB-AT-005` TTSと `ORB-AT-001` real LLM representativeを修正して再実行する。`ORB-GATE-002` packagingはWindowsQA公式証跡で実行する。Discord real relayは今回scope外。
 5. `ORB-GATE-002` Release Packaging runnerをWindowsQAで実行し、release build / installer install / installed app startup / uninstallを証跡化する。
-6. `ORB-AT-001` real LLM representative、`ORB-SIT-002` Discord real relay、`ORB-ST-005` Console/Worker Activity、`ORB-AT-002` Settings/Anima、`ORB-AT-005` TTSをWindowsQA公式証跡で実行する。secret準備が未完の項目は後回しにし、host稼働時間を空転させない。
-7. `ORB-GATE-001` strict auditを再実行し、required未実行と未verified blockerが0になったことを確認する。
+6. `ORB-GATE-001` strict auditを再実行し、required未実行と未verified blockerが0になったことを確認する。
