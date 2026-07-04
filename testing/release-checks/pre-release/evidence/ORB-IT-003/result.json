@@ -1,0 +1,19 @@
+{
+  "test_id": "ORB-IT-003",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:54:13+09:00",
+  "environment": "wslg",
+  "route": ["wdio", "webdriver", "real-app", "real-gpu", "supporting"],
+  "command": "rtk bash scripts/run-wdio-tests.sh --skip-build --spec tests/app-ai-native-chat.spec.ts",
+  "summary": {
+    "specFilesPassed": 1,
+    "specFilesTotal": 1,
+    "testsPassed": 1,
+    "display": ":0",
+    "gdkBackend": "wayland,x11",
+    "waylandDisplay": "wayland-0",
+    "xdgRuntimeDir": "/mnt/wslg/runtime-dir",
+    "dxg": "present",
+    "virtualDisplay": "disabled"
+  }
+}

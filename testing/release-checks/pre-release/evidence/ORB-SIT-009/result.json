@@ -1,0 +1,19 @@
+{
+  "test_id": "ORB-SIT-009",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:48:50+09:00",
+  "environment": "local-linux",
+  "route": ["cargo-test", "vitest", "integration", "mocked-filesystem"],
+  "commands": [
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml skill",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml template",
+    "rtk pnpm vitest run src/components/PromptsTab.test.tsx src/components/SkillsTab.test.tsx"
+  ],
+  "summary": {
+    "skillTestsPassed": 6,
+    "templateTestsPassed": 9,
+    "vitestFilesPassed": 2,
+    "vitestTestsPassed": 26,
+    "cargoSuites": 24
+  }
+}

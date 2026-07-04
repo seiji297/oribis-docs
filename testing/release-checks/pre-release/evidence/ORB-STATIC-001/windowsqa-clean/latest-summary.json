@@ -1,0 +1,52 @@
+﻿{
+    "runId":  "20260703-180952",
+    "startedAt":  "2026-07-03T18:09:52.4361516+09:00",
+    "endedAt":  "2026-07-03T18:10:08.7954638+09:00",
+    "durationSeconds":  16.359,
+    "status":  "fail",
+    "artifactDir":  "C:\\oribis-qa\\artifacts\\20260703-180952",
+    "steps":  [
+                  {
+                      "name":  "system-snapshot",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:09:53.9274116+09:00"
+                  },
+                  {
+                      "name":  "prerequisites",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:09:53.9780401+09:00"
+                  },
+                  {
+                      "name":  "repo-check",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:09:54.1391909+09:00"
+                  },
+                  {
+                      "name":  "git-update",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:09:57.1157123+09:00"
+                  },
+                  {
+                      "name":  "pnpm-install",
+                      "status":  "fail",
+                      "exitCode":  1,
+                      "details":  "C:\\Program Files\\nodejs\\pnpm.CMD failed with exit code 1",
+                      "at":  "2026-07-03T18:10:08.7821576+09:00"
+                  },
+                  {
+                      "name":  "diagnostics",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:10:09.4121815+09:00"
+                  }
+              ]
+}

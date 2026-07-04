@@ -1,0 +1,42 @@
+{
+  "bug_id": "ORB-BUG-019",
+  "test_id": "ORB-SIT-002",
+  "scope": "surface-closure",
+  "result": "PASS_WITH_PENDING_REAL_RELAY_VERIFICATION",
+  "verified_at": "2026-07-04T03:07:00+09:00",
+  "verified_by": "sysdev-1",
+  "environment": "local-linux",
+  "commands": [
+    {
+      "command": "rtk pnpm run typecheck",
+      "result": "PASS"
+    },
+    {
+      "command": "rtk pnpm vitest run src/components/DeveloperConsole.test.tsx src/command/typingScriptDsl.test.ts src/command/CommandRegistry.test.ts --reporter=dot",
+      "result": "PASS",
+      "summary": "3 files / 49 tests passed"
+    },
+    {
+      "command": "rtk cargo test agent_discord --manifest-path src-tauri/Cargo.toml",
+      "result": "PASS",
+      "summary": "35 passed / 2210 filtered out"
+    },
+    {
+      "command": "rtk rg -n \"LIST_DISCORD_OUTBOX|QUEUE_DISCORD_STATUS|ACK_DISCORD_OUTBOX|oribis\\.workerCore\\.(listDiscordOutbox|queueDiscordStatus|ackDiscordOutbox)|worker-core-discord|Discord Outbox|queueDiscord|ackDiscord|listDiscordOutbox\" src src-tauri e2e",
+      "result": "PASS",
+      "summary": "Product surface references removed. Remaining matches are regression tests and low-level internal Worker Core outbox implementation."
+    }
+  ],
+  "verified_behavior": [
+    "Developer Console no longer exposes Worker Core Discord Outbox controls.",
+    "CommandRegistry no longer registers Worker Core Discord outbox queue commands.",
+    "TypingScript DSL blocks old Worker Core Discord outbox methods.",
+    "RootShell no longer dispatches old Worker Core Discord outbox command IDs.",
+    "Agent Discord route/delivery tests still pass."
+  ],
+  "pending_behavior": [
+    "WindowsQA Server real relay send/receive evidence.",
+    "No fallback to old Worker Core outbox on real relay failure.",
+    "Queue metrics and sent-message evidence from the configured route."
+  ]
+}

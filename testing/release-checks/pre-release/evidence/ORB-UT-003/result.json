@@ -1,0 +1,12 @@
+{
+  "test_id": "ORB-UT-003",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:29:17+09:00",
+  "environment": "local-linux",
+  "route": ["vitest", "unit-only", "mocked"],
+  "command": "rtk pnpm vitest run src/scene-runtime/*.test.ts src/components/BabylonAvatarViewer.test.tsx src/components/BabylonStageViewer.test.ts",
+  "summary": {
+    "testFilesPassed": 10,
+    "testsPassed": 123
+  }
+}

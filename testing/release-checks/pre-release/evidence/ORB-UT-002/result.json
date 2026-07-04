@@ -1,0 +1,12 @@
+{
+  "test_id": "ORB-UT-002",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:27:35+09:00",
+  "environment": "local-linux",
+  "route": ["vitest", "unit-only", "mocked"],
+  "command": "rtk pnpm vitest run src/worker-core/*.test.ts",
+  "summary": {
+    "testFilesPassed": 18,
+    "testsPassed": 109
+  }
+}

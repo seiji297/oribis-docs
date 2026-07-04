@@ -1,0 +1,12 @@
+{
+  "test_id": "ORB-UT-001",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:23:13+09:00",
+  "environment": "local-linux",
+  "route": ["vitest", "unit-only", "mocked"],
+  "command": "rtk pnpm vitest run src/workbench/coreAppToolValidation.test.ts src/apps/__tests__/toolActionSchema.test.ts src/apps/__tests__/HostAPI.test.ts src/apps/__tests__/invoke.test.ts src/apps/__tests__/EventBus.test.ts src/workbench/CoreAppWorkbench.test.tsx src/workbench/coreAppWindow.test.ts",
+  "summary": {
+    "testFilesPassed": 7,
+    "testsPassed": 71
+  }
+}

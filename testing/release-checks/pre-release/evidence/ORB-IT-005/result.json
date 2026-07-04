@@ -1,0 +1,18 @@
+{
+  "test_id": "ORB-IT-005",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:37:57+09:00",
+  "environment": "local-linux",
+  "route": ["manifest-static-check", "vitest", "mocked-external-api"],
+  "commands": [
+    "node manifest static audit for apps/scene-editor, scene-builder, animation-creator, discord, google-workspace, github-integration, blender-hub, work-report, debug-panel",
+    "rtk pnpm vitest run src/apps/__tests__/useAppSystem.test.ts src/apps/__tests__/e2e.test.ts"
+  ],
+  "summary": {
+    "manifestAppsChecked": 9,
+    "manifestMissingRequiredKeys": 0,
+    "dangerousAllowedCommands": 0,
+    "vitestFilesPassed": 2,
+    "vitestTestsPassed": 15
+  }
+}

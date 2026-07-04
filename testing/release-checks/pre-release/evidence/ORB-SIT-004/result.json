@@ -1,0 +1,13 @@
+{
+  "test_id": "ORB-SIT-004",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:39:40+09:00",
+  "environment": "local-linux",
+  "route": ["cargo-test", "integration", "mocked-external-lite"],
+  "command": "rtk cargo test --manifest-path src-tauri/Cargo.toml --tests",
+  "summary": {
+    "cargoTestsPassed": 2202,
+    "cargoTestsIgnored": 42,
+    "cargoSuites": 24
+  }
+}

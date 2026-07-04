@@ -1,0 +1,12 @@
+{
+  "test_id": "ORB-IT-002",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:33:25+09:00",
+  "environment": "local-linux",
+  "route": ["vitest", "component-integration", "mocked"],
+  "command": "rtk pnpm vitest run src/components/GeneralTab.test.tsx src/components/PromptsTab.test.tsx src/components/AppsTab.test.tsx src/components/AnimaStatusBar.test.tsx",
+  "summary": {
+    "testFilesPassed": 4,
+    "testsPassed": 44
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "bugId": "ORB-BUG-021",
+  "status": "verified",
+  "verifiedAt": "2026-07-04T03:49:05+09:00",
+  "runner": "WindowsQA Server",
+  "gate": "required",
+  "run": {
+    "runId": "20260704-034448",
+    "official": true,
+    "sourceMode": "git",
+    "requestedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+    "resolvedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+    "artifactDir": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345"
+  },
+  "commands": [
+    "scripts/qa/invoke-windows-qa.sh --official --commit d37b7b02184b227f595bbf01af913d0b48dec4cd --wdio-spec tests/onboarding-scene-only.spec.ts",
+    "rtk pnpm vitest run src/components/BabylonStageViewer.test.ts src/command/CommandRegistry.test.ts src/components/DeveloperConsole.test.tsx src/workbench/coreAppToolValidation.test.ts --reporter=dot",
+    "rtk pnpm vitest run src/RootShell.terminal.test.tsx src/components/BabylonAvatarViewer.test.tsx src/scene-runtime/SceneRuntime.test.ts --reporter=dot",
+    "rtk pnpm run typecheck"
+  ],
+  "results": {
+    "windowsQaSummary": "PASS",
+    "wdio": "PASS: onboarding-scene-only.spec.ts",
+    "targetedVitest": "PASS: 121 tests on WindowsQA",
+    "typecheck": "PASS",
+    "sourceScan": "PASS: Stage fallback closed; Studio/world fallback remains true; Studio-only DeveloperConsole labels absent except absence assertions in tests"
+  },
+  "checks": {
+    "official": true,
+    "sourceModeGit": true,
+    "requestedCommitMatchesResolvedCommit": true,
+    "skippedStepsEmpty": true,
+    "stageProjectsRuntimeCube": false,
+    "studioProjectsRuntimeCube": true,
+    "stageProjectsAnimaTerminal": true,
+    "stageProjectsWorkerVirtualTerminal": true,
+    "stageProjectsSurfaceText": true,
+    "stageProjectsStageFurniture": true,
+    "stageFurnitureHasPhysicsPayload": false,
+    "developerConsoleAdvertisesCreateCube": false,
+    "developerConsoleAdvertisesMoveFirst": false,
+    "developerConsoleAdvertisesClear": false,
+    "babylonStageRenderedObjectIdsUsesProjectedIds": true,
+    "onboardingSceneOnlySpecPass": true,
+    "animaTerminalShownForCommandRequest": true
+  },
+  "evidence": [
+    {
+      "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\latest-summary.json",
+      "kind": "windowsqa-summary-json",
+      "sha256": "ec49875b5cc467fff800333c5772c68b347be3ffd08affe05e23491abe061f56"
+    },
+    {
+      "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\20260704-034448.zip",
+      "kind": "windowsqa-artifact-zip",
+      "sha256": "6fa48ce7f0dd78b98bfb1508a2ed2ded92c20cc0c0c4d3e9070351378ae38e90"
+    }
+  ],
+  "remainingRisks": [
+    "This official run covers onboarding Scene-only and Stage/Studio boundary regressions; full Workbench Scene App UX remains covered by ORB-ST-004/ORB-BUG-006/007 evidence"
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "bugId": "ORB-BUG-020",
+  "status": "verified",
+  "verifiedAt": "2026-07-04T03:49:05+09:00",
+  "runner": "WindowsQA Server",
+  "gate": "required",
+  "run": {
+    "runId": "20260704-034448",
+    "official": true,
+    "sourceMode": "git",
+    "requestedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+    "resolvedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+    "artifactDir": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345"
+  },
+  "commands": [
+    "scripts/qa/invoke-windows-qa.sh --official --commit d37b7b02184b227f595bbf01af913d0b48dec4cd --wdio-spec tests/onboarding-scene-only.spec.ts"
+  ],
+  "results": {
+    "summaryStatus": "PASS",
+    "targetedVitest": "PASS",
+    "cargoCheck": "PASS",
+    "frontendBuild": "PASS",
+    "tauriDebugBuild": "PASS",
+    "wdio": "PASS: onboarding-scene-only.spec.ts",
+    "desktopScreenshot": "WARN: CopyFromScreen handle invalid"
+  },
+  "checks": {
+    "official": true,
+    "sourceModeGit": true,
+    "requestedCommitMatchesResolvedCommit": true,
+    "skippedStepsEmpty": true,
+    "cleanChecksPass": true,
+    "processChecksPass": true,
+    "preflightBeforeCleanupCount": 0,
+    "preflightAfterCleanupCount": 0,
+    "postRunBeforeCleanupCount": 0,
+    "postRunAfterCleanupCount": 0,
+    "preflightCleanupStep": true,
+    "postRunCleanupStep": true,
+    "summaryHasProcessChecks": true,
+    "killsByNameOnly": false
+  },
+  "evidence": [
+    {
+      "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\latest-summary.json",
+      "kind": "windowsqa-summary-json",
+      "sha256": "ec49875b5cc467fff800333c5772c68b347be3ffd08affe05e23491abe061f56"
+    },
+    {
+      "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\20260704-034448.zip",
+      "kind": "windowsqa-artifact-zip",
+      "sha256": "6fa48ce7f0dd78b98bfb1508a2ed2ded92c20cc0c0c4d3e9070351378ae38e90"
+    }
+  ],
+  "remainingRisks": [
+    "desktop-screenshot step warned because CopyFromScreen returned an invalid handle; WDIO and processChecks still passed"
+  ]
+}

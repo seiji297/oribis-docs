@@ -1,0 +1,25 @@
+{
+  "stageAnimaModel": "vrm",
+  "stageRendererError": "",
+  "avatarCanvasReady": "true",
+  "avatarLoadState": "loaded",
+  "avatarVrmUrl": "asset://localhost/%2Fhome%2Fmnadmin%2Fagent-projects%2Fsysdev%2Fsysdev-1%2Foribis%2Fsrc-tauri%2Ftarget%2Fdebug%2Fresources%2Fanima_a_001.vrm",
+  "sceneRuntimePanelVisible": false,
+  "debugSidebarVisible": false,
+  "stageCharacterMode": "vrm",
+  "stageViewerVisible": true,
+  "canvasCount": 1,
+  "legacySurfaceRect": {
+    "height": 724,
+    "width": 599
+  },
+  "terminalToggleVisible": false,
+  "scenePaneVisible": false,
+  "legacySurfaceVisible": true,
+  "stageRenderer": "babylon-avatar",
+  "avatarLoadError": "",
+  "onboarding": true,
+  "terminalDiagnosticsActive": false,
+  "leakedDebugText": false,
+  "workbenchVisible": false
+}

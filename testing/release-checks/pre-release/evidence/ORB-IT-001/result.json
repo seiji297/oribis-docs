@@ -1,0 +1,13 @@
+{
+  "test_id": "ORB-IT-001",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:23:13+09:00",
+  "environment": "local-linux",
+  "route": ["vitest", "component-integration", "mocked"],
+  "command": "rtk pnpm vitest run src/workbench/CoreAppWorkbench.test.tsx src/workbench/coreAppWindow.test.ts",
+  "summary": {
+    "coveredByCombinedRun": "ORB-UT-001 combined App Runtime / Workbench supporting run",
+    "testFilesPassed": 7,
+    "testsPassed": 71
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "test_id": "ORB-UT-004",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:30:51+09:00",
+  "environment": "local-linux",
+  "route": ["vitest", "cargo-test", "unit-only", "mocked"],
+  "commands": [
+    "rtk pnpm vitest run src/hooks/useTTS.test.ts src/lib/readableTtsText.test.ts",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml --test tts_smoke --test tts_quality_test --test tts_e2e --test chat_tts_system --test chat_tts_e2e --test kokoro_chat_e2e --test kokoro_integration --test nemo_integration --test kokoro_integration"
+  ],
+  "summary": {
+    "vitestFilesPassed": 2,
+    "vitestTestsPassed": 14,
+    "cargoTestsPassed": 17,
+    "cargoTestsIgnored": 16,
+    "cargoSuites": 8
+  }
+}

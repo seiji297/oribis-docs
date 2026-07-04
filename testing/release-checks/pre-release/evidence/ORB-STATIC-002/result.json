@@ -1,0 +1,29 @@
+{
+  "test_id": "ORB-STATIC-002",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:20:00+09:00",
+  "environment": "local-linux",
+  "route": ["source-inspection", "policy-function-check"],
+  "checks": [
+    {
+      "name": "missing reset marker rejects normal send",
+      "result": "PASS"
+    },
+    {
+      "name": "direct worker-repo arg rejects without explicit env",
+      "result": "PASS"
+    },
+    {
+      "name": "normal DOM chat text accepts after reset marker",
+      "result": "PASS"
+    },
+    {
+      "name": "oribis-tool markup in chat text rejects",
+      "result": "PASS"
+    },
+    {
+      "name": "operation/request command rejects",
+      "result": "PASS"
+    }
+  ]
+}

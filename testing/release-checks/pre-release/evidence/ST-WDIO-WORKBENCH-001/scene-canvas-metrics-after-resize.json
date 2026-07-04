@@ -1,0 +1,56 @@
+{
+  "before": {
+    "drawingBuffer": {
+      "height": 499,
+      "width": 780,
+      "ratio": 1.56312625250501
+    },
+    "viewer": {
+      "height": 499,
+      "width": 780,
+      "ratio": 1.56312625250501
+    },
+    "scene": {
+      "height": 499,
+      "width": 780,
+      "ratio": 1.56312625250501
+    },
+    "workbench": {
+      "height": 724,
+      "width": 1222,
+      "ratio": 1.6878453038674033
+    },
+    "canvas": {
+      "height": 499,
+      "width": 780,
+      "ratio": 1.56312625250501
+    }
+  },
+  "after": {
+    "drawingBuffer": {
+      "height": 499,
+      "width": 780,
+      "ratio": 1.56312625250501
+    },
+    "viewer": {
+      "height": 499,
+      "width": 780,
+      "ratio": 1.56312625250501
+    },
+    "scene": {
+      "height": 499,
+      "width": 780,
+      "ratio": 1.56312625250501
+    },
+    "workbench": {
+      "height": 724,
+      "width": 1222,
+      "ratio": 1.6878453038674033
+    },
+    "canvas": {
+      "height": 499,
+      "width": 780,
+      "ratio": 1.56312625250501
+    }
+  }
+}

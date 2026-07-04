@@ -1,0 +1,70 @@
+﻿**********************
+Windows PowerShell トランスクリプト開始
+開始時刻: 20260703161129
+ユーザー名: DESKTOP-DEV001\admin
+RunAs ユーザー: DESKTOP-DEV001\admin
+構成名: 
+コンピューター: DESKTOP-DEV001 (Microsoft Windows NT 10.0.26100.0)
+ホスト アプリケーション: powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\oribis-qa\oribis\scripts\qa\run-windows-smoke.ps1 -RepoRoot C:\oribis-qa\oribis -ArtifactRoot C:\oribis-qa\artifacts -SkipGitUpdate -SkipWdio -SkipScreenshot
+プロセス ID: 20620
+PSVersion: 5.1.26100.7705
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.7705
+BuildVersion: 10.0.26100.7705
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+
+================================================
+ Oribis Windows smoke runner
+================================================
+[info] runDir=C:\oribis-qa\artifacts\20260703-161129
+
+================================================
+ system-snapshot
+================================================
+
+================================================
+ prerequisites
+================================================
+
+================================================
+ repo-check
+================================================
+[warn] .git not found. Treating RepoRoot as transferred source snapshot because SkipGitUpdate is set.
+
+================================================
+ pnpm-install
+================================================
+[exec] C:\Users\admin\scoop\shims\pnpm.exe install --frozen-lockfile
+
+
+================================================
+ typecheck
+================================================
+[exec] C:\Users\admin\scoop\shims\pnpm.exe run typecheck
+
+
+================================================
+ targeted-vitest
+================================================
+[exec] C:\Users\admin\scoop\shims\pnpm.exe vitest run src/RootShell.terminal.test.tsx src/components/BabylonAvatarViewer.test.tsx src/scene-runtime/SceneRuntime.test.ts
+
+
+================================================
+ cargo-check
+================================================
+[exec] cargo check --manifest-path src-tauri/Cargo.toml
+
+
+================================================
+ frontend-build
+================================================
+[exec] C:\Users\admin\scoop\shims\pnpm.exe vite build
+
+**********************
+Windows PowerShell トランスクリプト終了
+終了時刻: 20260703161456
+**********************

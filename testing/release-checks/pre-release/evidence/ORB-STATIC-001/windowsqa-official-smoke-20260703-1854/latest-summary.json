@@ -1,0 +1,93 @@
+﻿{
+    "runId":  "20260703-184522",
+    "startedAt":  "2026-07-03T18:45:22.7393130+09:00",
+    "endedAt":  "2026-07-03T18:47:45.4184580+09:00",
+    "durationSeconds":  142.679,
+    "status":  "fail",
+    "official":  true,
+    "sourceMode":  "git",
+    "branch":  "develop",
+    "requestedCommit":  "608e1258b14a04a69318a95b8ed83e74351cfbb4",
+    "resolvedCommit":  "608e1258b14a04a69318a95b8ed83e74351cfbb4",
+    "cleanChecks":  [
+                        {
+                            "context":  "repo-check before git update",
+                            "status":  "clean",
+                            "at":  "2026-07-03T18:45:25.1527586+09:00"
+                        },
+                        {
+                            "context":  "git-update after origin branch sync",
+                            "status":  "clean",
+                            "at":  "2026-07-03T18:45:31.0307401+09:00"
+                        }
+                    ],
+    "skippedSteps":  [
+
+                     ],
+    "artifactDir":  "C:\\oribis-qa\\artifacts\\20260703-184522",
+    "steps":  [
+                  {
+                      "name":  "system-snapshot",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:45:24.9628869+09:00"
+                  },
+                  {
+                      "name":  "prerequisites",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:45:25.0052022+09:00"
+                  },
+                  {
+                      "name":  "repo-check",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:45:25.1527586+09:00"
+                  },
+                  {
+                      "name":  "git-update",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:45:31.0728489+09:00"
+                  },
+                  {
+                      "name":  "pnpm-install",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:45:46.1496696+09:00"
+                  },
+                  {
+                      "name":  "typecheck",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:45:48.8691991+09:00"
+                  },
+                  {
+                      "name":  "targeted-vitest",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:46:19.9813864+09:00"
+                  },
+                  {
+                      "name":  "cargo-check",
+                      "status":  "fail",
+                      "exitCode":  1,
+                      "details":  "cargo failed with exit code 101",
+                      "at":  "2026-07-03T18:47:45.4158546+09:00"
+                  },
+                  {
+                      "name":  "diagnostics",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-03T18:47:46.1479612+09:00"
+                  }
+              ]
+}

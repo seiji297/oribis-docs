@@ -1,0 +1,21 @@
+{
+  "test_id": "ORB-STATIC-003",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:21:06+09:00",
+  "environment": "local-linux",
+  "route": ["source-inspection", "vitest"],
+  "checks": [
+    {
+      "name": "forbidden fixed vocabulary router symbols",
+      "command": "rtk rg -n \"coreAppNaturalLanguage|naturalLanguageHints|NEGATED_ACTION_TERMS|includesAny\\\\(\" src/workbench src/RootShell.tsx src/apps",
+      "result": "PASS",
+      "details": "No matches."
+    },
+    {
+      "name": "coreAppToolValidation unit tests",
+      "command": "rtk pnpm vitest run src/workbench/coreAppToolValidation.test.ts",
+      "result": "PASS",
+      "details": "1 test file passed, 7 tests passed."
+    }
+  ]
+}

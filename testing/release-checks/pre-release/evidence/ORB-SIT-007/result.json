@@ -1,0 +1,19 @@
+{
+  "test_id": "ORB-SIT-007",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:43:31+09:00",
+  "environment": "local-linux",
+  "route": ["cargo-test", "integration", "mocked-filesystem"],
+  "commands": [
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml memory",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml retrieval",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml consolidation"
+  ],
+  "summary": {
+    "memoryTestsPassed": 62,
+    "retrievalTestsPassed": 46,
+    "retrievalTestsIgnored": 1,
+    "consolidationTestsPassed": 44,
+    "cargoSuites": 24
+  }
+}

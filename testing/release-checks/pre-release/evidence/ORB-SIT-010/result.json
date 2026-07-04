@@ -1,0 +1,16 @@
+{
+  "test_id": "ORB-SIT-010",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:50:06+09:00",
+  "environment": "local-linux",
+  "route": ["cargo-test", "integration", "mocked-filesystem-time"],
+  "commands": [
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml recording",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml scheduler"
+  ],
+  "summary": {
+    "recordingTestsPassed": 7,
+    "schedulerTestsPassed": 21,
+    "cargoSuites": 24
+  }
+}

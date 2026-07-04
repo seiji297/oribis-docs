@@ -1,0 +1,18 @@
+{
+  "test_id": "ORB-IT-006",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:34:55+09:00",
+  "environment": "local-linux",
+  "route": ["vitest", "cargo-test", "integration", "mocked-filesystem"],
+  "commands": [
+    "rtk pnpm vitest run src/apps/__tests__/AppSandbox.test.ts src/apps/__tests__/AppSandbox.test.tsx src/apps/__tests__/sdk.test.ts src/apps/__tests__/useAppSystem.test.ts src/apps/__tests__/e2e.test.ts src/apps/__tests__/UIRenderer.test.tsx src/apps/__tests__/toolActionSchema.test.ts src/apps/__tests__/HostAPI.test.ts src/apps/__tests__/EventBus.test.ts src/apps/__tests__/invoke.test.ts",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml app_runtime::"
+  ],
+  "summary": {
+    "coveredByCombinedRun": "ORB-IT-004 App Manifest / Permission / Catalog and ORB-IT-006 App Runtime / Sandbox / Sidecar / Package combined run",
+    "vitestFilesPassed": 10,
+    "vitestTestsPassed": 99,
+    "cargoTestsPassed": 204,
+    "cargoSuites": 24
+  }
+}

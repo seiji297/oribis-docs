@@ -1,0 +1,2693 @@
+{
+  "schemaVersion": 2,
+  "target": {
+    "repository": "oribis",
+    "commit": "486fe2198c0ec2a3dd4b0f1a71a041adc274fdb4",
+    "worktree": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis",
+    "notes": "Working tree contained active development changes. This manifest tracks evidence, not a release approval."
+  },
+  "policy": {
+    "process": "Feature Intake -> Feature Build -> Feature Done Definition -> Risk-based Test Selection -> Release Gate",
+    "windowsQaRule": "Only windows-qa-server + real-gpu + actual-user-operation with official summary fields is accepted as official AT/Release Gate visual evidence.",
+    "localRule": "local-windows and WSLg results are diagnostic/supporting only unless explicitly promoted by a later WindowsQA Server run.",
+    "xvfbPolicy": "Xvfb/CPU fallback is not accepted as real GPU evidence.",
+    "testExpansionPolicy": "Human-readable test-matrix uses representative guarantee items. Detailed tests are linked through test-inventory and manifest commands.",
+    "bugRegressionPolicy": "Producer/QA-reported bugs are tracked in bug-regressions.md and must link back to canonical test_id entries. Open release-blocking bug regressions block Release Gate.",
+    "gateRules": {
+      "requiredPass": "Gate=required requires Result=PASS with evidence registered in this manifest.",
+      "officialVisualEvidence": "ST/AT items that verify Windows visual UX require windows-qa-server + real-gpu + actual-user-operation evidence.",
+      "supportingNotSubstitute": "supporting and diagnostic runs cannot substitute required ST/AT evidence.",
+      "diagnosticOnly": "PASS_WITH_DIAGNOSTIC_ONLY is never a Release Gate PASS.",
+      "secretEvidence": "Evidence containing secrets, tokens, cookies, API keys, or PII is invalid unless redacted.",
+      "officialSummaryFields": "Official WindowsQA evidence requires official=true, sourceMode, requestedCommit, resolvedCommit, cleanChecks, skippedSteps, schemaVersion, qaProfile, and runnerScriptSha256 fields in new summary JSON. Legacy official summaries without the last four compatibility fields are warning-only if official/sourceMode/commit/clean/skippedSteps checks pass.",
+      "exactRevision": "Official WindowsQA must pin an exact commit. Branch-tip-only execution is diagnostic/supporting.",
+      "packagingGate": "Release Gate requires packaged release build or installer execution evidence; dev server/debug build evidence cannot substitute it.",
+      "qaRefForUncommittedWork": "Uncommitted work should be tested through a pushed refs/qa/<run-id> commit. Source snapshots remain diagnostic/supporting only.",
+      "abortedRun": "ABORTED runs are recorded but never counted as PASS. Required test ids remain NOT_RUN unless a complete official run passes.",
+      "runSpecificEvidence": "Release Gate evidence must reference runId-specific immutable paths and hashes. latest-* aliases are convenience only and are not valid manifest evidence.",
+      "invalidSummary": "Missing, incomplete, or runId/zip-mismatched summaries are invalid evidence."
+    },
+    "bugRegressionRules": {
+      "path": "bug-regressions.md",
+      "releaseGateRule": "no_open_release_blocking_bug_regressions",
+      "requiredFields": [
+        "bug_id",
+        "severity",
+        "status",
+        "release_blocking",
+        "linked_test_ids",
+        "requires_test_matrix_update",
+        "test_matrix_update_summary",
+        "verification_evidence",
+        "limitations"
+      ],
+      "unlinkedBug": "A bug regression without linked_test_ids is not accepted for Release Gate.",
+      "unverifiedFix": "A fixed bug without verification_evidence remains fixed_pending_verification.",
+      "bugSpecificVerification": "A bug can be verified when its own reproduction condition has official or accepted supporting evidence, even if the linked test_id remains PASS_WITH_LIMITATION or NOT_RUN for broader acceptance scope."
+    },
+    "waiverRules": {
+      "requiredFields": [
+        "id",
+        "reason",
+        "approver",
+        "expiresAt",
+        "affectedTestIds"
+      ],
+      "default": "No waiver is active unless explicitly listed under waivers."
+    },
+    "traceabilityFields": [
+      "test_id",
+      "area",
+      "level",
+      "gate",
+      "environmentClass",
+      "sourceAnchors",
+      "requiredEvidence",
+      "lastExecution",
+      "result",
+      "waiver"
+    ]
+  },
+  "waivers": [],
+  "requiredTestIds": [
+    "ORB-STATIC-001",
+    "ORB-STATIC-002",
+    "ORB-STATIC-003",
+    "ORB-SIT-001",
+    "ORB-SIT-002",
+    "ORB-SIT-003",
+    "ORB-ST-001",
+    "ORB-ST-002",
+    "ORB-ST-003",
+    "ORB-ST-004",
+    "ORB-ST-005",
+    "ORB-ST-006",
+    "ORB-AT-001",
+    "ORB-AT-002",
+    "ORB-AT-003",
+    "ORB-AT-004",
+    "ORB-AT-005",
+    "ORB-GATE-001",
+    "ORB-GATE-002"
+  ],
+  "bugRegressions": [
+    {
+      "bug_id": "ORB-BUG-001",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-001",
+        "ORB-ST-003"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Startup/GPU and Scene App criteria include render-error absence and Anima VRM load evidence.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-onboarding-scene-camera2-20260704-002011/extracted/wdio-evidence\\onboarding-scene-only.png",
+          "sha256": "4be0b1fa6d60175526b34490f4f28d3542e98a8c163f600ec633dc40da824804"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-onboarding-scene-camera2-20260704-002011/extracted/wdio-evidence\\onboarding-scene-only.json",
+          "sha256": "348e50a756f6b613680c3ba6117430036e00bb9bbb7fe3487db127e57e86caa4"
+        }
+      ],
+      "limitations": "Desktop-wide screenshot warning remains tracked on the ST item; WDIO evidence covers the bug condition."
+    },
+    {
+      "bug_id": "ORB-BUG-002",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-001",
+        "ORB-ST-002",
+        "ORB-ST-003"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Onboarding and Scene criteria require Anima VRM instead of placeholder humanoids.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-onboarding-scene-camera2-20260704-002011/extracted/wdio-evidence\\onboarding-scene-only.png",
+          "sha256": "4be0b1fa6d60175526b34490f4f28d3542e98a8c163f600ec633dc40da824804"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-onboarding-scene-camera2-20260704-002011/extracted/wdio-evidence\\onboarding-scene-only.json",
+          "sha256": "348e50a756f6b613680c3ba6117430036e00bb9bbb7fe3487db127e57e86caa4"
+        }
+      ],
+      "limitations": "Evidence verifies default startup path only."
+    },
+    {
+      "bug_id": "ORB-BUG-003",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-002"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Onboarding criteria require Scene-only display with Workbench/terminal/debug UI hidden.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-onboarding-scene-camera2-20260704-002011/extracted/wdio-evidence\\onboarding-scene-only.png",
+          "sha256": "4be0b1fa6d60175526b34490f4f28d3542e98a8c163f600ec633dc40da824804"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-onboarding-scene-camera2-20260704-002011/extracted/wdio-evidence\\onboarding-scene-only.json",
+          "sha256": "348e50a756f6b613680c3ba6117430036e00bb9bbb7fe3487db127e57e86caa4"
+        }
+      ],
+      "limitations": "Evidence covers onboarding path; Workbench layout is covered by ORB-ST-004."
+    },
+    {
+      "bug_id": "ORB-BUG-004",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-002",
+        "ORB-ST-003"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Onboarding and Scene criteria require idle animation instead of T-pose.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-onboarding-scene-camera2-20260704-002011/extracted/wdio-evidence\\onboarding-scene-only.png",
+          "sha256": "4be0b1fa6d60175526b34490f4f28d3542e98a8c163f600ec633dc40da824804"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-onboarding-scene-camera2-20260704-002011/extracted/wdio-evidence\\onboarding-scene-only.json",
+          "sha256": "348e50a756f6b613680c3ba6117430036e00bb9bbb7fe3487db127e57e86caa4"
+        }
+      ],
+      "limitations": "Evidence checks initial idle pose, not every animation transition."
+    },
+    {
+      "bug_id": "ORB-BUG-005",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-003",
+        "ORB-ST-004"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Scene/Workbench evidence requires canvas and drawing buffer aspect metrics after resize.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-after-resize.png",
+          "sha256": "0863d5f8120f74443e75455d0a5ef7e4209c5a54b979cf2a65b0d174e68e69cf"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-scene-canvas-metrics-after-resize.json",
+          "sha256": "ffffa73e597138b7f89584082a76b867b6a7bab1f73ca155de984d0ff4120bd2"
+        }
+      ],
+      "limitations": "Evidence covers representative pane resize, not all monitor aspect ratios."
+    },
+    {
+      "bug_id": "ORB-BUG-006",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-003",
+        "ORB-ST-004"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Scene App criteria require legacy 3D Viewer essential UI: chat, attach, mic, send, tabs, LLM overlay.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-default-layout.png",
+          "sha256": "4c8cc16fac86f866d41c1acbfd072acf5ade0a4194e8fce4a49fb95134eaa1e0"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-layout-rects.json",
+          "sha256": "1cdce822d264fb767ec8ee423ff6c10a03e93e96e0ef86d13536d75c1cf55432"
+        }
+      ],
+      "limitations": "Evidence confirms presence, not every control's end-to-end behavior."
+    },
+    {
+      "bug_id": "ORB-BUG-007",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-003",
+        "ORB-ST-004"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Scene App criteria require centered bottom chat input with attach/mic/send visible and no overlap.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-default-layout.png",
+          "sha256": "4c8cc16fac86f866d41c1acbfd072acf5ade0a4194e8fce4a49fb95134eaa1e0"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-layout-rects.json",
+          "sha256": "1cdce822d264fb767ec8ee423ff6c10a03e93e96e0ef86d13536d75c1cf55432"
+        }
+      ],
+      "limitations": "Evidence covers default layout viewport."
+    },
+    {
+      "bug_id": "ORB-BUG-008",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-004"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Workbench criteria require App selection state not to appear as close/delete controls.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-default-layout.png",
+          "sha256": "4c8cc16fac86f866d41c1acbfd072acf5ade0a4194e8fce4a49fb95134eaa1e0"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-layout-rects.json",
+          "sha256": "1cdce822d264fb767ec8ee423ff6c10a03e93e96e0ef86d13536d75c1cf55432"
+        }
+      ],
+      "limitations": "Evidence covers default active App tabs."
+    },
+    {
+      "bug_id": "ORB-BUG-009",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-006",
+        "ORB-AT-004"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "WebViewer UI criteria require manual open to start empty without previous or mystery page.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-web-viewer-empty.png",
+          "sha256": "f6b37140d84b279bc8959bc856621d34a2faf6756465eccc0e6ac2bc5ae7218c"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-web-viewer-manual.json",
+          "sha256": "d547c76713a420dca8a0aa93be9e352d14e52d91c08a7e5d3679bff1ba984647"
+        }
+      ],
+      "limitations": "Evidence covers manual open empty-state; real web operation is covered by ORB-SIT-003/ORB-AT-004."
+    },
+    {
+      "bug_id": "ORB-BUG-010",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-AT-002",
+        "ORB-ST-004"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Settings/Apps UX evidence requires theme-consistent panels without white remnants.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-settings-apps.png",
+          "sha256": "2a942d32e57a5a370ed70a05922776a34e7d5bcaae4a0f565aeefd933fc59f2a"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-settings-apps-theme.json",
+          "sha256": "cbea37b6d6902900a12c1569853d84fe20b34baedce9e25d7033f16c0161e27d"
+        }
+      ],
+      "limitations": "Evidence covers Settings/Apps representative screens."
+    },
+    {
+      "bug_id": "ORB-BUG-011",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-AT-002"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Settings/Anima UX criteria require settings to be split across focused tabs, not General dumping.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-settings-apps.png",
+          "sha256": "2a942d32e57a5a370ed70a05922776a34e7d5bcaae4a0f565aeefd933fc59f2a"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/extracted/wdio-evidence/core-app-workbench-settings-apps-theme.json",
+          "sha256": "cbea37b6d6902900a12c1569853d84fe20b34baedce9e25d7033f16c0161e27d"
+        }
+      ],
+      "limitations": "Evidence checks tab structure, not every setting value."
+    },
+    {
+      "bug_id": "ORB-BUG-012",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-AT-002",
+        "ORB-SIT-007",
+        "ORB-SIT-009"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Anima/Prompt criteria require one Prompts surface for Core/File/Anima Memory Cache.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-settings-onboarding-regression-20260704-010303-core/extracted/wdio-evidence\\core-app-workbench-anima-prompts-state.json",
+          "sha256": "39d3d21c1b7facdcf5cc112c57aaf8ab9a162a6de6a44851fe480bee37a3a1f0"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-settings-onboarding-regression-20260704-010303-core/extracted/wdio-evidence\\core-app-workbench-default-layout.png",
+          "sha256": "42498a293ba000845dde95b16b49c46a3e322d0858f5b3abf559d223cbe30664"
+        }
+      ],
+      "limitations": "Evidence checks UI consolidation; backend prompt/memory is covered by SIT-007/009."
+    },
+    {
+      "bug_id": "ORB-BUG-013",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-002",
+        "ORB-AT-002"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Onboarding criteria require default Anima name to be anima, not Idea.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-settings-onboarding-regression-20260704-010303-onboarding/extracted/wdio-evidence\\onboarding-anima-visual-main-ui.png",
+          "sha256": "c953d00fdcf2b15c258a5ac408f16d078671c3856d07912387d01258fcaa5a82"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-settings-onboarding-regression-20260704-010303-onboarding/extracted/wdio-evidence\\onboarding-anima-visual-saved-state.json",
+          "sha256": "6b63c099408bff7ef077fc99e785028a068b644e03e1a05f63e83abe7410966a"
+        }
+      ],
+      "limitations": "Evidence covers default onboarding state."
+    },
+    {
+      "bug_id": "ORB-BUG-014",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-002",
+        "ORB-AT-002"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Onboarding criteria require default user name to be User.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-settings-onboarding-regression-20260704-010303-onboarding/extracted/wdio-evidence\\onboarding-anima-visual-main-ui.png",
+          "sha256": "c953d00fdcf2b15c258a5ac408f16d078671c3856d07912387d01258fcaa5a82"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-settings-onboarding-regression-20260704-010303-onboarding/extracted/wdio-evidence\\onboarding-anima-visual-saved-state.json",
+          "sha256": "6b63c099408bff7ef077fc99e785028a068b644e03e1a05f63e83abe7410966a"
+        }
+      ],
+      "limitations": "Evidence covers default onboarding state."
+    },
+    {
+      "bug_id": "ORB-BUG-015",
+      "status": "fixed_pending_verification",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-SIT-001",
+        "ORB-AT-003"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Worker Chat criteria require Worker terminal and chat output to include final answer content, not only queued/completed status.",
+      "verification_evidence": [
+        "planned: tests/worker-chat.spec.ts on WindowsQA official"
+      ],
+      "limitations": "Local Vitest passed; WindowsQA official rerun is blocked by SSH timeout."
+    },
+    {
+      "bug_id": "ORB-BUG-016",
+      "status": "fixed_pending_verification",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-SIT-001",
+        "ORB-AT-003"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Worker UX criteria require Worker chat input not to overlap Anima input and to clear after send.",
+      "verification_evidence": [
+        "planned: tests/worker-chat.spec.ts on WindowsQA official"
+      ],
+      "limitations": "Local checks passed; WindowsQA official rerun is blocked by SSH timeout."
+    },
+    {
+      "bug_id": "ORB-BUG-017",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-AT-002",
+        "ORB-AT-005"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Anima/TTS UX criteria require affinity/internal metadata not to leak to chat or spoken output.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-anima-chat-affinity-meta-20260704-022840/extracted/wdio-evidence/anima-chat-regression/anima-chat-affinity-meta.png",
+          "sha256": "06d6af8051ec18292b684d337a223890095c3360f8841a140e358165afe1be99"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-anima-chat-affinity-meta-20260704-022840/extracted/wdio-evidence/anima-chat-regression/anima-chat-affinity-meta.json",
+          "sha256": "98741edcbc3cb5cdb179da2b675682e5f714c22db59b60c347108b7681090393"
+        }
+      ],
+      "limitations": "Bug-specific chat display leak is verified fixed. Frontend and Rust TTS marker stripping now have local supporting tests; actual audio output remains under ORB-AT-005."
+    },
+    {
+      "bug_id": "ORB-BUG-018",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-STATIC-003",
+        "ORB-AT-001"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Static policy and AT-001 require schema/tool catalog routing and forbid fixed vocabulary routers.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-app-ai-native-route-acceptance-20260704-0250/extracted/wdio-evidence/app-ai-native-route-acceptance/app-ai-native-route-acceptance.png",
+          "sha256": "a757862ccb9ecaca4e5e931e3fe2b1ccc47e1183495b8cd11abb1d7004143064"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-app-ai-native-route-acceptance-20260704-0250/extracted/wdio-evidence/app-ai-native-route-acceptance/app-ai-native-route-acceptance.json",
+          "sha256": "ac90a71f6ab15008185d1c28409cdd9234602b93baf7d3910220ae176408fb14"
+        }
+      ],
+      "limitations": "Fixed-router regression is verified. Real LLM representative natural-language quality remains a separate ORB-AT-001 limitation."
+    },
+    {
+      "bug_id": "ORB-BUG-019",
+      "status": "fixed_pending_verification",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-SIT-002"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Discord Relay criteria require system-routed immediate delivery, fixed destination, and queue metrics.",
+      "verification_evidence": [
+        {
+          "path": "/home/mnadmin/agent-projects/sysdev/shared/oribis-docs/testing/release-checks/pre-release/evidence/ORB-BUG-019/result.json",
+          "sha256": "63545efee890fbdafaebdc3000f485465b16a6db50c42c05f7ed275392712918"
+        }
+      ],
+      "limitations": "Surface closure passed locally; real Discord send/receive and queue metrics remain required."
+    },
+    {
+      "bug_id": "ORB-BUG-020",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-001"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Startup/GPU criteria require process/window inventory and no residual/loading Oribis windows.",
+      "verification_evidence": [
+        {
+          "path": "/home/mnadmin/agent-projects/sysdev/shared/oribis-docs/testing/release-checks/pre-release/evidence/ORB-BUG-020/result.json",
+          "sha256": "81f362cef5b2744a74e89912a2234f348b6d3ced2bce9e6f386dc892741f8a51"
+        }
+      ],
+      "limitations": "Desktop screenshot warning remains tracked on ST-001."
+    },
+    {
+      "bug_id": "ORB-BUG-021",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-ST-003"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "Scene App criteria require Stage to deny Studio-only physics/gravity/cube projection by default.",
+      "verification_evidence": [
+        {
+          "path": "/home/mnadmin/agent-projects/sysdev/shared/oribis-docs/testing/release-checks/pre-release/evidence/ORB-BUG-021/result.json",
+          "sha256": "eefaefdd211170c0d4626efc1ed4f31720c4ca1926c7c04b0d7fafa9ec4476cc"
+        }
+      ],
+      "limitations": "Evidence covers Stage/Studio boundary, not every Studio authoring operation."
+    },
+    {
+      "bug_id": "ORB-BUG-022",
+      "status": "verified",
+      "release_blocking": true,
+      "linked_test_ids": [
+        "ORB-SIT-003",
+        "ORB-AT-004"
+      ],
+      "requires_test_matrix_update": true,
+      "test_matrix_update_summary": "WebViewer criteria require real web connection and AI-native automation evidence.",
+      "verification_evidence": [
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-webviewer-app-ai-native-evidence-20260704-021712/extracted/wdio-evidence/app-ai-native-chat/web-viewer-ai-native.png",
+          "sha256": "9fb8b46526e5cf64dce0df12159ff924391fb6bec34c65eeb2fda378a3f55063"
+        },
+        {
+          "path": "/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-webviewer-app-ai-native-evidence-20260704-021712/extracted/wdio-evidence/app-ai-native-chat/web-viewer-ai-native-state.json",
+          "sha256": "604d1be39af11712d8433af2df9f149d5417c614874a980216cb1bb7a11bbe97"
+        }
+      ],
+      "limitations": "Verified with localhost representative page; broader external web compatibility remains future scope."
+    }
+  ],
+  "environments": {
+    "local-windows-source-snapshot": {
+      "kind": "local-windows",
+      "gate": "diagnostic",
+      "os": "Windows 11 Pro 10.0.26100",
+      "host": "DESKTOP-DEV001",
+      "gpu": [
+        "Intel(R) UHD Graphics 770",
+        "NVIDIA GeForce RTX 3060 Ti"
+      ],
+      "sourceSnapshot": "C:\\oribis-qa\\oribis"
+    },
+    "windows-qa-server": {
+      "kind": "windows-qa-server",
+      "gate": "required",
+      "status": "NOT_RUN"
+    }
+  },
+  "testItems": [
+    {
+      "test_id": "ORB-STATIC-001",
+      "area": "Build",
+      "level": "Static",
+      "gate": "required",
+      "environmentClass": "windows-qa-server",
+      "sourceAnchors": [
+        "package.json",
+        "src-tauri/Cargo.toml",
+        "vite.config.ts"
+      ],
+      "requiredEvidence": [
+        "summary-json",
+        "command-log",
+        "system-json"
+      ],
+      "lastExecution": "20260704-034448",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-STATIC-002",
+      "area": "Test Harness",
+      "level": "Static",
+      "gate": "required",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "scripts/send-live-stage-chat.sh",
+        "scripts/run-live-stage-chat-harness.sh",
+        "e2e/wdio/tests/live-stage-chat-harness.spec.ts",
+        "scripts/live-stage-policy.cjs"
+      ],
+      "requiredEvidence": [
+        "policy-log",
+        "script-output"
+      ],
+      "lastExecution": "2026-07-03T17:20:00+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-STATIC-003",
+      "area": "AI-native",
+      "level": "Static",
+      "gate": "required",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src/workbench/coreAppRegistry.ts",
+        "src/workbench/coreAppToolValidation.ts",
+        "src/RootShell.tsx"
+      ],
+      "requiredEvidence": [
+        "source-report",
+        "policy-log"
+      ],
+      "lastExecution": "2026-07-03T17:21:06+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-UT-001",
+      "area": "App Runtime",
+      "level": "UT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src/workbench/coreAppToolValidation.ts",
+        "src/apps/HostAPI.ts",
+        "src/apps/types.ts",
+        "src/apps/AppSystem.ts",
+        "src/workbench/CoreAppWorkbench.tsx"
+      ],
+      "requiredEvidence": [
+        "vitest-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:23:13+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-IT-001",
+      "area": "RootShell/App",
+      "level": "IT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src/workbench/CoreAppWorkbench.tsx",
+        "src/workbench/coreAppWindow.ts",
+        "src/RootShell.tsx"
+      ],
+      "requiredEvidence": [
+        "vitest-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:23:13+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-UT-002",
+      "area": "Worker Core",
+      "level": "UT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src/worker-core"
+      ],
+      "requiredEvidence": [
+        "vitest-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:27:35+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-UT-003",
+      "area": "Scene Runtime",
+      "level": "UT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src/scene-runtime",
+        "src/components/BabylonAvatarViewer.tsx",
+        "src/components/BabylonStageViewer.tsx"
+      ],
+      "requiredEvidence": [
+        "vitest-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:29:17+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-UT-004",
+      "area": "Anima/TTS",
+      "level": "UT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src/hooks/useTTS.ts",
+        "src/lib/readableTtsText.ts",
+        "src-tauri/tests/tts_*",
+        "src-tauri/tests/*tts*"
+      ],
+      "requiredEvidence": [
+        "vitest-log",
+        "cargo-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:30:51+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-IT-002",
+      "area": "Settings/Anima App",
+      "level": "IT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src/components/GeneralTab.tsx",
+        "src/components/PromptsTab.tsx",
+        "src/components/AppsTab.tsx",
+        "src/components/AnimaStatusBar.tsx"
+      ],
+      "requiredEvidence": [
+        "vitest-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:33:25+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-IT-004",
+      "area": "App Manifest / Permission / Catalog",
+      "level": "IT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src-tauri/src/app_runtime/manifest.rs",
+        "src-tauri/src/app_runtime/permission.rs",
+        "src-tauri/src/app_runtime/mod.rs",
+        "src/apps/useAppSystem.ts"
+      ],
+      "requiredEvidence": [
+        "cargo-log",
+        "vitest-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:34:55+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-IT-006",
+      "area": "App Runtime / Sandbox / Sidecar / Package",
+      "level": "IT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src-tauri/src/app_runtime/package.rs",
+        "src-tauri/src/app_runtime/sidecar.rs",
+        "src-tauri/src/app_runtime/storage.rs",
+        "src-tauri/src/app_runtime/fs.rs",
+        "src-tauri/src/app_runtime/net.rs",
+        "src/apps/AppSandbox.tsx"
+      ],
+      "requiredEvidence": [
+        "cargo-log",
+        "vitest-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:34:55+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-IT-005",
+      "area": "External Service Apps",
+      "level": "IT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "apps/discord/manifest.yaml",
+        "apps/google-workspace/manifest.yaml",
+        "apps/github-integration/manifest.yaml",
+        "apps/blender-hub/manifest.yaml",
+        "apps/work-report/manifest.yaml",
+        "src/apps/useAppSystem.ts"
+      ],
+      "requiredEvidence": [
+        "manifest-audit",
+        "vitest-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:37:57+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-SIT-004",
+      "area": "Tauri/Rust bridge",
+      "level": "SIT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src-tauri/tests",
+        "src-tauri/src/lib.rs",
+        "src-tauri/src/app_runtime",
+        "src-tauri/src/worker_server.rs"
+      ],
+      "requiredEvidence": [
+        "cargo-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:39:40+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-SIT-005",
+      "area": "Agent Server / Collaboration",
+      "level": "SIT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src-tauri/src/agent_routing.rs",
+        "src-tauri/src/agent_server.rs",
+        "src-tauri/src/agent_server_http.rs",
+        "src-tauri/src/agent_collaboration.rs",
+        "src-tauri/src/anima_agent_server.rs"
+      ],
+      "requiredEvidence": [
+        "cargo-log",
+        "route-decision-report",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:41:05+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-SIT-006",
+      "area": "Remote / Web Remote / Auth",
+      "level": "SIT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src-tauri/src/remote",
+        "scripts/setup-web-remote.ps1",
+        "scripts/start-web-remote.ps1"
+      ],
+      "requiredEvidence": [
+        "auth-log",
+        "config-snapshot",
+        "command-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:42:25+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-SIT-007",
+      "area": "Anima Memory / Retrieval",
+      "level": "SIT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src-tauri/src/anima/memory_db.rs",
+        "src-tauri/src/anima/memory.rs",
+        "src-tauri/src/anima/amem.rs",
+        "src-tauri/src/anima/consolidation.rs",
+        "src-tauri/src/anima/retrieval.rs"
+      ],
+      "requiredEvidence": [
+        "test-log",
+        "storage-diff",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:43:31+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-SIT-008",
+      "area": "Auth / License / Subscription",
+      "level": "SIT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src-tauri/src/license",
+        "src-tauri/src/openai_subscription_auth.rs",
+        "src-tauri/src/kimi_coding_auth.rs"
+      ],
+      "requiredEvidence": [
+        "command-log",
+        "auth-state-redaction-check",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:44:27+09:00",
+      "result": "PASS_WITH_LIMITATION",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-SIT-009",
+      "area": "Prompt / Skills / Templates",
+      "level": "SIT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src-tauri/src/skill.rs",
+        "src-tauri/src/templates",
+        "src/components/PromptsTab.test.tsx",
+        "src/components/SkillsTab.test.tsx"
+      ],
+      "requiredEvidence": [
+        "test-log",
+        "storage-diff",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:48:50+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-SIT-010",
+      "area": "Recording / Scheduler",
+      "level": "SIT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "src-tauri/src/recording.rs",
+        "src-tauri/src/scheduler.rs"
+      ],
+      "requiredEvidence": [
+        "command-log",
+        "state-snapshot",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:50:06+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-IT-003",
+      "area": "AI-native UI",
+      "level": "IT",
+      "gate": "supporting",
+      "environmentClass": "supporting",
+      "sourceAnchors": [
+        "e2e/wdio/tests/app-ai-native-chat.spec.ts",
+        "src/workbench/coreAppToolValidation.ts"
+      ],
+      "requiredEvidence": [
+        "wdio-log",
+        "result-json"
+      ],
+      "lastExecution": "2026-07-03T17:54:13+09:00",
+      "result": "PASS",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-SIT-002",
+      "area": "Discord Relay",
+      "level": "SIT",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "src-tauri/src/agent_discord_delivery.rs",
+        "src-tauri/src/agent_discord_route_store.rs",
+        "src-tauri/src/agent_discord_commands.rs",
+        "src-tauri/src/discord_bridge.rs",
+        "apps/discord/manifest.yaml"
+      ],
+      "requiredEvidence": [
+        "relay-log",
+        "queue-metrics",
+        "sent-message-evidence"
+      ],
+      "lastExecution": "2026-07-04T03:07:00+09:00",
+      "result": "BLOCKED_ON_WINDOWSQA",
+      "waiver": null,
+      "notes": "Surface closure for ORB-BUG-019 passed locally. Real Discord relay send/receive and queue metrics remain required.",
+      "supportingEvidence": [
+        {
+          "path": "evidence/ORB-BUG-019/result.json",
+          "kind": "surface-closure-json",
+          "sha256": "63545efee890fbdafaebdc3000f485465b16a6db50c42c05f7ed275392712918"
+        }
+      ],
+      "blockedReason": "WindowsQA host 100.64.6.42 / desktop-test001.tail68ea5e.ts.net is offline (SSH timeout, Tailscale Online=false). Supporting/local checks cannot substitute official evidence."
+    },
+    {
+      "test_id": "ORB-GATE-001",
+      "area": "Release",
+      "level": "Release Gate",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "test-matrix.md",
+        "test-inventory.md",
+        "manifest.json",
+        "execution-report.md"
+      ],
+      "requiredEvidence": [
+        "manifest",
+        "evidence-hashes",
+        "execution-report",
+        "risk-list"
+      ],
+      "lastExecution": null,
+      "result": "NOT_RUN",
+      "waiver": null
+    },
+    {
+      "test_id": "ORB-GATE-002",
+      "area": "Release Packaging",
+      "level": "Release Gate",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "src-tauri/tauri.conf.json",
+        "src-tauri/Cargo.toml",
+        "scripts/qa/run-windows-packaging.ps1"
+      ],
+      "requiredEvidence": [
+        "packaging-summary-json",
+        "system-snapshot-json",
+        "webview2-runtime-version",
+        "installer-candidates-and-sha256",
+        "installer-signature-status",
+        "installer-log",
+        "installed-app-screenshot",
+        "installed-exe-sha256",
+        "installed-exe-signature-status",
+        "uninstall-log",
+        "cleanup-result"
+      ],
+      "lastExecution": null,
+      "result": "BLOCKED_ON_WINDOWSQA",
+      "waiver": null,
+      "blockedReason": "WindowsQA host 100.64.6.42 / desktop-test001.tail68ea5e.ts.net is offline (SSH timeout, Tailscale Online=false). Supporting/local checks cannot substitute official evidence."
+    },
+    {
+      "test_id": "ORB-SIT-001",
+      "area": "Worker Chat",
+      "level": "SIT",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA scenario: chat submit -> Worker -> terminal/output/input clear"
+      ],
+      "requiredEvidence": [
+        "screenshot",
+        "DOM/result JSON",
+        "terminal text",
+        "operation log"
+      ],
+      "lastExecution": null,
+      "result": "BLOCKED_ON_WINDOWSQA",
+      "waiver": null,
+      "notes": "ローカルPCやdirect commandは不可",
+      "blockedReason": "WindowsQA host 100.64.6.42 / desktop-test001.tail68ea5e.ts.net is offline (SSH timeout, Tailscale Online=false). Supporting/local checks cannot substitute official evidence."
+    },
+    {
+      "test_id": "ORB-SIT-003",
+      "area": "WebViewer Connection",
+      "level": "SIT",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "`e2e/wdio/tests/web-remote-e2e.spec.ts`, WindowsQA WebViewer scenario"
+      ],
+      "requiredEvidence": [
+        "screenshot",
+        "automation JSON",
+        "operation log"
+      ],
+      "lastExecution": {
+        "date": "2026-07-04",
+        "environment": "WindowsQA Server",
+        "mode": "official",
+        "commit": "96f5943445452f5988fc7ee7cacc4eef88681150",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-webviewer-app-ai-native-evidence-20260704-021712\\latest-summary.json",
+        "evidence": [
+          "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-webviewer-app-ai-native-evidence-20260704-021712\\extracted\\wdio-evidence\\app-ai-native-chat\\web-viewer-ai-native-state.json",
+          "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-webviewer-app-ai-native-evidence-20260704-021712\\extracted\\wdio-evidence\\app-ai-native-chat\\web-viewer-ai-native.png"
+        ]
+      },
+      "result": "PASS",
+      "waiver": null,
+      "notes": "WindowsQA official WDIOでWebViewer URL接続、localhost実ページ表示、waitForText automation結果取得を確認。runner desktop-screenshotはwarnだが、WDIO個別PNG/JSONを保存済み。"
+    },
+    {
+      "test_id": "ORB-ST-001",
+      "area": "Startup/GPU",
+      "level": "ST",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA launch scenario"
+      ],
+      "requiredEvidence": [
+        "startup video/screenshot",
+        "process/window inventory",
+        "console log"
+      ],
+      "lastExecution": null,
+      "result": "NOT_RUN",
+      "waiver": null,
+      "notes": "local-windowsの黒画面/1420問題はdiagnostic扱い"
+    },
+    {
+      "test_id": "ORB-ST-002",
+      "area": "Onboarding",
+      "level": "ST",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA onboarding scenario"
+      ],
+      "requiredEvidence": [
+        "screenshot",
+        "result JSON"
+      ],
+      "lastExecution": "20260704-002031",
+      "result": "PASS_WITH_SCREENSHOT_WARN",
+      "waiver": null,
+      "notes": "WindowsQA official onboarding-scene-only. desktop screenshot step warned, but WDIO PNG/JSON evidence is present."
+    },
+    {
+      "test_id": "ORB-ST-003",
+      "area": "Scene App",
+      "level": "ST",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA scene scenario"
+      ],
+      "requiredEvidence": [
+        "screenshot/video",
+        "DOM/canvas metrics"
+      ],
+      "lastExecution": null,
+      "result": "NOT_RUN",
+      "waiver": null,
+      "notes": "3Dのアスペクト比崩れ再発防止"
+    },
+    {
+      "test_id": "ORB-ST-004",
+      "area": "Workbench",
+      "level": "ST",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA workbench scenario"
+      ],
+      "requiredEvidence": [
+        "screenshot/video",
+        "layout JSON"
+      ],
+      "lastExecution": {
+        "runId": "20260704-004932",
+        "commit": "b10263d49f1bff02e0539173ef36e44923d0bbb4",
+        "official": true,
+        "sourceMode": "git",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\latest-summary.json"
+      },
+      "result": "PASS_WITH_SCREENSHOT_WARN",
+      "waiver": null,
+      "notes": "WindowsQA officialでScene右、Anima左上、Workers左下、Console下のdefault layoutをlayout JSON/PNGで確認。runner desktop screenshotのみwarn。"
+    },
+    {
+      "test_id": "ORB-ST-005",
+      "area": "Console/Log",
+      "level": "ST",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA console scenario"
+      ],
+      "requiredEvidence": [
+        "screenshot",
+        "log extract"
+      ],
+      "lastExecution": null,
+      "result": "BLOCKED_ON_WINDOWSQA",
+      "waiver": null,
+      "notes": "Worker/Anima統合後のUI確認",
+      "blockedReason": "WindowsQA host 100.64.6.42 / desktop-test001.tail68ea5e.ts.net is offline (SSH timeout, Tailscale Online=false). Supporting/local checks cannot substitute official evidence."
+    },
+    {
+      "test_id": "ORB-ST-006",
+      "area": "WebViewer UI",
+      "level": "ST",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA WebViewer UI scenario"
+      ],
+      "requiredEvidence": [
+        "screenshot",
+        "operation JSON"
+      ],
+      "lastExecution": {
+        "runId": "20260704-004932",
+        "commit": "b10263d49f1bff02e0539173ef36e44923d0bbb4",
+        "official": true,
+        "sourceMode": "git",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\latest-summary.json"
+      },
+      "result": "PASS_WITH_SCREENSHOT_WARN",
+      "waiver": null,
+      "notes": "手動Open時に空状態から始まり、前回ページ/謎ページが出ないことをWebViewer JSON/PNGで確認。runner desktop screenshotのみwarn。Web接続はSIT、体験はATで別証跡。"
+    },
+    {
+      "test_id": "ORB-AT-001",
+      "area": "AI-native App Operation",
+      "level": "AT",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "e2e/wdio/tests/app-ai-native-route-acceptance.spec.ts",
+        "e2e/wdio/tests/app-ai-native-real-llm-representative.spec.ts",
+        "src/workbench/coreAppRegistry.ts",
+        "src/workbench/coreAppToolValidation.ts",
+        "src/RootShell.tsx"
+      ],
+      "requiredEvidence": [
+        "operation transcript",
+        "before/after values",
+        "screenshot",
+        "summary-json"
+      ],
+      "lastExecution": {
+        "date": "2026-07-04",
+        "environment": "WindowsQA Server",
+        "mode": "official",
+        "commit": "5d5589780b0e571bc2c3038bacef76adbe60b7d4",
+        "runId": "20260704-024858",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\latest-summary.json",
+        "evidence": [
+          "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\extracted\\wdio-evidence\\app-ai-native-route-acceptance\\app-ai-native-route-acceptance.json",
+          "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\extracted\\wdio-evidence\\app-ai-native-route-acceptance\\app-ai-native-route-acceptance.png"
+        ],
+        "summarySha256": "035caee2a020c5fd9dd9d2ad39b80cc3629a5ce544d3eddae49142d54930c202",
+        "evidenceSha256": {
+          "app-ai-native-route-acceptance.json": "ac90a71f6ab15008185d1c28409cdd9234602b93baf7d3910220ae176408fb14",
+          "app-ai-native-route-acceptance.png": "a757862ccb9ecaca4e5e931e3fe2b1ccc47e1183495b8cd11abb1d7004143064",
+          "artifactZip": "21d4c34488830ec092bdf97a210ee603e676a75171b8c6b61fdeb1c665c3fa8b"
+        }
+      },
+      "result": "PASS_WITH_LIMITATION",
+      "waiver": null,
+      "notes": "決定的mock Anima経路でApp tool invoke 30件はPASS。2026-07-04 localで実Anima promptへAI-native App Actions catalog/tool schemaを注入する経路を追加し、RootShell.chat testで確認済み。ただしreal LLM代表確認は未実行のためRelease Gateは未達。"
+    },
+    {
+      "test_id": "ORB-AT-002",
+      "area": "Settings/Anima UX",
+      "level": "AT",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA settings/anima scenario"
+      ],
+      "requiredEvidence": [
+        "screenshot/video",
+        "checklist"
+      ],
+      "lastExecution": null,
+      "result": "BLOCKED_ON_WINDOWSQA",
+      "waiver": null,
+      "notes": "UI妥当性は人間レビューも必要",
+      "blockedReason": "WindowsQA host 100.64.6.42 / desktop-test001.tail68ea5e.ts.net is offline (SSH timeout, Tailscale Online=false). Supporting/local checks cannot substitute official evidence."
+    },
+    {
+      "test_id": "ORB-AT-003",
+      "area": "Worker UX",
+      "level": "AT",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA worker representative task"
+      ],
+      "requiredEvidence": [
+        "terminal text",
+        "chat output",
+        "operation log"
+      ],
+      "lastExecution": null,
+      "result": "BLOCKED_ON_WINDOWSQA",
+      "waiver": null,
+      "notes": "ファイル作成しない簡易コード依頼を含む",
+      "blockedReason": "WindowsQA host 100.64.6.42 / desktop-test001.tail68ea5e.ts.net is offline (SSH timeout, Tailscale Online=false). Supporting/local checks cannot substitute official evidence."
+    },
+    {
+      "test_id": "ORB-AT-004",
+      "area": "WebViewer UX",
+      "level": "AT",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA WebViewer representative task"
+      ],
+      "requiredEvidence": [
+        "screenshot/video",
+        "automation JSON"
+      ],
+      "lastExecution": {
+        "date": "2026-07-04",
+        "environment": "WindowsQA Server",
+        "mode": "official",
+        "commit": "96f5943445452f5988fc7ee7cacc4eef88681150",
+        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-webviewer-app-ai-native-evidence-20260704-021712\\latest-summary.json",
+        "evidence": [
+          "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-webviewer-app-ai-native-evidence-20260704-021712\\extracted\\wdio-evidence\\app-ai-native-chat\\web-viewer-ai-native-state.json",
+          "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-webviewer-app-ai-native-evidence-20260704-021712\\extracted\\wdio-evidence\\app-ai-native-chat\\web-viewer-ai-native.png"
+        ]
+      },
+      "result": "PASS",
+      "waiver": null,
+      "notes": "チャット送信からWebViewer App操作、実localhostページ表示、automation結果取得まで確認。実LLMではなくテスト用mock応答でApp tool実行経路を固定。"
+    },
+    {
+      "test_id": "ORB-AT-005",
+      "area": "Audio/TTS UX",
+      "level": "AT",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "WindowsQA TTS scenario"
+      ],
+      "requiredEvidence": [
+        "audio capture or human checklist",
+        "settings JSON"
+      ],
+      "lastExecution": null,
+      "result": "BLOCKED_ON_WINDOWSQA",
+      "waiver": null,
+      "notes": "自動判定だけでは不十分",
+      "blockedReason": "WindowsQA host 100.64.6.42 / desktop-test001.tail68ea5e.ts.net is offline (SSH timeout, Tailscale Online=false). Supporting/local checks cannot substitute official evidence."
+    },
+    {
+      "test_id": "ORB-DIAG-001",
+      "area": "Local Windows DevUrl",
+      "level": "Diagnostic",
+      "gate": "diagnostic",
+      "environmentClass": "diagnostic",
+      "sourceAnchors": [
+        "local bundle/devUrl reproduction"
+      ],
+      "requiredEvidence": [
+        "screenshot",
+        "netstat",
+        "bind check"
+      ],
+      "lastExecution": null,
+      "result": "BLOCKED_DIAGNOSTIC",
+      "waiver": null,
+      "notes": "WindowsQA Server本番とは分離"
+    }
+  ],
+  "tests": [
+    {
+      "test_id": "ORB-STATIC-001",
+      "area": "Build",
+      "level": "Static",
+      "runner": [
+        "WindowsQA smoke",
+        "TypeScript",
+        "Vitest",
+        "Cargo",
+        "Build"
+      ],
+      "environment": "local-windows-source-snapshot",
+      "route": [
+        "source-snapshot",
+        "real-windows",
+        "no-xvfb",
+        "diagnostic"
+      ],
+      "gate": "diagnostic",
+      "regressionScope": [
+        "smoke",
+        "regression"
+      ],
+      "guarantee": "local-windows source snapshot passes dependency install, typecheck, targeted Vitest, cargo check, and frontend build. This does not certify official WindowsQA AT/ST.",
+      "result": "PASS_WITH_DIAGNOSTIC_ONLY",
+      "run": {
+        "runId": "20260703-161129",
+        "artifactDir": "C:\\oribis-qa\\artifacts\\20260703-161129",
+        "sourceSnapshot": "C:\\oribis-qa\\oribis",
+        "skipped": [
+          "WDIO",
+          "desktop-screenshot"
+        ]
+      },
+      "commands": [
+        "pnpm install --frozen-lockfile",
+        "pnpm run typecheck",
+        "pnpm vitest run src/RootShell.terminal.test.tsx src/components/BabylonAvatarViewer.test.tsx src/scene-runtime/SceneRuntime.test.ts",
+        "cargo check --manifest-path src-tauri/Cargo.toml",
+        "pnpm vite build"
+      ],
+      "evidence": [
+        {
+          "path": "evidence/STATIC-BUILD-001/windows-smoke-summary.json",
+          "kind": "summary-json",
+          "sha256": "23f47e1efd0f3ce9f8b550ab48084fa4bb64ab156e63226ef3714cee0dadc3b7"
+        },
+        {
+          "path": "evidence/STATIC-BUILD-001/windows-smoke.log",
+          "kind": "log",
+          "sha256": "7c00a6d6c657e7ad475fd799c0e34525c7fac113c6d9a8f4974f33a93854de1f"
+        },
+        {
+          "path": "evidence/STATIC-BUILD-001/windows-system.json",
+          "kind": "system-json",
+          "sha256": "ac526833ae8c53fb33ae6e978d91ef0b21d2388aec67f40ffc0799e9c1a9046a"
+        },
+        {
+          "path": "evidence/STATIC-BUILD-001/windows-smoke.zip",
+          "kind": "artifact-zip",
+          "sha256": "fcc5df576528f590cb7751042a732178960b588779496199f35785d382b36081"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-STATIC-002",
+      "area": "TestHarness",
+      "level": "Static",
+      "runner": [
+        "Node policy check"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "source-inspection",
+        "policy-function-check"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "regression",
+        "safety"
+      ],
+      "guarantee": "Live Stage send path rejects direct/mock/tool command routes unless explicitly allowed, requires reset marker, and accepts DOM chat text after reset.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:20:00+09:00"
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-STATIC-002/result.json",
+          "kind": "result-json",
+          "sha256": "d4e81a56a49e3d24723380c49215f028593d04b66fd45791b47a4c8527030f23"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-STATIC-003",
+      "area": "AINative",
+      "level": "Static",
+      "runner": [
+        "source policy check",
+        "Vitest"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "source-inspection",
+        "vitest"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "regression",
+        "safety"
+      ],
+      "guarantee": "Fixed vocabulary natural-language router symbols are absent from core App routing, and schema/tool validation tests pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:21:06+09:00"
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-STATIC-003/result.json",
+          "kind": "result-json",
+          "sha256": "56f1756926e3865aca6f727a7ff4a673b54f4ef882c2833c2be8e1c43e3980cf"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-UT-001",
+      "area": "AppRuntime",
+      "level": "UT",
+      "runner": [
+        "Vitest"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "unit-only",
+        "mocked",
+        "vitest"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "App schema/tool/policy, Host API, invoke/EventBus, Workbench, and App window unit-level checks pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:23:13+09:00",
+        "summary": {
+          "testFilesPassed": 7,
+          "testsPassed": 71
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-UT-001/result.json",
+          "kind": "result-json",
+          "sha256": "eb4070ee4bb4f010a8ab00bf0dcee7a7d24b7ba40b3ccafc2e6b92c15284ba86"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-IT-001",
+      "area": "RootShellApp",
+      "level": "IT",
+      "runner": [
+        "Vitest"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "component-integration",
+        "mocked",
+        "vitest"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "Core App Workbench and App window integration-level checks pass in the combined App Runtime / Workbench run.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:23:13+09:00",
+        "summary": {
+          "coveredByCombinedRun": "ORB-UT-001 combined App Runtime / Workbench supporting run",
+          "testFilesPassed": 7,
+          "testsPassed": 71
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-IT-001/result.json",
+          "kind": "result-json",
+          "sha256": "2312391ae6da97d80c902ed1d8edc7f7771915c9dbe2ff7fdb6e2cd17160c1fa"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-UT-002",
+      "area": "WorkerCore",
+      "level": "UT",
+      "runner": [
+        "Vitest"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "unit-only",
+        "mocked",
+        "vitest"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "Worker core protocol, session, store, permission, redaction, runtime, actions, and Discord adapter unit checks pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:27:35+09:00",
+        "summary": {
+          "testFilesPassed": 18,
+          "testsPassed": 109
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-UT-002/result.json",
+          "kind": "result-json",
+          "sha256": "c6c763efa95a1d6afae4dacbedf8a39e231023dbe7b7461798850afcf06af621"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-UT-003",
+      "area": "SceneRuntime",
+      "level": "UT",
+      "runner": [
+        "Vitest"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "unit-only",
+        "mocked",
+        "vitest"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "Scene runtime, terminal layout/projection, rust scene runtime client, avatar viewer, and stage viewer unit checks pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:29:17+09:00",
+        "summary": {
+          "testFilesPassed": 10,
+          "testsPassed": 123
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-UT-003/result.json",
+          "kind": "result-json",
+          "sha256": "bd0ee544bc9560fe82d4bb1f9bd5caf3b111534f775d369699f9ee80e5217a48"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-UT-004",
+      "area": "AnimaTTS",
+      "level": "UT",
+      "runner": [
+        "Vitest",
+        "Cargo tests"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "unit-only",
+        "mocked",
+        "vitest",
+        "cargo-test"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "TTS settings/readable text and Rust-side TTS basics pass. Audio quality remains AT/human-review scope.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:30:51+09:00",
+        "summary": {
+          "vitestFilesPassed": 2,
+          "vitestTestsPassed": 14,
+          "cargoTestsPassed": 17,
+          "cargoTestsIgnored": 16,
+          "cargoSuites": 8
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-UT-004/result.json",
+          "kind": "result-json",
+          "sha256": "0009bc6c5a2f828b3f9712669bc5ceda4b8f21243eed6722342c1b6227b07ddf"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-IT-002",
+      "area": "SettingsAnimaApp",
+      "level": "IT",
+      "runner": [
+        "Vitest"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "component-integration",
+        "mocked",
+        "vitest"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "Settings and Anima related UI components reflect saved values and visible state in component integration tests.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:33:25+09:00",
+        "summary": {
+          "testFilesPassed": 4,
+          "testsPassed": 44
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-IT-002/result.json",
+          "kind": "result-json",
+          "sha256": "b3210441f7fafcd5c6ed60c8b4112d9c6b2817b2f12017998575e1d8f6a37d32"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-IT-004",
+      "area": "AppManifestPermissionCatalog",
+      "level": "IT",
+      "runner": [
+        "Vitest",
+        "Cargo tests"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "integration",
+        "mocked-filesystem",
+        "vitest",
+        "cargo-test"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression",
+        "security"
+      ],
+      "guarantee": "App manifest, permission, capability discovery, tool catalog, and app frontend runtime tests pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:34:55+09:00",
+        "summary": {
+          "vitestFilesPassed": 10,
+          "vitestTestsPassed": 99,
+          "cargoTestsPassed": 204,
+          "cargoSuites": 24
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-IT-004/result.json",
+          "kind": "result-json",
+          "sha256": "ac1baef282c745cda7ec3edeea1a72a5e191c93c9e57db864d59e3602825018e"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-IT-006",
+      "area": "AppRuntimeSandboxSidecarPackage",
+      "level": "IT",
+      "runner": [
+        "Vitest",
+        "Cargo tests"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "integration",
+        "mocked-filesystem",
+        "vitest",
+        "cargo-test"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression",
+        "security"
+      ],
+      "guarantee": "App runtime, sandbox, package/trust, sidecar, storage, filesystem, and network boundary checks pass in the combined run.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:34:55+09:00",
+        "summary": {
+          "coveredByCombinedRun": "ORB-IT-004 App Manifest / Permission / Catalog and ORB-IT-006 App Runtime / Sandbox / Sidecar / Package combined run",
+          "vitestFilesPassed": 10,
+          "vitestTestsPassed": 99,
+          "cargoTestsPassed": 204,
+          "cargoSuites": 24
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-IT-006/result.json",
+          "kind": "result-json",
+          "sha256": "384d8bea0bcbfb920db8ec8e6e1996f44fb5fd7fad5e51a28f3d70454cc99cd1"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-IT-005",
+      "area": "ExternalServiceApps",
+      "level": "IT",
+      "runner": [
+        "manifest static audit",
+        "Vitest"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "manifest-static-check",
+        "mocked-external-api",
+        "vitest"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression",
+        "security"
+      ],
+      "guarantee": "Builtin/external App manifests and index files exist, required manifest keys are present, dangerous shell-style allowed commands are absent, and App registration tests pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:37:57+09:00",
+        "summary": {
+          "manifestAppsChecked": 9,
+          "manifestMissingRequiredKeys": 0,
+          "dangerousAllowedCommands": 0,
+          "vitestFilesPassed": 2,
+          "vitestTestsPassed": 15
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-IT-005/result.json",
+          "kind": "result-json",
+          "sha256": "588ede199dc4c39345f986b8b3887a70688174aa51bec3ff4de2760c7e9f036a"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-SIT-004",
+      "area": "TauriRustBridge",
+      "level": "SIT",
+      "runner": [
+        "Cargo tests"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "integration",
+        "mocked-external-lite",
+        "cargo-test"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "Rust/Tauri command boundary and backend integration tests pass. Windows visual behavior remains ST/AT scope.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:39:40+09:00",
+        "summary": {
+          "cargoTestsPassed": 2202,
+          "cargoTestsIgnored": 42,
+          "cargoSuites": 24
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-SIT-004/result.json",
+          "kind": "result-json",
+          "sha256": "e186296306ddcd68ab200ceca7d2ac626f96ba89a8f295c3867bc46871c0e918"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-SIT-005",
+      "area": "AgentServerCollaboration",
+      "level": "SIT",
+      "runner": [
+        "Cargo tests"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "integration",
+        "mocked-server-backend",
+        "cargo-test"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression",
+        "architecture"
+      ],
+      "guarantee": "Agent server, collaboration, and routing targeted Cargo tests pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:41:05+09:00",
+        "summary": {
+          "agentServerTestsPassed": 50,
+          "agentCollaborationTestsPassed": 62,
+          "agentRoutingTestsPassed": 8,
+          "cargoSuites": 24
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-SIT-005/result.json",
+          "kind": "result-json",
+          "sha256": "d7ea80fc079d9cb3d8119295422a7d8c4e078fbc1a9770010fe81becd4784f60"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-SIT-006",
+      "area": "RemoteWebRemoteAuth",
+      "level": "SIT",
+      "runner": [
+        "Cargo tests"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "integration",
+        "auth-mocked",
+        "cargo-test"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression",
+        "security"
+      ],
+      "guarantee": "Remote and auth targeted Cargo tests pass. Enabled-route Windows visual behavior remains WindowsQA scope.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:42:25+09:00",
+        "summary": {
+          "remoteTestsPassed": 5,
+          "totpFilterTestsMatched": 0,
+          "authTestsPassed": 40,
+          "cargoSuites": 24
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-SIT-006/result.json",
+          "kind": "result-json",
+          "sha256": "d00a7281581fb6cc5b6136af9d5fedfcc56f23eb339039d82cd1891eb387fe50"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-SIT-007",
+      "area": "AnimaMemoryRetrieval",
+      "level": "SIT",
+      "runner": [
+        "Cargo tests"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "integration",
+        "mocked-filesystem",
+        "cargo-test"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression",
+        "data"
+      ],
+      "guarantee": "Anima memory, retrieval, and consolidation targeted Cargo tests pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:43:31+09:00",
+        "summary": {
+          "memoryTestsPassed": 62,
+          "retrievalTestsPassed": 46,
+          "retrievalTestsIgnored": 1,
+          "consolidationTestsPassed": 44,
+          "cargoSuites": 24
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-SIT-007/result.json",
+          "kind": "result-json",
+          "sha256": "70736b8373ceff79d61728adc28ee03a3458e1e1ed91eec4c7f54cecf2cdd28f"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-SIT-008",
+      "area": "AuthLicenseSubscription",
+      "level": "SIT",
+      "runner": [
+        "Cargo tests"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "integration",
+        "external-auth-mocked",
+        "cargo-test"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression",
+        "security"
+      ],
+      "guarantee": "Subscription and Kimi auth targeted Cargo tests pass. GUI auth and secret-bearing scenarios remain WindowsQA/AT scope.",
+      "result": "PASS_WITH_LIMITATION",
+      "run": {
+        "executedAt": "2026-07-03T17:44:27+09:00",
+        "summary": {
+          "licenseFilterTestsMatched": 0,
+          "subscriptionTestsPassed": 6,
+          "kimiTestsPassed": 1,
+          "cargoSuites": 24,
+          "limitation": "WDIO GUI auth specs and secret-bearing scenarios require WindowsQA/AT route and were not executed in local-linux supporting run."
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-SIT-008/result.json",
+          "kind": "result-json",
+          "sha256": "54ecb06ec9bc8cd21f2e190bdfd5733f114cee0ef8f6982c1a9e9db367a27cdc"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-SIT-009",
+      "area": "PromptSkillsTemplates",
+      "level": "SIT",
+      "runner": [
+        "Cargo tests",
+        "Vitest"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "integration",
+        "mocked-filesystem",
+        "cargo-test",
+        "vitest"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "Prompt, skill, and template targeted backend and UI tests pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:48:50+09:00",
+        "summary": {
+          "skillTestsPassed": 6,
+          "templateTestsPassed": 9,
+          "vitestFilesPassed": 2,
+          "vitestTestsPassed": 26,
+          "cargoSuites": 24
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-SIT-009/result.json",
+          "kind": "result-json",
+          "sha256": "688d1db1936ece41d07ff542078b91c98eecfb143cb63f6d5d5fa0e48f0f79ae"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-SIT-010",
+      "area": "RecordingScheduler",
+      "level": "SIT",
+      "runner": [
+        "Cargo tests"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "integration",
+        "mocked-filesystem-time",
+        "cargo-test"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "Recording and scheduler targeted Cargo tests pass.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:50:06+09:00",
+        "summary": {
+          "recordingTestsPassed": 7,
+          "schedulerTestsPassed": 21,
+          "cargoSuites": 24
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-SIT-010/result.json",
+          "kind": "result-json",
+          "sha256": "cc07ebb2c4714a6c1e2c21358e6fbe89f5908bbdbf1948010b5deecc149b1e46"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-IT-003",
+      "area": "AINativeUI",
+      "level": "IT",
+      "runner": [
+        "WDIO"
+      ],
+      "environment": "wslg",
+      "route": [
+        "wdio",
+        "webdriver",
+        "real-app",
+        "real-gpu",
+        "supporting"
+      ],
+      "gate": "supporting",
+      "regressionScope": [
+        "regression"
+      ],
+      "guarantee": "AI-native App action catalog appears in the real Settings UI through WDIO supporting route. This is not WindowsQA AT/ST release evidence.",
+      "result": "PASS",
+      "run": {
+        "executedAt": "2026-07-03T17:54:13+09:00",
+        "summary": {
+          "specFilesPassed": 1,
+          "specFilesTotal": 1,
+          "testsPassed": 1,
+          "display": ":0",
+          "gdkBackend": "wayland,x11",
+          "waylandDisplay": "wayland-0",
+          "xdgRuntimeDir": "/mnt/wslg/runtime-dir",
+          "dxg": "present",
+          "virtualDisplay": "disabled"
+        }
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-IT-003/result.json",
+          "kind": "result-json",
+          "sha256": "10aca2ce8bf6de01bcfd81e9a65fa3c15e333d97f054ad10b48c85105c18e360"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-DIAG-001",
+      "area": "StartupGPU",
+      "level": "Diagnostic",
+      "runner": [
+        "local command",
+        "desktop capture"
+      ],
+      "environment": "local-windows-source-snapshot",
+      "route": [
+        "local-windows",
+        "diagnostic"
+      ],
+      "gate": "diagnostic",
+      "regressionScope": [
+        "investigation"
+      ],
+      "guarantee": "Records local-windows devUrl/localhost issue only. Not accepted as AT/ST/Release Gate evidence.",
+      "result": "BLOCKED_DIAGNOSTIC",
+      "observed": "Tauri debug exe reached WebView, then localhost:1420 timed out / black screen. This is a local diagnostic blocker, not official WindowsQA evidence.",
+      "evidence": []
+    },
+    {
+      "test_id": "ORB-GATE-001",
+      "area": "Release",
+      "level": "Release Gate",
+      "runner": [
+        "manifest review",
+        "human review"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "evidence-audit"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "release",
+        "critical"
+      ],
+      "guarantee": "Required items have PASS evidence, NOT_RUN/BLOCKED/FAIL are explicit, manifest paths and hashes match evidence files.",
+      "result": "NOT_RUN",
+      "evidence": []
+    },
+    {
+      "test_id": "ORB-GATE-002",
+      "area": "Release Packaging",
+      "level": "Release Gate",
+      "runner": [
+        "WindowsQA packaging runner"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "packaged-app",
+        "real-gpu",
+        "installer"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "release",
+        "critical"
+      ],
+      "guarantee": "Release build and Windows installer are created on WindowsQA, the app installed from the installer launches successfully with ST-001-equivalent startup evidence, and uninstall/cleanup succeeds. Official mode fails when no installer is produced.",
+      "result": "BLOCKED_ON_WINDOWSQA",
+      "evidence": [],
+      "blockedReason": "WindowsQA host 100.64.6.42 / desktop-test001.tail68ea5e.ts.net is offline (SSH timeout, Tailscale Online=false). Supporting/local checks cannot substitute official evidence."
+    },
+    {
+      "test_id": "ORB-STATIC-001",
+      "area": "Build",
+      "level": "Static",
+      "runner": [
+        "WindowsQA smoke",
+        "TypeScript",
+        "Vitest",
+        "Cargo"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "git",
+        "qa-ref",
+        "official",
+        "real-windows",
+        "no-xvfb"
+      ],
+      "gate": "required-attempt",
+      "regressionScope": [
+        "smoke",
+        "regression"
+      ],
+      "guarantee": "Official WindowsQA smoke was started but aborted by operator during cargo check. This is recorded for audit only and does not satisfy ORB-STATIC-001.",
+      "result": "ABORTED",
+      "run": {
+        "runId": "20260703-184522",
+        "requestedCommit": "608e1258b14a04a69318a95b8ed83e74351cfbb4",
+        "resolvedCommit": "608e1258b14a04a69318a95b8ed83e74351cfbb4",
+        "abortReason": "Producer requested interruption while cargo check was running",
+        "passedBeforeAbort": [
+          "repo-check",
+          "git-update",
+          "pnpm-install",
+          "typecheck",
+          "targeted-vitest"
+        ],
+        "failedStepInSummary": "cargo-check",
+        "officialPassCounted": false,
+        "notes": "latest-windows-smoke.zip pointed to older runId 20260703-180952 and is invalid as evidence for this attempt."
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-STATIC-001/windowsqa-official-smoke/summary-20260703-184522.json",
+          "kind": "summary-json",
+          "sha256": "4d937ace6aac1c1bd266625dbc3af9fd37d34fa99f000133c8813ffdad1f15a1"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-STATIC-001",
+      "area": "Build",
+      "level": "Static",
+      "runner": [
+        "WindowsQA Server",
+        "TypeScript",
+        "Cargo",
+        "Vite Build",
+        "Tauri debug build"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "git",
+        "qa-ref",
+        "official",
+        "exact-commit",
+        "real-windows",
+        "no-xvfb"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "smoke",
+        "regression"
+      ],
+      "guarantee": "Official WindowsQA build/static smoke passed typecheck, targeted Vitest, cargo-check, frontend build, and Tauri debug build on the pinned QA ref.",
+      "result": "PASS",
+      "run": {
+        "runId": "20260704-034448",
+        "official": true,
+        "sourceMode": "git",
+        "requestedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+        "resolvedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+        "skippedSteps": [],
+        "desktopScreenshot": "warn"
+      },
+      "evidence": [
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\latest-summary.json",
+          "kind": "windowsqa-summary-json",
+          "sha256": "ec49875b5cc467fff800333c5772c68b347be3ffd08affe05e23491abe061f56"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\20260704-034448.zip",
+          "kind": "windowsqa-artifact-zip",
+          "sha256": "6fa48ce7f0dd78b98bfb1508a2ed2ded92c20cc0c0c4d3e9070351378ae38e90"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-SIT-002",
+      "area": "DiscordRelaySurfaceClosure",
+      "level": "SIT",
+      "runner": [
+        "TypeScript",
+        "Vitest",
+        "Cargo",
+        "Source inspection"
+      ],
+      "environment": "local-linux",
+      "route": [
+        "surface-closure",
+        "no-ai-routing",
+        "no-public-queue-command"
+      ],
+      "gate": "required-bug-regression-partial",
+      "regressionScope": [
+        "regression",
+        "critical"
+      ],
+      "guarantee": "旧Worker Core Discord outbox queue導線がDeveloper Console、CommandRegistry、TypingScript DSL、RootShellから到達不能で、Agent Discord route/deliveryの正規経路が維持される。",
+      "result": "PASS_WITH_PENDING_REAL_RELAY",
+      "run": {
+        "runId": "ORB-BUG-019-surface-closure-20260704-0307",
+        "official": false,
+        "realRelayPending": true
+      },
+      "commands": [
+        "rtk pnpm run typecheck",
+        "rtk pnpm vitest run src/components/DeveloperConsole.test.tsx src/command/typingScriptDsl.test.ts src/command/CommandRegistry.test.ts --reporter=dot",
+        "rtk cargo test agent_discord --manifest-path src-tauri/Cargo.toml",
+        "rtk rg -n \"LIST_DISCORD_OUTBOX|QUEUE_DISCORD_STATUS|ACK_DISCORD_OUTBOX|oribis\\\\.workerCore\\\\.(listDiscordOutbox|queueDiscordStatus|ackDiscordOutbox)|worker-core-discord|Discord Outbox|queueDiscord|ackDiscord|listDiscordOutbox\" src src-tauri e2e"
+      ],
+      "evidence": [
+        {
+          "path": "evidence/ORB-BUG-019/result.json",
+          "kind": "surface-closure-json",
+          "sha256": "63545efee890fbdafaebdc3000f485465b16a6db50c42c05f7ed275392712918"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-ST-002",
+      "area": "Onboarding",
+      "level": "ST",
+      "runner": [
+        "WindowsQA Server",
+        "WDIO"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "real-app",
+        "real-gpu",
+        "actual-user-operation",
+        "onboarding-scene-only"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "smoke",
+        "regression",
+        "critical"
+      ],
+      "guarantee": "Onboarding starts with the standalone Stage 3D surface, Anima VRM is visible and idle, and Workbench/terminal/debug UI are not shown.",
+      "result": "PASS_WITH_SCREENSHOT_WARN",
+      "run": {
+        "runId": "20260704-002031",
+        "official": true,
+        "sourceMode": "git",
+        "requestedCommit": "7ad8bc0747156b3371fcfa1980249581ab235f2b",
+        "resolvedCommit": "7ad8bc0747156b3371fcfa1980249581ab235f2b",
+        "skippedSteps": [],
+        "desktopScreenshot": "warn"
+      },
+      "evidence": [
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-onboarding-scene-camera2-20260704-002011\\latest-summary.json",
+          "kind": "windowsqa-summary-json",
+          "sha256": "99c33443627c87b16c5521c660b08a417f502ab94d00aca46e54b2c3074226ce"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-onboarding-scene-camera2-20260704-002011\\20260704-002031.zip",
+          "kind": "windowsqa-artifact-zip",
+          "sha256": "f6ea0087b504717662491c8a3817d8e995224cbded1f08fdb3c4fe25cb53f556"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-onboarding-scene-camera2-20260704-002011\\extracted\\wdio-evidence\\onboarding-scene-only.json",
+          "kind": "wdio-state-json",
+          "sha256": "348e50a756f6b613680c3ba6117430036e00bb9bbb7fe3487db127e57e86caa4"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-onboarding-scene-camera2-20260704-002011\\extracted\\wdio-evidence\\onboarding-scene-only.png",
+          "kind": "screenshot",
+          "sha256": "4be0b1fa6d60175526b34490f4f28d3542e98a8c163f600ec633dc40da824804"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-ST-003",
+      "area": "StageStudioSplitSurfaceClosure",
+      "level": "ST",
+      "runner": [
+        "WindowsQA Server",
+        "WDIO",
+        "Vitest",
+        "TypeScript"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "real-app",
+        "real-gpu",
+        "actual-user-operation",
+        "stage-projection-policy",
+        "no-stage-physics-payload",
+        "no-stage-studio-command-advertising"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "regression",
+        "critical"
+      ],
+      "guarantee": "Stage surface does not project arbitrary Studio/runtime cube objects, does not attach physics payload to Stage activity furniture, and does not advertise Studio-only cube/move/clear snippets in the default DeveloperConsole.",
+      "result": "PASS_WITH_PARTIAL_SCENE_SCOPE",
+      "run": {
+        "runId": "20260704-034448",
+        "official": true,
+        "sourceMode": "git",
+        "requestedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+        "resolvedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+        "skippedSteps": [],
+        "desktopScreenshot": "warn"
+      },
+      "commands": [
+        "scripts/qa/invoke-windows-qa.sh --official --commit d37b7b02184b227f595bbf01af913d0b48dec4cd --wdio-spec tests/onboarding-scene-only.spec.ts",
+        "rtk pnpm vitest run src/components/BabylonStageViewer.test.ts src/command/CommandRegistry.test.ts src/components/DeveloperConsole.test.tsx src/workbench/coreAppToolValidation.test.ts --reporter=dot",
+        "rtk pnpm vitest run src/RootShell.terminal.test.tsx src/components/BabylonAvatarViewer.test.tsx src/scene-runtime/SceneRuntime.test.ts --reporter=dot",
+        "rtk pnpm run typecheck"
+      ],
+      "evidence": [
+        {
+          "path": "evidence/ORB-BUG-021/result.json",
+          "kind": "result-json",
+          "sha256": "eefaefdd211170c0d4626efc1ed4f31720c4ca1926c7c04b0d7fafa9ec4476cc"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\latest-summary.json",
+          "kind": "windowsqa-summary-json",
+          "sha256": "ec49875b5cc467fff800333c5772c68b347be3ffd08affe05e23491abe061f56"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\20260704-034448.zip",
+          "kind": "windowsqa-artifact-zip",
+          "sha256": "6fa48ce7f0dd78b98bfb1508a2ed2ded92c20cc0c0c4d3e9070351378ae38e90"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-ST-001",
+      "area": "StartupResidualProcessWindowGuard",
+      "level": "ST",
+      "runner": [
+        "WindowsQA Server",
+        "WDIO",
+        "PowerShell"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "real-app",
+        "real-gpu",
+        "windowsqa-runner-guard",
+        "no-broad-process-kill"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "regression",
+        "critical"
+      ],
+      "guarantee": "WindowsQA runner records and cleans RepoRoot-scoped Oribis QA residual processes before and after runs, exposes processChecks in summary JSON, and avoids broad name-only WebView2/Chrome/Node cleanup.",
+      "result": "PASS_WITH_SCREENSHOT_WARN",
+      "run": {
+        "runId": "20260704-034448",
+        "official": true,
+        "sourceMode": "git",
+        "requestedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+        "resolvedCommit": "d37b7b02184b227f595bbf01af913d0b48dec4cd",
+        "skippedSteps": [],
+        "desktopScreenshot": "warn"
+      },
+      "commands": [
+        "scripts/qa/invoke-windows-qa.sh --official --commit d37b7b02184b227f595bbf01af913d0b48dec4cd --wdio-spec tests/onboarding-scene-only.spec.ts",
+        "powershell.exe -NoProfile -Command \"[System.Management.Automation.Language.Parser]::ParseFile('scripts/qa/run-windows-smoke.ps1',[ref]$null,[ref]$null)\""
+      ],
+      "evidence": [
+        {
+          "path": "evidence/ORB-BUG-020/result.json",
+          "kind": "result-json",
+          "sha256": "81f362cef5b2744a74e89912a2234f348b6d3ced2bce9e6f386dc892741f8a51"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\latest-summary.json",
+          "kind": "windowsqa-summary-json",
+          "sha256": "ec49875b5cc467fff800333c5772c68b347be3ffd08affe05e23491abe061f56"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-startup-stage-guards-20260704-0345\\20260704-034448.zip",
+          "kind": "windowsqa-artifact-zip",
+          "sha256": "6fa48ce7f0dd78b98bfb1508a2ed2ded92c20cc0c0c4d3e9070351378ae38e90"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-ST-004",
+      "area": "Workbench",
+      "level": "ST",
+      "runner": [
+        "WindowsQA Server",
+        "WDIO"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "real-app",
+        "real-gpu",
+        "actual-user-operation"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "regression",
+        "critical"
+      ],
+      "guarantee": "Scene右、Anima左上、Workers左下、Console下のdefault layoutが実GPU実アプリで表示され、Workbench App windowの配置が崩れない。",
+      "result": "PASS_WITH_SCREENSHOT_WARN",
+      "run": {
+        "runId": "20260704-004932",
+        "official": true,
+        "sourceMode": "git",
+        "requestedCommit": "b10263d49f1bff02e0539173ef36e44923d0bbb4",
+        "resolvedCommit": "b10263d49f1bff02e0539173ef36e44923d0bbb4",
+        "skippedSteps": [],
+        "desktopScreenshot": "warn: CopyFromScreen handle invalid; WDIO app screenshot present"
+      },
+      "commands": [
+        "scripts/qa/invoke-windows-qa.sh --official --commit b10263d49f1bff02e0539173ef36e44923d0bbb4 --wdio-spec tests/core-app-workbench.spec.ts"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\latest-summary.json",
+          "kind": "windowsqa-summary-json",
+          "sha256": "29b016d4ccc837d8750a3799a6052306f8226b1a681b87f38d20dd6ab85885c5"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\extracted\\wdio-evidence\\core-app-workbench-layout-rects.json",
+          "kind": "layout-json",
+          "sha256": "1cdce822d264fb767ec8ee423ff6c10a03e93e96e0ef86d13536d75c1cf55432"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\extracted\\wdio-evidence\\core-app-workbench-default-layout.png",
+          "kind": "screenshot",
+          "sha256": "4c8cc16fac86f866d41c1acbfd072acf5ade0a4194e8fce4a49fb95134eaa1e0"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\20260704-004932.zip",
+          "kind": "windowsqa-artifact-zip",
+          "sha256": "8e35425bb23175b6771849215021c7dacca10720b24597520cf911c170ddc9d8"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-ST-006",
+      "area": "WebViewer UI",
+      "level": "ST",
+      "runner": [
+        "WindowsQA Server",
+        "WDIO"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "real-app",
+        "real-gpu",
+        "actual-user-operation"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "new",
+        "regression"
+      ],
+      "guarantee": "WebViewerがOribis App windowとして表示され、手動Open時に空状態から始まり、前回ページ/謎ページや不自然な白windowを出さない。",
+      "result": "PASS_WITH_SCREENSHOT_WARN",
+      "run": {
+        "runId": "20260704-004932",
+        "official": true,
+        "sourceMode": "git",
+        "requestedCommit": "b10263d49f1bff02e0539173ef36e44923d0bbb4",
+        "resolvedCommit": "b10263d49f1bff02e0539173ef36e44923d0bbb4",
+        "skippedSteps": [],
+        "desktopScreenshot": "warn: CopyFromScreen handle invalid; WDIO app screenshot present"
+      },
+      "commands": [
+        "scripts/qa/invoke-windows-qa.sh --official --commit b10263d49f1bff02e0539173ef36e44923d0bbb4 --wdio-spec tests/core-app-workbench.spec.ts"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\latest-summary.json",
+          "kind": "windowsqa-summary-json",
+          "sha256": "29b016d4ccc837d8750a3799a6052306f8226b1a681b87f38d20dd6ab85885c5"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\extracted\\wdio-evidence\\core-app-workbench-web-viewer-manual.json",
+          "kind": "operation-json",
+          "sha256": "d547c76713a420dca8a0aa93be9e352d14e52d91c08a7e5d3679bff1ba984647"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\extracted\\wdio-evidence\\core-app-workbench-web-viewer-empty.png",
+          "kind": "screenshot",
+          "sha256": "f6b37140d84b279bc8959bc856621d34a2faf6756465eccc0e6ac2bc5ae7218c"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-core-workbench-scene-input-20260704-005006\\20260704-004932.zip",
+          "kind": "windowsqa-artifact-zip",
+          "sha256": "8e35425bb23175b6771849215021c7dacca10720b24597520cf911c170ddc9d8"
+        }
+      ]
+    },
+    {
+      "test_id": "ORB-AT-001",
+      "area": "AINativeAppOperation",
+      "level": "AT",
+      "runner": [
+        "WindowsQA Server",
+        "WDIO"
+      ],
+      "environment": "windows-qa-server",
+      "route": [
+        "real-app",
+        "real-gpu",
+        "actual-chat-submit",
+        "deterministic-mock-anima",
+        "real-llm-representative",
+        "app.tool.invoke"
+      ],
+      "gate": "required",
+      "regressionScope": [
+        "regression",
+        "critical"
+      ],
+      "guarantee": "実チャット送信からApp tool invokeを通し、代表30件のApp設定/操作がschema/tool catalog経路で実行される。固定語録ルーターではない。実LLM経路では、Anima promptへApp Actions catalog/tool schemaが注入され、自然言語から正しいapp.tool.invokeを生成できることを代表確認する。",
+      "result": "PASS_WITH_LIMITATION",
+      "run": {
+        "runId": "20260704-024858",
+        "commit": "5d5589780b0e571bc2c3038bacef76adbe60b7d4",
+        "official": true,
+        "sourceMode": "git",
+        "caseCount": 30,
+        "failures": 0,
+        "desktopScreenshot": "warn: CopyFromScreen handle invalid; WDIO app screenshot present"
+      },
+      "commands": [
+        "scripts/qa/invoke-windows-qa.sh --official --wdio-spec tests/app-ai-native-route-acceptance.spec.ts",
+        "scripts/qa/invoke-windows-qa.sh --official --commit e9c0307fc10b6d7f9fb401c89a391418bc88c09e --wdio-spec tests/app-ai-native-real-llm-representative.spec.ts"
+      ],
+      "evidence": [
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\latest-summary.json",
+          "kind": "summary-json",
+          "sha256": "035caee2a020c5fd9dd9d2ad39b80cc3629a5ce544d3eddae49142d54930c202"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\extracted\\wdio-evidence\\app-ai-native-route-acceptance\\app-ai-native-route-acceptance.json",
+          "kind": "result-json",
+          "sha256": "ac90a71f6ab15008185d1c28409cdd9234602b93baf7d3910220ae176408fb14"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\extracted\\wdio-evidence\\app-ai-native-route-acceptance\\app-ai-native-route-acceptance.png",
+          "kind": "screenshot",
+          "sha256": "a757862ccb9ecaca4e5e931e3fe2b1ccc47e1183495b8cd11abb1d7004143064"
+        },
+        {
+          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\20260704-024858.zip",
+          "kind": "artifact-zip",
+          "sha256": "21d4c34488830ec092bdf97a210ee603e676a75171b8c6b61fdeb1c665c3fa8b"
+        }
+      ],
+      "notes": "決定的mock Anima経路はPASS。2026-07-04 localでcatalog注入テストはPASS。real LLM代表確認は未実行のためRelease Gate未達。"
+    }
+  ],
+  "requiredNotRun": [
+    "ORB-GATE-001"
+  ],
+  "supportingNotRun": [],
+  "requiredBlocked": [
+    "ORB-AT-001",
+    "ORB-SIT-001",
+    "ORB-SIT-002",
+    "ORB-ST-005",
+    "ORB-AT-002",
+    "ORB-AT-003",
+    "ORB-AT-005",
+    "ORB-GATE-002"
+  ]
+}

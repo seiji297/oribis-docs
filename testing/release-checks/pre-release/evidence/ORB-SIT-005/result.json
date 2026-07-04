@@ -1,0 +1,18 @@
+{
+  "test_id": "ORB-SIT-005",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:41:05+09:00",
+  "environment": "local-linux",
+  "route": ["cargo-test", "integration", "mocked-server-backend"],
+  "commands": [
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml agent_server",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml agent_collaboration",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml agent_routing"
+  ],
+  "summary": {
+    "agentServerTestsPassed": 50,
+    "agentCollaborationTestsPassed": 62,
+    "agentRoutingTestsPassed": 8,
+    "cargoSuites": 24
+  }
+}

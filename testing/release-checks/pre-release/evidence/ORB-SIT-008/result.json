@@ -1,0 +1,19 @@
+{
+  "test_id": "ORB-SIT-008",
+  "result": "PASS_WITH_LIMITATION",
+  "executedAt": "2026-07-03T17:44:27+09:00",
+  "environment": "local-linux",
+  "route": ["cargo-test", "integration", "external-auth-mocked"],
+  "commands": [
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml license",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml subscription",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml kimi"
+  ],
+  "summary": {
+    "licenseFilterTestsMatched": 0,
+    "subscriptionTestsPassed": 6,
+    "kimiTestsPassed": 1,
+    "cargoSuites": 24,
+    "limitation": "WDIO GUI auth specs and secret-bearing scenarios require WindowsQA/AT route and were not executed in local-linux supporting run."
+  }
+}

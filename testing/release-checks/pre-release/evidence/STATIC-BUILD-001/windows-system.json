@@ -1,0 +1,31 @@
+﻿{
+    "host":  "DESKTOP-DEV001",
+    "user":  "DESKTOP-DEV001\\admin",
+    "powershell":  "5.1.26100.7705",
+    "os":  {
+               "Caption":  "Microsoft Windows 11 Pro",
+               "Version":  "10.0.26100",
+               "BuildNumber":  "26100",
+               "TotalVisibleMemorySize":  33264792,
+               "FreePhysicalMemory":  22100620
+           },
+    "cpu":  {
+                "Name":  "13th Gen Intel(R) Core(TM) i7-13700K",
+                "NumberOfCores":  16,
+                "NumberOfLogicalProcessors":  24
+            },
+    "gpu":  [
+                {
+                    "Name":  "Intel(R) UHD Graphics 770",
+                    "DriverVersion":  "32.0.101.7082",
+                    "AdapterRAM":  2147479552
+                },
+                {
+                    "Name":  "NVIDIA GeForce RTX 3060 Ti",
+                    "DriverVersion":  "32.0.15.9174",
+                    "AdapterRAM":  4293918720
+                }
+            ],
+    "repoRoot":  "C:\\oribis-qa\\oribis",
+    "branch":  "develop"
+}

@@ -1,0 +1,34 @@
+{
+  "anima": {
+    "left": 1,
+    "width": 441,
+    "right": 442,
+    "top": 68,
+    "height": 409,
+    "bottom": 477
+  },
+  "scene": {
+    "left": 442,
+    "width": 780,
+    "right": 1222,
+    "top": 68,
+    "height": 499,
+    "bottom": 567
+  },
+  "workers": {
+    "left": 1,
+    "width": 441,
+    "right": 442,
+    "top": 512,
+    "height": 245,
+    "bottom": 757
+  },
+  "logs": {
+    "left": 442,
+    "width": 780,
+    "right": 1222,
+    "top": 602,
+    "height": 155,
+    "bottom": 757
+  }
+}

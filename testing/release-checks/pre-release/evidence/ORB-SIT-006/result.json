@@ -1,0 +1,18 @@
+{
+  "test_id": "ORB-SIT-006",
+  "result": "PASS",
+  "executedAt": "2026-07-03T17:42:25+09:00",
+  "environment": "local-linux",
+  "route": ["cargo-test", "integration", "auth-mocked"],
+  "commands": [
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml remote",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml totp",
+    "rtk cargo test --manifest-path src-tauri/Cargo.toml auth"
+  ],
+  "summary": {
+    "remoteTestsPassed": 5,
+    "totpFilterTestsMatched": 0,
+    "authTestsPassed": 40,
+    "cargoSuites": 24
+  }
+}
