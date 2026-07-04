@@ -53,6 +53,8 @@ WindowsQA connectivity latest:
 
 - `ssh -i ~/.ssh/oribis_windows_qa -o BatchMode=yes -o ConnectTimeout=8 admin@100.64.6.42 "echo windowsqa-ok"`: timeout。
 - latest QA ref for pre-RC diagnostic/supporting run: `e9c0307fc10b6d7f9fb401c89a391418bc88c09e` (`refs/qa/qa-20260704-qa-audit-script-and-blocked-status`)。required公式runは出荷候補RC SHA確定後に、そのRC SHAで実行する。
+- RC candidate SHA: `bb6561b3a7602304260d1dbc5cbc2757935081eb` (`origin/develop`)。WindowsQA公式runはこのSHAで実行する。
+- Testing docs commit: `8a99ff386c79994ef065d8881def65fad058830a` (`oribis-docs/main`)。
 - `ip route get 100.64.6.42`: `dev eth0 src 100.121.14.20`。
 - `ping -c 3 -W 2 100.64.6.42`: 0 received / 100% packet loss。
 - TCP 22 probe: timeout。
@@ -90,6 +92,7 @@ Latest local gate audit:
 - 結論: `ORB-GATE-001` の監査処理自体は動作。Release Gateは未達。
 - latest WindowsQA reachability rerun: `ssh -i ~/.ssh/oribis_windows_qa -o BatchMode=yes -o ConnectTimeout=8 admin@100.64.6.42 "echo windowsqa-ok"`: timeout。WindowsQA公式項目は引き続き `BLOCKED_ON_WINDOWSQA`。
 - Windows host-side check: `Test-NetConnection 100.64.6.42 -Port 22` returned `TcpTestSucceeded=false`, `PingSucceeded=false`, `InterfaceAlias=Tailscale`。`tailscale status --json` では `DESKTOP-TEST001` / `100.64.6.42` が `Online=false`, `Active=true`, `LastSeen=2026-07-03T18:59:08.1Z`。
+- RC SHA確定後の再確認: WSL SSH to `admin@100.64.6.42` はtimeout。WindowsQA公式runは引き続きhost到達性で `BLOCKED_ON_WINDOWSQA`。
 - `ORB-STATIC-003` latest source policy check:
   - `rtk rg -n "coreAppNaturalLanguage|naturalLanguageHints|includesAny|NEGATED_ACTION_TERMS|低め|ピッチ|TTSのピッチ|exact example|語録" src e2e scripts src-tauri --glob '!node_modules'`
   - 実装側の固定語録ルーター禁止シンボルは0件。ヒットは `e2e/wdio/tests/app-ai-native-route-acceptance.spec.ts` の受け入れテスト入力文1件のみ。
