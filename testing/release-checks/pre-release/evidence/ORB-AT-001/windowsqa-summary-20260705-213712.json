@@ -1,0 +1,220 @@
+﻿{
+    "schemaVersion":  1,
+    "qaProfile":  "WindowsQASmoke",
+    "runId":  "20260705-213712",
+    "startedAt":  "2026-07-05T21:37:12.9815196+09:00",
+    "endedAt":  "2026-07-05T21:49:24.5949748+09:00",
+    "durationSeconds":  731.613,
+    "status":  "pass",
+    "official":  true,
+    "sourceMode":  "git",
+    "mode":  "official",
+    "transportAuthMode":  "pubkey-only",
+    "branch":  "develop",
+    "requestedCommit":  "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+    "resolvedCommit":  "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+    "commit":  "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+    "cleanChecks":  [
+                        {
+                            "context":  "repo-check before git update",
+                            "status":  "clean",
+                            "at":  "2026-07-05T21:37:15.4885369+09:00"
+                        },
+                        {
+                            "context":  "git-update after origin branch sync",
+                            "status":  "clean",
+                            "at":  "2026-07-05T21:37:22.4094434+09:00"
+                        }
+                    ],
+    "processChecks":  [
+                          {
+                              "name":  "preflight-before-cleanup",
+                              "status":  "pass",
+                              "count":  0,
+                              "details":  "",
+                              "processes":  [
+
+                                            ],
+                              "at":  "2026-07-05T21:37:15.6107144+09:00"
+                          },
+                          {
+                              "name":  "preflight-after-cleanup",
+                              "status":  "pass",
+                              "count":  0,
+                              "details":  "",
+                              "processes":  [
+
+                                            ],
+                              "at":  "2026-07-05T21:37:16.5178695+09:00"
+                          },
+                          {
+                              "name":  "post-run-before-cleanup",
+                              "status":  "pass",
+                              "count":  0,
+                              "details":  "",
+                              "processes":  [
+
+                                            ],
+                              "at":  "2026-07-05T21:49:24.7416501+09:00"
+                          },
+                          {
+                              "name":  "post-run-after-cleanup",
+                              "status":  "pass",
+                              "count":  0,
+                              "details":  "",
+                              "processes":  [
+
+                                            ],
+                              "at":  "2026-07-05T21:49:25.6707650+09:00"
+                          }
+                      ],
+    "systemSnapshot":  {
+                           "host":  "DESKTOP-TEST001",
+                           "user":  "DESKTOP-TEST001\\admin",
+                           "powershell":  "5.1.19041.6456",
+                           "os":  {
+                                      "Caption":  "Microsoft Windows 10 Pro",
+                                      "Version":  "10.0.19045",
+                                      "BuildNumber":  "19045",
+                                      "TotalVisibleMemorySize":  16717732,
+                                      "FreePhysicalMemory":  12645820
+                                  },
+                           "cpu":  {
+                                       "Name":  "Intel(R) Core(TM) i5-4590 CPU @ 3.30GHz",
+                                       "NumberOfCores":  4,
+                                       "NumberOfLogicalProcessors":  4
+                                   },
+                           "gpu":  {
+                                       "Name":  "NVIDIA GeForce GTX 980",
+                                       "DriverVersion":  "32.0.15.6094",
+                                       "AdapterRAM":  4293918720
+                                   },
+                           "repoRoot":  "C:\\oribis-qa\\oribis",
+                           "branch":  "develop",
+                           "commit":  "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+                           "webView2Version":  "149.0.4022.98",
+                           "nodeVersion":  "v24.17.0",
+                           "pnpmVersion":  "11.8.0",
+                           "rustcVersion":  "rustc 1.96.0 (ac68faa20 2026-05-25)",
+                           "cargoVersion":  "cargo 1.96.0 (30a34c682 2026-05-25)"
+                       },
+    "runnerScriptSha256":  "babd0dca551606625d6d91d1aea6dc88d633ed38c6ae2af631e3caadc9cd8fa1",
+    "skippedSteps":  [
+
+                     ],
+    "artifactDir":  "C:\\oribis-qa\\artifacts\\20260705-213712",
+    "steps":  [
+                  {
+                      "name":  "system-snapshot",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:37:15.3029345+09:00"
+                  },
+                  {
+                      "name":  "prerequisites",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:37:15.3574305+09:00"
+                  },
+                  {
+                      "name":  "repo-check",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:37:15.4885369+09:00"
+                  },
+                  {
+                      "name":  "oribis-preflight-cleanup",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:37:16.5178695+09:00"
+                  },
+                  {
+                      "name":  "git-update",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:37:22.4534782+09:00"
+                  },
+                  {
+                      "name":  "pnpm-install",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:37:23.0550812+09:00"
+                  },
+                  {
+                      "name":  "local-llm-provision",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:37:33.7283447+09:00"
+                  },
+                  {
+                      "name":  "typecheck",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:37:36.3713563+09:00"
+                  },
+                  {
+                      "name":  "targeted-vitest",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:38:10.7612064+09:00"
+                  },
+                  {
+                      "name":  "cargo-check",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:38:11.9421881+09:00"
+                  },
+                  {
+                      "name":  "frontend-build",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:40:59.2885154+09:00"
+                  },
+                  {
+                      "name":  "tauri-debug-build",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:41:00.3537297+09:00"
+                  },
+                  {
+                      "name":  "wdio",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:49:24.5413494+09:00"
+                  },
+                  {
+                      "name":  "desktop-screenshot",
+                      "status":  "warn",
+                      "exitCode":  0,
+                      "details":  "Exception calling \"CopyFromScreen\" with \"3\" argument(s): \"The handle is invalid\"",
+                      "at":  "2026-07-05T21:49:24.5926542+09:00"
+                  },
+                  {
+                      "name":  "oribis-post-run-cleanup",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:49:25.6707650+09:00"
+                  },
+                  {
+                      "name":  "diagnostics",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:49:26.3310141+09:00"
+                  }
+              ]
+}

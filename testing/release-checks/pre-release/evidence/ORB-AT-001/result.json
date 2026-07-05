@@ -1,19 +1,19 @@
 {
   "test_id": "ORB-AT-001",
   "result": "PASS",
-  "runId": "20260705-211538",
+  "runId": "20260705-213712",
   "environment": "WindowsQA Server",
   "mode": "official",
   "sourceMode": "git",
-  "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-  "resolvedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+  "requestedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+  "resolvedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
   "summary": {
-    "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
-    "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
+    "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-213712.json",
+    "sha256": "4ede3423a33890e06871c368da9dae8a0279a6089cfcf342fab8d9dd64c5cfd7"
   },
   "artifactZip": {
-    "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
-    "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
+    "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-213712.zip",
+    "sha256": "8fc1eaee83e40be01e98a5dbe8f8502826383be1d1feef81597018a89cc1a1ec"
   },
   "pass": {
     "passedCount": 8,

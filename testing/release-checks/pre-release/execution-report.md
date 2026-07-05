@@ -4,7 +4,7 @@
 
 現時点の判定: **PASS / Release Gate監査上は出荷可能**。
 
-対象QA evidence SHA: `fa003cc6645c88863a8c84a21a966ad6c408c29c`。
+対象QA evidence SHA: `b4601967900a4898d959b75bf4c8f78a92fdadfa`。
 
 `manifest.json` のstrict監査はPASS。requiredBlocked / requiredNotRun / nonVerifiedBlockingBugs は0件。
 
@@ -20,13 +20,13 @@
 
 | test_id | Release Gate上の扱い | 直接原因 | 次のunblock条件 |
 |---|---|---|---|
-| `ORB-GATE-001` | `pass` | `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` PASS | 証跡 `evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json` をSHA固定済み |
+| `ORB-GATE-001` | `pass` | `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` PASS | 証跡 `evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json` をSHA固定済み。最終develop commit `b4601967900a4898d959b75bf4c8f78a92fdadfa` の `ORB-AT-001` run `20260705-213712` も追加済み |
 
 分類ルール:
 
 - `requiredBlocked` はRelease Gateを止める。scope外/waived扱いではない。
 - `requiredBlocked` には、製品不具合だけでなく、official条件の環境・前提未充足でrequired PASSへ到達できないものも含める。原因種別は上の表で分離して読む。
-- `ORB-AT-001` は2026-07-05 official run `20260705-211538` でthreshold PASSへ解消済み。deterministic mock 30件PASSに加え、real LLM代表10件で `passedCount=8/10`, `minPass=8` を満たした。
+- `ORB-AT-001` は2026-07-05 official run `20260705-213712` / commit `b4601967900a4898d959b75bf4c8f78a92fdadfa` でthreshold PASSへ解消済み。deterministic mock 30件PASSに加え、real LLM代表10件で `passedCount=8/10`, `minPass=8` を満たした。
 - `ORB-AT-005` は2026-07-05 official run `20260705-111317` でPASS_WITH_WARNINGSへ解消済み。desktop screenshot warnは残るが、WDIO TTS playback 6件はPASS。
 - `ORB-GATE-002` は2026-07-05 official run `20260705-112014` でPASSへ解消済み。release build / installer install / installed app startup / uninstall を確認済み。
 - `ORB-GATE-001` は2026-07-05 strict auditでPASS。requiredBlocked / requiredNotRun / nonVerifiedBlockingBugs / failures は0件。
@@ -38,7 +38,7 @@ codex-adviser確認:
 
 - 2026-07-05に `codex-adviser` へAT-001の扱いを確認。
 - 1回目結論: deterministic mock 30件PASSだけではreal LLM代表FAILを代替してRelease Gateを通してはいけない。
-- 2回目結論: WindowsQA official / real GPU / local LLM run `20260705-211538` は事前固定 `minPass=8` に対して `passedCount=8/10` のため、`ORB-AT-001` はRelease Gate上PASS扱いで妥当。`affinity-off` / `model-off` はUnsupported planner operationのcoverage gapとしてknown limitation/follow-up管理にし、後出しblockerにしない。
+- 2回目結論: WindowsQA official / real GPU / local LLM run `20260705-211538` および最終develop再実行 `20260705-213712` は事前固定 `minPass=8` に対して `passedCount=8/10` のため、`ORB-AT-001` はRelease Gate上PASS扱いで妥当。`affinity-off` / `model-off` はUnsupported planner operationのcoverage gapとしてknown limitation/follow-up管理にし、後出しblockerにしない。
 
 追加確認:
 
@@ -52,8 +52,8 @@ codex-adviser確認:
 
 ## 現状サマリ
 
-テスト体系は新ルールへ移行中。  
-現時点では、Release Gate required項目の多くが未実行のため、リリース受け入れは未完了。
+テスト体系は新ルールへ移行済み。  
+現時点では、Discord real relayを明示scope外waiverにしたうえで、Release Gate required項目はPASS済み。
 
 | Category | Result | Gate | Notes |
 |---|---|---|---|
@@ -80,7 +80,7 @@ codex-adviser確認:
 | Recording / Scheduler supporting | PASS | supporting | `ORB-SIT-010`: recording 7、scheduler 21 passed |
 | AI-native UI supporting | PASS | supporting | `ORB-IT-003`: WDIO real GPU/WSLg route 1 spec / 1 test PASS |
 | Anima chat metadata regression | PASS_WITH_LIMITATION | required bug regression | `ORB-BUG-017`: WindowsQA official / commit `6f08c523c045d82afc8c7a9d45305883e9dcf8ae`。実チャット送信経路で `[好感度: ...]` が表示本文へ漏れないことを確認。音声読み上げの実出力確認は `ORB-AT-005` に残す |
-| AI-native App Operation official | PASS | required | `ORB-AT-001` / `ORB-BUG-018`: 決定的mock Anima応答でApp tool invoke 30件PASS。2026-07-05 WindowsQA official run `20260705-211538` / commit `fa003cc6645c88863a8c84a21a966ad6c408c29c` のreal LLM代表確認はOllama Vulkan GPU offloadで `passedCount=8/10`, `minPass=8` を満たしPASS。`affinity-off` / `model-off` はknown limitation/follow-up |
+| AI-native App Operation official | PASS | required | `ORB-AT-001` / `ORB-BUG-018`: 決定的mock Anima応答でApp tool invoke 30件PASS。2026-07-05 WindowsQA official run `20260705-213712` / commit `b4601967900a4898d959b75bf4c8f78a92fdadfa` のreal LLM代表確認はOllama Vulkan GPU offloadで `passedCount=8/10`, `minPass=8` を満たしPASS。`affinity-off` / `model-off` はknown limitation/follow-up |
 | WebViewer AI-native official | PASS | required | `ORB-SIT-003` / `ORB-AT-004`: WindowsQA official / commit `96f5943445452f5988fc7ee7cacc4eef88681150`。実チャット送信からWebViewer URL表示、localhostページ読取、automation結果取得、WDIO個別PNG/JSON保存 |
 | Discord Relay surface closure | PASS_WITH_PENDING_REAL_RELAY_DEFERRED_BY_WAIVER | deferred | `ORB-BUG-019`: local-linuxで旧Worker Core outbox queue導線をDeveloper Console/CommandRegistry/TypingScript DSL/RootShellから削除確認。実Discord送受信/queue metricsはDiscord環境未準備のためProducer指示で今回scopeから延期 |
 | Discord Relay supporting recheck | DEFERRED_BY_WAIVER | deferred | `ORB-SIT-002`: `cargo test agent_discord` 35 passed、Discord/outbox関連Vitest 9 passed。実Discord送受信とqueue metricsはwaiver `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` により今回scope外。PASS扱いにはしない |
@@ -97,7 +97,7 @@ codex-adviser確認:
 | Frontend full Vitest | PASS | supporting | `vitest.config.ts` でNode専用QA testをVitest対象から除外。`rtk pnpm vitest run --reporter=dot`: 133 files / 1590 tests PASS |
 | WindowsQA Server remaining AT/ST | PASS | required | Discord waiverを除く残required AT/STは解消済み。`ORB-AT-001` / `ORB-AT-005` / `ORB-GATE-002` はWindowsQA officialで解消済み |
 | local-windows devUrl diagnostic | BLOCKED_DIAGNOSTIC | diagnostic | local-windowsで`localhost:1420` timeout/black screenを確認。AT/STの代替にしない |
-| Release Gate | PASS | required | `ORB-GATE-001`: 2026-07-05 strict audit PASS。requiredBlocked=[] / requiredNotRun=[] / nonVerifiedBlockingBugs=[] / failures=[] |
+| Release Gate | PASS | required | `ORB-GATE-001`: 2026-07-05 strict audit `20260705-2155` PASS。requiredBlocked=[] / requiredNotRun=[] / nonVerifiedBlockingBugs=[] / failures=[] |
 
 WindowsQA connectivity latest:
 
@@ -750,7 +750,7 @@ clean checkout、`pnpm install --frozen-lockfile`、typecheck、targeted Vitest�
 
 ### ORB-AT-001 AI-native App Operation official
 
-2026-07-05追加: WindowsQA official run `20260705-211538` / commit `fa003cc6645c88863a8c84a21a966ad6c408c29c` でreal LLM代表10件を再実行。Ollama Vulkan GPU offload証跡あり、WDIO spec 1件PASS、`passedCount=8/10`, `minPass=8` によりthreshold PASS。`affinity-off` / `model-off` はUnsupported planner operationとしてknown limitation/follow-up管理。`codex-adviser` 確認済み。
+2026-07-05追加: WindowsQA official run `20260705-213712` / commit `b4601967900a4898d959b75bf4c8f78a92fdadfa` でreal LLM代表10件を再実行。Ollama Vulkan GPU offload証跡あり、WDIO spec 1件PASS、`passedCount=8/10`, `minPass=8` によりthreshold PASS。`affinity-off` / `model-off` はUnsupported planner operationとしてknown limitation/follow-up管理。`codex-adviser` 確認済み。
 
 2026-07-04にWindowsQA Server `C:\oribis-qa\oribis-develop-clean` でQA-ref `5d5589780b0e571bc2c3038bacef76adbe60b7d4` を指定して公式実行。
 

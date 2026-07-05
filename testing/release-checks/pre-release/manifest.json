@@ -2,9 +2,9 @@
   "schemaVersion": 2,
   "target": {
     "repository": "oribis",
-    "commit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
+    "commit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
     "worktree": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis",
-    "notes": "Current QA evidence target SHA includes Kokoro provisioning and packaging fixes through refs/qa/orb-at-005-tts-kokoro-selected-20260705-110920. Release Gate is not approved: ORB-AT-001 remains failing on real LLM evidence and ORB-GATE-001 remains NOT_RUN pending final strict audit.",
+    "notes": "Current QA evidence target SHA includes ORB-AT-001 real LLM threshold PASS on final develop, ORB-AT-005 TTS, ORB-GATE-002 packaging, and ORB-GATE-001 strict release audit. Discord real relay remains scope-deferred by waiver and is not counted as PASS.",
     "rcCandidate": true,
     "previousTrackedCommit": "e366936065ca5a393e69344358047d2f1e1ccf7e"
   },
@@ -1058,26 +1058,18 @@
         "risk-list"
       ],
       "lastExecution": {
-        "date": "2026-07-05",
+        "runId": "20260705-2155",
+        "commit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "requestedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
-        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "runId": "20260705-2130",
-        "official": true,
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
-        "evidence": [
-          {
-            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
-            "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
-          }
-        ],
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json",
         "result": "PASS",
-        "status": "PASS",
         "requiredBlocked": [],
         "requiredNotRun": [],
-        "nonVerifiedBlockingBugs": []
+        "nonVerifiedBlockingBugs": [],
+        "failures": []
       },
       "result": "PASS",
       "waiver": null,
@@ -1085,15 +1077,15 @@
         "date": "2026-07-05",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
-        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "runId": "20260705-2130",
+        "commit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "requestedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "runId": "20260705-2155",
         "official": true,
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json",
         "evidence": [
           {
-            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json",
             "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
           }
         ],
@@ -1101,16 +1093,18 @@
         "status": "PASS",
         "requiredBlocked": [],
         "requiredNotRun": [],
-        "nonVerifiedBlockingBugs": []
+        "nonVerifiedBlockingBugs": [],
+        "failures": []
       },
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
-          "kind": "release-gate-audit-json",
-          "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
+          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json",
+          "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd",
+          "type": "release-gate-strict-audit"
         }
       ],
-      "notes": "Strict release audit passed after ORB-AT-001, ORB-AT-005, and ORB-GATE-002 evidence were registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS."
+      "notes": "Strict release audit passed after final develop ORB-AT-001 evidence was registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS.",
+      "status": "PASS"
     },
     {
       "test_id": "ORB-GATE-002",
@@ -1429,30 +1423,41 @@
         "summary-json"
       ],
       "lastExecution": {
-        "date": "2026-07-05",
+        "runId": "20260705-213712",
+        "commit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "requestedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
         "environment": "WindowsQA Server",
         "mode": "official",
-        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "runId": "20260705-211538",
-        "official": true,
         "sourceMode": "git",
-        "summary": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
-        "evidence": [
-          {
-            "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
-            "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
-          },
-          {
-            "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
-            "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
-          }
-        ],
+        "summary": "evidence/ORB-AT-001/windowsqa-summary-20260705-213712.json",
         "result": "PASS",
-        "status": "PASS",
         "passedCount": 8,
         "total": 10,
         "minPass": 8,
+        "gpu": {
+          "backend": "ollama",
+          "requestedLibrary": "vulkan",
+          "hasVulkanLog": true,
+          "hasOffloadLog": true
+        },
+        "knownLimitations": [
+          "affinity-off",
+          "model-off"
+        ]
+      },
+      "result": "PASS",
+      "waiver": null,
+      "notes": "WindowsQA official real LLM representative run passed threshold on final develop commit. Ollama Vulkan GPU offload evidence present. passedCount=8/10, minPass=8; affinity-off/model-off remain known planner coverage limitations.",
+      "run": {
+        "runId": "20260705-213712",
+        "commit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "requestedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "official": true,
+        "sourceMode": "git",
+        "caseCount": 10,
+        "minPass": 8,
+        "passedCount": 8,
+        "failures": 2,
         "gpu": {
           "backend": "ollama",
           "requestedLibrary": "vulkan",
@@ -1469,45 +1474,33 @@
             "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
           }
         ],
-        "acceptance": "Threshold pass: real LLM representative run passed 8/10 with minPass=8. rawToolBlockVisible=false and chat input remained empty for all cases.",
-        "adviserDecision": "codex-adviser confirmed PASS is acceptable for Release Gate and the two unsupported planner operation cases should be tracked as known limitations/follow-up, not release blockers."
-      },
-      "result": "PASS",
-      "waiver": null,
-      "notes": "WindowsQA official real LLM representative run passed threshold: 8/10 with minPass=8 using Ollama Vulkan GPU offload. affinity-off/model-off remain known planner operation coverage follow-ups, not release blockers for this gate.",
-      "run": {
-        "runId": "20260705-211538",
-        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "official": true,
-        "sourceMode": "git",
-        "caseCount": 10,
-        "minPass": 8,
-        "passedCount": 8,
-        "failures": 2,
-        "knownLimitations": [
+        "summary": "evidence/ORB-AT-001/windowsqa-summary-20260705-213712.json",
+        "evidence": [
           {
-            "id": "affinity-off",
-            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+            "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-213712.json",
+            "sha256": "4ede3423a33890e06871c368da9dae8a0279a6089cfcf342fab8d9dd64c5cfd7"
           },
           {
-            "id": "model-off",
-            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+            "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-213712.zip",
+            "sha256": "8fc1eaee83e40be01e98a5dbe8f8502826383be1d1feef81597018a89cc1a1ec"
           }
-        ]
+        ],
+        "result": "PASS",
+        "status": "PASS"
       },
       "evidence": [
         {
-          "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
-          "kind": "summary-json",
-          "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
+          "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-213712.json",
+          "sha256": "4ede3423a33890e06871c368da9dae8a0279a6089cfcf342fab8d9dd64c5cfd7",
+          "type": "windowsqa-summary"
         },
         {
-          "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
-          "kind": "artifact-zip",
-          "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
+          "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-213712.zip",
+          "sha256": "8fc1eaee83e40be01e98a5dbe8f8502826383be1d1feef81597018a89cc1a1ec",
+          "type": "windowsqa-artifact-zip"
         }
-      ]
+      ],
+      "status": "PASS"
     },
     {
       "test_id": "ORB-AT-002",
@@ -2504,46 +2497,38 @@
       "result": "PASS",
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
-          "kind": "release-gate-audit-json",
-          "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
+          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json",
+          "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd",
+          "type": "release-gate-strict-audit"
         }
       ],
       "lastExecution": {
-        "date": "2026-07-05",
+        "runId": "20260705-2155",
+        "commit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "requestedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
-        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "runId": "20260705-2130",
-        "official": true,
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
-        "evidence": [
-          {
-            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
-            "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
-          }
-        ],
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json",
         "result": "PASS",
-        "status": "PASS",
         "requiredBlocked": [],
         "requiredNotRun": [],
-        "nonVerifiedBlockingBugs": []
+        "nonVerifiedBlockingBugs": [],
+        "failures": []
       },
       "run": {
         "date": "2026-07-05",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
-        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "runId": "20260705-2130",
+        "commit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "requestedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "runId": "20260705-2155",
         "official": true,
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json",
         "evidence": [
           {
-            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json",
             "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
           }
         ],
@@ -2551,9 +2536,11 @@
         "status": "PASS",
         "requiredBlocked": [],
         "requiredNotRun": [],
-        "nonVerifiedBlockingBugs": []
+        "nonVerifiedBlockingBugs": [],
+        "failures": []
       },
-      "notes": "Strict release audit passed after ORB-AT-001, ORB-AT-005, and ORB-GATE-002 evidence were registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS."
+      "notes": "Strict release audit passed after final develop ORB-AT-001 evidence was registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS.",
+      "status": "PASS"
     },
     {
       "test_id": "ORB-GATE-002",
@@ -3073,88 +3060,15 @@
       "guarantee": "実チャット送信からApp tool invokeを通し、代表30件のApp設定/操作がschema/tool catalog経路で実行される。固定語録ルーターではない。実LLM経路では、Anima promptへApp Actions catalog/tool schemaが注入され、自然言語から正しいapp.tool.invokeを生成できることを代表確認する。",
       "result": "PASS",
       "run": {
-        "runId": "20260705-211538",
-        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "runId": "20260705-213712",
+        "commit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "requestedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
         "official": true,
         "sourceMode": "git",
         "caseCount": 10,
         "minPass": 8,
         "passedCount": 8,
         "failures": 2,
-        "knownLimitations": [
-          {
-            "id": "affinity-off",
-            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
-          },
-          {
-            "id": "model-off",
-            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
-          }
-        ]
-      },
-      "commands": [
-        "scripts/qa/invoke-windows-qa.sh --official --wdio-spec tests/app-ai-native-route-acceptance.spec.ts",
-        "scripts/qa/invoke-windows-qa.sh --official --commit 1f4c86a --wdio-spec e2e/wdio/tests/app-ai-native-real-llm-representative.spec.ts"
-      ],
-      "evidence": [
-        {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\latest-summary.json",
-          "kind": "summary-json",
-          "sha256": "035caee2a020c5fd9dd9d2ad39b80cc3629a5ce544d3eddae49142d54930c202"
-        },
-        {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\extracted\\wdio-evidence\\app-ai-native-route-acceptance\\app-ai-native-route-acceptance.json",
-          "kind": "result-json",
-          "sha256": "ac90a71f6ab15008185d1c28409cdd9234602b93baf7d3910220ae176408fb14"
-        },
-        {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\extracted\\wdio-evidence\\app-ai-native-route-acceptance\\app-ai-native-route-acceptance.png",
-          "kind": "screenshot",
-          "sha256": "a757862ccb9ecaca4e5e931e3fe2b1ccc47e1183495b8cd11abb1d7004143064"
-        },
-        {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-app-ai-native-route-acceptance-20260704-0250\\20260704-024858.zip",
-          "kind": "artifact-zip",
-          "sha256": "21d4c34488830ec092bdf97a210ee603e676a75171b8c6b61fdeb1c665c3fa8b"
-        },
-        {
-          "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
-          "kind": "summary-json",
-          "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
-        },
-        {
-          "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
-          "kind": "artifact-zip",
-          "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
-        }
-      ],
-      "notes": "WindowsQA official real LLM representative run passed threshold: 8/10 with minPass=8 using Ollama Vulkan GPU offload. affinity-off/model-off remain known planner operation coverage follow-ups, not release blockers for this gate.",
-      "lastExecution": {
-        "date": "2026-07-05",
-        "environment": "WindowsQA Server",
-        "mode": "official",
-        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
-        "runId": "20260705-211538",
-        "official": true,
-        "sourceMode": "git",
-        "summary": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
-        "evidence": [
-          {
-            "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
-            "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
-          },
-          {
-            "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
-            "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
-          }
-        ],
-        "result": "PASS",
-        "status": "PASS",
-        "passedCount": 8,
-        "total": 10,
-        "minPass": 8,
         "gpu": {
           "backend": "ollama",
           "requestedLibrary": "vulkan",
@@ -3171,9 +3085,61 @@
             "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
           }
         ],
-        "acceptance": "Threshold pass: real LLM representative run passed 8/10 with minPass=8. rawToolBlockVisible=false and chat input remained empty for all cases.",
-        "adviserDecision": "codex-adviser confirmed PASS is acceptable for Release Gate and the two unsupported planner operation cases should be tracked as known limitations/follow-up, not release blockers."
-      }
+        "summary": "evidence/ORB-AT-001/windowsqa-summary-20260705-213712.json",
+        "evidence": [
+          {
+            "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-213712.json",
+            "sha256": "4ede3423a33890e06871c368da9dae8a0279a6089cfcf342fab8d9dd64c5cfd7"
+          },
+          {
+            "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-213712.zip",
+            "sha256": "8fc1eaee83e40be01e98a5dbe8f8502826383be1d1feef81597018a89cc1a1ec"
+          }
+        ],
+        "result": "PASS",
+        "status": "PASS"
+      },
+      "commands": [
+        "scripts/qa/invoke-windows-qa.sh --official --wdio-spec tests/app-ai-native-route-acceptance.spec.ts",
+        "scripts/qa/invoke-windows-qa.sh --official --commit 1f4c86a --wdio-spec e2e/wdio/tests/app-ai-native-real-llm-representative.spec.ts"
+      ],
+      "evidence": [
+        {
+          "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-213712.json",
+          "sha256": "4ede3423a33890e06871c368da9dae8a0279a6089cfcf342fab8d9dd64c5cfd7",
+          "type": "windowsqa-summary"
+        },
+        {
+          "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-213712.zip",
+          "sha256": "8fc1eaee83e40be01e98a5dbe8f8502826383be1d1feef81597018a89cc1a1ec",
+          "type": "windowsqa-artifact-zip"
+        }
+      ],
+      "notes": "WindowsQA official real LLM representative run passed threshold on final develop commit. Ollama Vulkan GPU offload evidence present. passedCount=8/10, minPass=8; affinity-off/model-off remain known planner coverage limitations.",
+      "lastExecution": {
+        "runId": "20260705-213712",
+        "commit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "requestedCommit": "b4601967900a4898d959b75bf4c8f78a92fdadfa",
+        "environment": "WindowsQA Server",
+        "mode": "official",
+        "sourceMode": "git",
+        "summary": "evidence/ORB-AT-001/windowsqa-summary-20260705-213712.json",
+        "result": "PASS",
+        "passedCount": 8,
+        "total": 10,
+        "minPass": 8,
+        "gpu": {
+          "backend": "ollama",
+          "requestedLibrary": "vulkan",
+          "hasVulkanLog": true,
+          "hasOffloadLog": true
+        },
+        "knownLimitations": [
+          "affinity-off",
+          "model-off"
+        ]
+      },
+      "status": "PASS"
     }
   ],
   "requiredNotRun": [],
