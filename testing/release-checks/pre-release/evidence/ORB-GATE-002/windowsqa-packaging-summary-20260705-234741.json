@@ -1,0 +1,328 @@
+﻿{
+    "schemaVersion":  1,
+    "qaProfile":  "WindowsQAPackagingGate",
+    "runId":  "20260705-234741",
+    "startedAt":  "2026-07-05T23:47:41.0850809+09:00",
+    "endedAt":  "2026-07-06T00:02:11.7340777+09:00",
+    "durationSeconds":  870.649,
+    "status":  "pass",
+    "official":  true,
+    "sourceMode":  "git",
+    "mode":  "official",
+    "executionMode":  "official",
+    "transportAuthMode":  "pubkey-only",
+    "officialPassEligible":  true,
+    "officialEvidenceValid":  true,
+    "headlessDiagnosticAllowed":  false,
+    "headlessDetected":  false,
+    "diagnosticResult":  "",
+    "branch":  "develop",
+    "requestedCommit":  "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+    "resolvedCommit":  "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+    "commit":  "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+    "cleanChecks":  [
+                        {
+                            "context":  "repo-check before git update",
+                            "status":  "clean",
+                            "at":  "2026-07-05T23:47:43.5643048+09:00"
+                        },
+                        {
+                            "context":  "git-update after exact revision sync",
+                            "status":  "clean",
+                            "at":  "2026-07-05T23:47:49.6880760+09:00"
+                        }
+                    ],
+    "warnings":  [
+
+                 ],
+    "runningUser":  "DESKTOP-TEST001\\admin",
+    "isElevated":  true,
+    "systemSnapshot":  {
+                           "osCaption":  "Microsoft Windows 10 Pro",
+                           "osVersion":  "10.0.19045",
+                           "osBuildNumber":  "19045",
+                           "computerName":  "DESKTOP-TEST001",
+                           "runningUser":  "DESKTOP-TEST001\\admin",
+                           "isElevated":  true,
+                           "gpus":  [
+                                        {
+                                            "name":  "NVIDIA GeForce GTX 980",
+                                            "driverVersion":  "32.0.15.6094",
+                                            "adapterRAM":  4293918720
+                                        }
+                                    ],
+                           "webView2RuntimeVersion":  "149.0.4022.98",
+                           "nodeVersion":  "v24.17.0",
+                           "pnpmVersion":  "11.8.0",
+                           "rustcVersion":  "rustc 1.96.0 (ac68faa20 2026-05-25)",
+                           "cargoVersion":  "cargo 1.96.0 (30a34c682 2026-05-25)",
+                           "tauriCliVersion":  ""
+                       },
+    "runnerScriptSha256":  "3865e18c792084dcf05cf6a5d1169ecd9c415dd5763ae5c9e35ccf00c58aee08",
+    "bundleDir":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\bundle",
+    "releaseExe":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\oribis.exe",
+    "releaseExeSha256":  "f83818a22fcf2eb8aee9eb512fa7023d62d881e6e838ff308cee3cfa3155e5a3",
+    "releaseExeSignature":  {
+                                "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\oribis.exe",
+                                "status":  "NotSigned",
+                                "signer":  "",
+                                "thumbprint":  ""
+                            },
+    "releaseExeStartupStatus":  "not-run",
+    "releaseExeStartupWindow":  null,
+    "releaseExeStartupScreenshot":  "C:\\oribis-qa\\artifacts\\packaging-20260705-234741\\release-exe-startup.png",
+    "releaseExeStartupScreenshotStatus":  "not-run",
+    "installerCandidates":  [
+                                {
+                                    "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\bundle\\msi\\Oribis_0.1.0_x64_en-US.msi",
+                                    "relativePath":  "msi\\Oribis_0.1.0_x64_en-US.msi",
+                                    "kind":  "msi",
+                                    "score":  120,
+                                    "length":  568918016,
+                                    "lastWriteTimeUtc":  "2026-07-05T14:56:29.8740000Z",
+                                    "sha256":  "402e7bf90d6fe702fd597953ab04d13f2bc5a9664a9a23216f3c60f399a9317b"
+                                },
+                                {
+                                    "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\bundle\\nsis\\Oribis_0.1.0_x64-setup.exe",
+                                    "relativePath":  "nsis\\Oribis_0.1.0_x64-setup.exe",
+                                    "kind":  "nsis",
+                                    "score":  110,
+                                    "length":  539365094,
+                                    "lastWriteTimeUtc":  "2026-07-05T15:01:13.9875920Z",
+                                    "sha256":  "b8e9e7d2ac0c33b9921922a6baa2cc697fd0eeff70876f1077463bfac16c7b6e"
+                                }
+                            ],
+    "installerPath":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\bundle\\msi\\Oribis_0.1.0_x64_en-US.msi",
+    "installerKind":  "msi",
+    "installerSha256":  "402e7bf90d6fe702fd597953ab04d13f2bc5a9664a9a23216f3c60f399a9317b",
+    "installerSignature":  {
+                               "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\bundle\\msi\\Oribis_0.1.0_x64_en-US.msi",
+                               "status":  "NotSigned",
+                               "signer":  "",
+                               "thumbprint":  ""
+                           },
+    "msiProductCode":  "{C2A60D79-AC86-41B2-B18B-22A0A5E158DF}",
+    "existingInstallPathsBefore":  [
+
+                                   ],
+    "installCommandMasked":  "msiexec.exe /i \u003cinstaller.msi\u003e /qn /norestart",
+    "installExitCode":  0,
+    "installStatus":  "pass",
+    "installedExe":  "C:\\Program Files\\Oribis\\Oribis.exe",
+    "installedExeSha256":  "160b470d7de2ea2e611a2c58d044b9b1a199173332657974c4c2fa32198e0751",
+    "installedExeSignature":  {
+                                  "path":  "C:\\Program Files\\Oribis\\Oribis.exe",
+                                  "status":  "NotSigned",
+                                  "signer":  "",
+                                  "thumbprint":  ""
+                              },
+    "installedExeLaunchStatus":  "pass",
+    "installedExeStartupWindow":  {
+                                      "processId":  9780,
+                                      "mainWindowHandle":  3212286,
+                                      "mainWindowTitle":  "Oribis"
+                                  },
+    "installedAppStartupScreenshot":  "C:\\oribis-qa\\artifacts\\packaging-20260705-234741\\installed-app-startup.png",
+    "installedAppStartupScreenshotStatus":  "pass",
+    "installedAppInteractiveMetadata":  "C:\\oribis-qa\\artifacts\\packaging-20260705-234741\\installed-app-startup.json",
+    "installedAppInteractiveTaskStatus":  "pass",
+    "installedAppInteractiveTaskNames":  [
+                                             "OribisPackagingLaunch-20260705-234741",
+                                             "OribisPackagingCapture-20260705-234741"
+                                         ],
+    "interactiveSessionStatus":  "pass",
+    "interactiveSession":  {
+                               "exitCode":  1,
+                               "stdout":  " USERNAME              SESSIONNAME        ID  STATE   IDLE TIME  LOGON TIME\r\n admin                 console             1  Active      none   2026/07/05 9:04\r\n",
+                               "stderr":  "",
+                               "activeSessionCount":  1,
+                               "qwinstaExitCode":  0,
+                               "qwinstaStdout":  " SESSIONNAME       USERNAME                 ID  STATE   TYPE        DEVICE \r\n\u003eservices                                    0  Disc                        \r\n console           admin                     1  Active                      \r\n rdp-tcp                                 65536  Listen                      \r\n",
+                               "qwinstaStderr":  "",
+                               "explorerProcesses":  [
+                                                         {
+                                                             "id":  5240,
+                                                             "sessionId":  1,
+                                                             "processName":  "explorer"
+                                                         }
+                                                     ],
+                               "dwmProcesses":  [
+                                                    {
+                                                        "id":  1520,
+                                                        "sessionId":  1,
+                                                        "processName":  "dwm"
+                                                    }
+                                                ],
+                               "logonUi":  {
+                                               "lastLoggedOnUser":  ".\\admin",
+                                               "lastLoggedOnDisplayName":  ""
+                                           }
+                           },
+    "ttsBundleAssets":  {
+                            "voicevox":  {
+                                             "assetRoot":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\voicevox-core",
+                                             "ready":  true,
+                                             "dictFileCount":  9,
+                                             "requiredFiles":  [
+                                                                   {
+                                                                       "relativePath":  "c_api\\lib\\voicevox_core.dll",
+                                                                       "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\voicevox-core\\c_api\\lib\\voicevox_core.dll",
+                                                                       "exists":  true,
+                                                                       "isDirectory":  false,
+                                                                       "length":  6205880,
+                                                                       "sha256":  "b599e7cf117454d82f49063520922a5472277a936da81cc549c9be762eb056c6"
+                                                                   },
+                                                                   {
+                                                                       "relativePath":  "onnxruntime\\lib\\voicevox_onnxruntime.dll",
+                                                                       "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\voicevox-core\\onnxruntime\\lib\\voicevox_onnxruntime.dll",
+                                                                       "exists":  true,
+                                                                       "isDirectory":  false,
+                                                                       "length":  12312440,
+                                                                       "sha256":  "fb8359e8a4db0902bb3bd54730f49503402cf515d5356430230b9e4758cec05d"
+                                                                   },
+                                                                   {
+                                                                       "relativePath":  "dict\\open_jtalk_dic_utf_8-1.11",
+                                                                       "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\voicevox-core\\dict\\open_jtalk_dic_utf_8-1.11",
+                                                                       "exists":  true,
+                                                                       "isDirectory":  true,
+                                                                       "length":  0,
+                                                                       "sha256":  ""
+                                                                   },
+                                                                   {
+                                                                       "relativePath":  "models\\n0.vvm",
+                                                                       "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\voicevox-core\\models\\n0.vvm",
+                                                                       "exists":  true,
+                                                                       "isDirectory":  false,
+                                                                       "length":  58214379,
+                                                                       "sha256":  "917e592cae92a02fb7668bd9e168df4e39c8ab2f5302c2be71906c70ec4e2df2"
+                                                                   },
+                                                                   {
+                                                                       "relativePath":  "n0.vvm",
+                                                                       "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\voicevox-core\\n0.vvm",
+                                                                       "exists":  true,
+                                                                       "isDirectory":  false,
+                                                                       "length":  73074437,
+                                                                       "sha256":  "e91e2e6ed5cfa6940ff55b61234ba89c631fce3d0146c23685552e7f5d2fe437"
+                                                                   }
+                                                               ]
+                                         },
+                            "kokoro":  {
+                                           "assetRoot":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\kokoro",
+                                           "ready":  true,
+                                           "requiredFiles":  [
+                                                                 {
+                                                                     "relativePath":  "model.onnx",
+                                                                     "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\kokoro\\model.onnx",
+                                                                     "exists":  true,
+                                                                     "length":  325532232,
+                                                                     "sha256":  "8fbea51ea711f2af382e88c833d9e288c6dc82ce5e98421ea61c058ce21a34cb"
+                                                                 },
+                                                                 {
+                                                                     "relativePath":  "voices\\af_bella.bin",
+                                                                     "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\kokoro\\voices\\af_bella.bin",
+                                                                     "exists":  true,
+                                                                     "length":  522240,
+                                                                     "sha256":  "f69d836209b78eb8c66e75e3cda491e26ea838a3674257e9d4e5703cbaf55c8b"
+                                                                 },
+                                                                 {
+                                                                     "relativePath":  "voices\\af_heart.bin",
+                                                                     "path":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\release\\resources\\kokoro\\voices\\af_heart.bin",
+                                                                     "exists":  true,
+                                                                     "length":  522240,
+                                                                     "sha256":  "d583ccff3cdca2f7fae535cb998ac07e9fcb90f09737b9a41fa2734ec44a8f0b"
+                                                                 }
+                                                             ]
+                                       }
+                        },
+    "uninstallCommandMasked":  "msiexec.exe /x \u003cproduct-code-or-installer.msi\u003e /qn /norestart",
+    "uninstallExitCode":  0,
+    "uninstallStatus":  "pass",
+    "cleanupStatus":  "pass",
+    "remainingInstallPathsAfterUninstall":  [
+
+                                            ],
+    "skippedSteps":  [
+
+                     ],
+    "artifactDir":  "C:\\oribis-qa\\artifacts\\packaging-20260705-234741",
+    "artifactZip":  "C:\\oribis-qa\\artifacts\\packaging-20260705-234741.zip",
+    "steps":  [
+                  {
+                      "name":  "repo-check",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T23:47:43.5643048+09:00"
+                  },
+                  {
+                      "name":  "git-update",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T23:47:49.7253299+09:00"
+                  },
+                  {
+                      "name":  "interactive-desktop-precheck",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T23:47:51.9086139+09:00"
+                  },
+                  {
+                      "name":  "pnpm-install",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T23:47:52.5284599+09:00"
+                  },
+                  {
+                      "name":  "tts-assets-provision",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T23:48:42.5725961+09:00"
+                  },
+                  {
+                      "name":  "tauri-release-build",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-06T00:01:15.8875556+09:00"
+                  },
+                  {
+                      "name":  "tts-assets-bundle-check",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-06T00:01:21.6024292+09:00"
+                  },
+                  {
+                      "name":  "installer-detect",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-06T00:01:36.3143698+09:00"
+                  },
+                  {
+                      "name":  "installer-install",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-06T00:01:45.4863214+09:00"
+                  },
+                  {
+                      "name":  "installed-exe-startup",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-06T00:02:07.6561181+09:00"
+                  },
+                  {
+                      "name":  "installer-uninstall",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-06T00:02:11.7340777+09:00"
+                  }
+              ]
+}

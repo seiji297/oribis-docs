@@ -2,9 +2,9 @@
   "schemaVersion": 2,
   "target": {
     "repository": "oribis",
-    "commit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
+    "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
     "worktree": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis",
-    "notes": "Current QA evidence target SHA includes ORB-AT-001 real LLM threshold PASS, ORB-AT-005 TTS, ORB-GATE-002 packaging with bundled VOICEVOX/Kokoro assets, and ORB-GATE-001 strict release audit. Discord real relay remains scope-deferred by waiver and is not counted as PASS.",
+    "notes": "Current QA evidence target SHA includes ORB-AT-001 real LLM threshold PASS, ORB-AT-005 TTS, ORB-GATE-002 packaging with bundled VOICEVOX/Kokoro assets on the release-workflow commit, and ORB-GATE-001 strict release audit. Discord real relay remains scope-deferred by waiver and is not counted as PASS.",
     "rcCandidate": true,
     "previousTrackedCommit": "e366936065ca5a393e69344358047d2f1e1ccf7e"
   },
@@ -90,7 +90,7 @@
         "ORB-BUG-019"
       ],
       "targetCommitAtApproval": "bb6561b3a7602304260d1dbc5cbc2757935081eb",
-      "currentTargetCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
+      "currentTargetCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
       "releaseGateMeaning": "Scope deferral only. Does not count as PASS for Discord real relay and does not validate Discord send/receive or queue metrics.",
       "recheckCondition": "Before a release that includes Discord relay as in-scope, run ORB-SIT-002 real Discord relay evidence on WindowsQA or a dedicated Discord-ready QA environment."
     }
@@ -1058,13 +1058,13 @@
         "risk-list"
       ],
       "lastExecution": {
-        "runId": "20260705-2318",
-        "commit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "requestedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
+        "runId": "20260706-0008",
+        "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
         "result": "PASS",
         "requiredBlocked": [],
         "requiredNotRun": [],
@@ -1074,18 +1074,18 @@
       "result": "PASS",
       "waiver": null,
       "run": {
-        "date": "2026-07-05",
+        "date": "2026-07-06",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
-        "commit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "requestedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "runId": "20260705-2318",
+        "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "runId": "20260706-0008",
         "official": true,
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
         "evidence": [
           {
-            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json",
+            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
             "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
           }
         ],
@@ -1098,12 +1098,12 @@
       },
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json",
+          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
           "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd",
           "type": "release-gate-strict-audit"
         }
       ],
-      "notes": "Strict release audit passed after final c70e372 packaging evidence was registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS.",
+      "notes": "Strict release audit passed after final 48ea7fd packaging evidence was registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS.",
       "status": "PASS"
     },
     {
@@ -1131,30 +1131,30 @@
         "cleanup-result"
       ],
       "lastExecution": {
-        "runId": "20260705-225930",
+        "runId": "20260705-234741",
         "result": "PASS",
         "status": "pass",
         "environment": "WindowsQA Server",
         "runner": "windows-qa-server + packaging runner",
-        "commit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "requestedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "resolvedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
+        "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "resolvedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
         "official": true,
         "mode": "official",
         "executionMode": "official",
         "sourceMode": "git",
         "skippedSteps": [],
-        "summary": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-225930.json",
+        "summary": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
         "evidence": [
           {
-            "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-225930.json",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
             "kind": "packaging-summary-json",
-            "sha256": "97155c58b6c7b8256946b19beb2127da416ffc693289714e7ff561a15f1a9473"
+            "sha256": "8f7f8262abafbaeb08993def5709a5c0def69cfdb74738b2b1bd7757445aefc6"
           },
           {
-            "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-225930.zip",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-234741.zip",
             "kind": "packaging-artifact-zip",
-            "sha256": "6f18dfd6ed7f9d890087b9b5394e4727a22e4e2ea73c3148fa7f59cb7f991716"
+            "sha256": "aca549e16208fbab1aa4088367c036c9c0a8b8454f6d2c615fc3f13606c630e2"
           }
         ],
         "installerKind": "msi",
@@ -1170,17 +1170,18 @@
       "waiver": null,
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-225930.json",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
           "kind": "packaging-summary-json",
-          "sha256": "97155c58b6c7b8256946b19beb2127da416ffc693289714e7ff561a15f1a9473"
+          "sha256": "8f7f8262abafbaeb08993def5709a5c0def69cfdb74738b2b1bd7757445aefc6"
         },
         {
-          "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-225930.zip",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-234741.zip",
           "kind": "packaging-artifact-zip",
-          "sha256": "6f18dfd6ed7f9d890087b9b5394e4727a22e4e2ea73c3148fa7f59cb7f991716"
+          "sha256": "aca549e16208fbab1aa4088367c036c9c0a8b8454f6d2c615fc3f13606c630e2"
         }
       ],
-      "notes": "WindowsQA official run 20260705-225930 passed release build, VOICEVOX/Kokoro resource bundle check, MSI/NSIS generation, MSI install, installed app startup screenshot, uninstall, and cleanup on exact commit c70e372590fc3bf6e43f871002b10d78827a2c38."
+      "notes": "WindowsQA official run 20260705-234741 passed release build, VOICEVOX/Kokoro resource bundle check, MSI/NSIS generation, MSI install, installed app startup screenshot, uninstall, and cleanup on exact commit 48ea7fd64c5c59833962d6e1755d0d930d39764e.",
+      "status": "PASS"
     },
     {
       "test_id": "ORB-SIT-001",
@@ -2498,19 +2499,19 @@
       "result": "PASS",
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json",
+          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
           "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd",
           "type": "release-gate-strict-audit"
         }
       ],
       "lastExecution": {
-        "runId": "20260705-2318",
-        "commit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "requestedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
+        "runId": "20260706-0008",
+        "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
         "result": "PASS",
         "requiredBlocked": [],
         "requiredNotRun": [],
@@ -2518,18 +2519,18 @@
         "failures": []
       },
       "run": {
-        "date": "2026-07-05",
+        "date": "2026-07-06",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
-        "commit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "requestedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "runId": "20260705-2318",
+        "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "runId": "20260706-0008",
         "official": true,
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
         "evidence": [
           {
-            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json",
+            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
             "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
           }
         ],
@@ -2540,7 +2541,7 @@
         "nonVerifiedBlockingBugs": [],
         "failures": []
       },
-      "notes": "Strict release audit passed after final c70e372 packaging evidence was registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS.",
+      "notes": "Strict release audit passed after final 48ea7fd packaging evidence was registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS.",
       "status": "PASS"
     },
     {
@@ -2565,41 +2566,41 @@
       "result": "PASS",
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-225930.json",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
           "kind": "packaging-summary-json",
-          "sha256": "97155c58b6c7b8256946b19beb2127da416ffc693289714e7ff561a15f1a9473"
+          "sha256": "8f7f8262abafbaeb08993def5709a5c0def69cfdb74738b2b1bd7757445aefc6"
         },
         {
-          "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-225930.zip",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-234741.zip",
           "kind": "packaging-artifact-zip",
-          "sha256": "6f18dfd6ed7f9d890087b9b5394e4727a22e4e2ea73c3148fa7f59cb7f991716"
+          "sha256": "aca549e16208fbab1aa4088367c036c9c0a8b8454f6d2c615fc3f13606c630e2"
         }
       ],
       "lastExecution": {
-        "runId": "20260705-225930",
+        "runId": "20260705-234741",
         "result": "PASS",
         "status": "pass",
         "environment": "WindowsQA Server",
         "runner": "windows-qa-server + packaging runner",
-        "commit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "requestedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-        "resolvedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
+        "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "resolvedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
         "official": true,
         "mode": "official",
         "executionMode": "official",
         "sourceMode": "git",
         "skippedSteps": [],
-        "summary": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-225930.json",
+        "summary": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
         "evidence": [
           {
-            "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-225930.json",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
             "kind": "packaging-summary-json",
-            "sha256": "97155c58b6c7b8256946b19beb2127da416ffc693289714e7ff561a15f1a9473"
+            "sha256": "8f7f8262abafbaeb08993def5709a5c0def69cfdb74738b2b1bd7757445aefc6"
           },
           {
-            "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-225930.zip",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-234741.zip",
             "kind": "packaging-artifact-zip",
-            "sha256": "6f18dfd6ed7f9d890087b9b5394e4727a22e4e2ea73c3148fa7f59cb7f991716"
+            "sha256": "aca549e16208fbab1aa4088367c036c9c0a8b8454f6d2c615fc3f13606c630e2"
           }
         ],
         "installerKind": "msi",
@@ -2611,7 +2612,8 @@
         "officialPassEligible": true,
         "ttsBundleStatus": "pass"
       },
-      "notes": "WindowsQA official run 20260705-225930 passed release build, VOICEVOX/Kokoro resource bundle check, MSI/NSIS generation, MSI install, installed app startup screenshot, uninstall, and cleanup on exact commit c70e372590fc3bf6e43f871002b10d78827a2c38."
+      "notes": "WindowsQA official run 20260705-234741 passed release build, VOICEVOX/Kokoro resource bundle check, MSI/NSIS generation, MSI install, installed app startup screenshot, uninstall, and cleanup on exact commit 48ea7fd64c5c59833962d6e1755d0d930d39764e.",
+      "status": "PASS"
     },
     {
       "test_id": "ORB-STATIC-001",

@@ -1,27 +1,28 @@
 {
   "test_id": "ORB-GATE-002",
   "result": "PASS",
-  "runId": "20260705-225930",
+  "runId": "20260705-234741",
   "environment": "WindowsQA Server",
   "mode": "official",
   "executionMode": "official",
   "sourceMode": "git",
-  "requestedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
-  "resolvedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
+  "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+  "resolvedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
   "summary": {
-    "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-225930.json",
-    "sha256": "97155c58b6c7b8256946b19beb2127da416ffc693289714e7ff561a15f1a9473"
+    "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
+    "sha256": "8f7f8262abafbaeb08993def5709a5c0def69cfdb74738b2b1bd7757445aefc6"
   },
   "artifactZip": {
-    "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-225930.zip",
-    "sha256": "6f18dfd6ed7f9d890087b9b5394e4727a22e4e2ea73c3148fa7f59cb7f991716"
+    "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-234741.zip",
+    "sha256": "aca549e16208fbab1aa4088367c036c9c0a8b8454f6d2c615fc3f13606c630e2"
   },
   "acceptance": [
     "Release build completed on WindowsQA.",
     "Windows installer candidates were produced and MSI was selected for install/startup/uninstall verification.",
     "VOICEVOX and Kokoro runtime resources were present in the packaged release resources.",
     "Installed application launched from the installer output and produced startup evidence.",
-    "Installer uninstall and cleanup completed."
+    "Installer uninstall and cleanup completed.",
+    "The release workflow commit was included in the exact tested revision."
   ],
   "warnings": []
 }

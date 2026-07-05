@@ -1,13 +1,13 @@
 {
   "test_id": "ORB-GATE-001",
   "result": "PASS",
-  "runId": "20260705-2318",
+  "runId": "20260706-0008",
   "environment": "local-linux",
   "mode": "official-evidence-audit",
   "sourceMode": "git-evidence-manifest",
-  "targetCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
+  "targetCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
   "audit": {
-    "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json",
+    "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
     "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
   },
   "decision": "Release Gate strict audit passed: requiredBlocked=[], requiredNotRun=[], nonVerifiedBlockingBugs=[]. Discord real relay remains deferred by waiver and is not represented as PASS."
