@@ -92,8 +92,8 @@ codex-adviser確認:
 | Console/Worker Activity UI official | PASS_WITH_WARNINGS | required | `ORB-ST-005`: WindowsQA official run `20260704-202324` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Console/Log default layout、Workers Activity表示、不要なJobs/Tasks/Queue分散タブなしを確認。desktop screenshotのみwarn |
 | Settings/Anima UX official | PASS_WITH_WARNINGS | required | `ORB-AT-002`: WindowsQA official runs `20260704-202324`, `20260704-202948` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Settings分割、白パネルなし、Prompts統合、Onboarding保存値 `characterName=anima` / `userName=User` / VRM pathを確認。desktop screenshotのみwarn |
 | Worker Chat UX official | PASS_WITH_WARNINGS | required | `ORB-SIT-001` / `ORB-AT-003`: WindowsQA official run `20260704-200036` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Worker terminal stream、worker_output本文、Anima入力欄非存在、送信後input空を確認。desktop screenshotのみwarn |
-| TTS voice acceptance official | PASS_WITH_WARNINGS | required | `ORB-AT-005`: WindowsQA official run `20260705-111317` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。VOICEVOX資産provision（Kokoroは同梱検出のみ。今回のTTS受け入れ主対象外）、typecheck、targeted Vitest、cargo-check、frontend-build、tauri-debug-build、WDIO `tts-voice-playback.spec.ts` 6件PASS。desktop screenshotのみwarn |
-| Release Packaging official | PASS | required | `ORB-GATE-002`: WindowsQA official run `20260705-112014` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。release build、VOICEVOX bundle check（Kokoroは同梱検出のみ。今回のTTS受け入れ主対象外）、MSI/NSIS生成、MSI install、installed exe startup screenshot、uninstall/cleanup PASS |
+| TTS voice acceptance official | PASS_WITH_WARNINGS | required | `ORB-AT-005`: WindowsQA official run `20260705-111317` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。VOICEVOX/Kokoro資産provision、typecheck、targeted Vitest、cargo-check、frontend-build、tauri-debug-build、WDIO `tts-voice-playback.spec.ts` 6件PASS。desktop screenshotのみwarn |
+| Release Packaging official | PASS | required | `ORB-GATE-002`: WindowsQA official run `20260705-112014` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。release build、VOICEVOX/Kokoro bundle check、MSI/NSIS生成、MSI install、installed exe startup screenshot、uninstall/cleanup PASS |
 | Frontend full Vitest | PASS | supporting | `vitest.config.ts` でNode専用QA testをVitest対象から除外。`rtk pnpm vitest run --reporter=dot`: 133 files / 1590 tests PASS |
 | WindowsQA Server remaining AT/ST | PASS | required | Discord waiverを除く残required AT/STは解消済み。`ORB-AT-001` / `ORB-AT-005` / `ORB-GATE-002` はWindowsQA officialで解消済み |
 | local-windows devUrl diagnostic | BLOCKED_DIAGNOSTIC | diagnostic | local-windowsで`localhost:1420` timeout/black screenを確認。AT/STの代替にしない |
@@ -1333,7 +1333,7 @@ WindowsQA:
 
 解消済み:
 
-- `ORB-AT-005`: 2026-07-05 WindowsQA official run `20260705-111317` でPASS_WITH_WARNINGS。VOICEVOX資産provision（Kokoroは同梱検出のみ。今回のTTS受け入れ主対象外）とWDIO TTS playback 6件を確認。
+- `ORB-AT-005`: 2026-07-05 WindowsQA official run `20260705-111317` でPASS_WITH_WARNINGS。VOICEVOX/Kokoro資産provisionとWDIO TTS playback 6件を確認。
 - `ORB-GATE-002`: 2026-07-05 WindowsQA official run `20260705-112014` でPASS。release build / installer install / installed app startup / uninstallを確認。
 
 ## 未実行のsupporting項目

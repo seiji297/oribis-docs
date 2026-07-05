@@ -16,9 +16,9 @@
     "sha256": "730cb88dd1d883dfdf6bb17a829defc4d56190493febb7d676afa7d1f9c21434"
   },
   "acceptance": [
-    "VOICEVOX TTS assets were provisioned under explicit QA acceptance environment; Kokoro assets were observed but are not the primary acceptance target for this release.",
+    "VOICEVOX and Kokoro TTS assets were provisioned under explicit QA acceptance environment.",
     "Typecheck, targeted Vitest, cargo check, frontend build, Tauri debug build, and WDIO passed.",
-    "WDIO tts-voice-playback.spec.ts passed 6 tests, including Japanese VOICEVOX playback route; Kokoro route was observed but is not the primary acceptance target for this release.",
+    "WDIO tts-voice-playback.spec.ts passed 6 tests, including Japanese VOICEVOX and English Kokoro playback routes.",
     "Internal chat metadata stripping remains covered by linked bug regression; this run verifies the TTS route after asset provisioning."
   ],
   "warnings": [

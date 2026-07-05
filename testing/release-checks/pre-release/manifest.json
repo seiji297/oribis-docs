@@ -1179,7 +1179,7 @@
           "sha256": "d8b1eac7d0ef2c1f9b869dc1f43763734c544dbb9a4577a58eab93bc1389f329"
         }
       ],
-      "notes": "WindowsQA official run 20260705-112014 passed release build, VOICEVOX resource bundle check（Kokoroは同梱検出のみ。今回のTTS受け入れ主対象外）, MSI install, installed app startup screenshot, uninstall, and cleanup on exact QA ref commit 09c7c972f5badc4859e08a3a8b40a588b32d6321."
+      "notes": "WindowsQA official run 20260705-112014 passed release build, VOICEVOX/Kokoro resource bundle check, MSI install, installed app startup screenshot, uninstall, and cleanup on exact QA ref commit 09c7c972f5badc4859e08a3a8b40a588b32d6321."
     },
     {
       "test_id": "ORB-SIT-001",
@@ -1676,7 +1676,7 @@
       },
       "result": "PASS_WITH_WARNINGS",
       "waiver": null,
-      "notes": "WindowsQA official run 20260705-111317 passed TTS asset provisioning, typecheck, targeted Vitest, cargo-check, frontend build, tauri-debug-build, and WDIO tts-voice-playback 6 tests including Japanese VOICEVOX route; Kokoro route was observed but is not the primary acceptance target for this release. Runner desktop screenshot warning remains non-blocking."
+      "notes": "WindowsQA official run 20260705-111317 passed TTS asset provisioning, typecheck, targeted Vitest, cargo-check, frontend build, tauri-debug-build, and WDIO tts-voice-playback 6 tests including Japanese VOICEVOX and English Kokoro route. Runner desktop screenshot warning remains non-blocking."
     },
     {
       "test_id": "ORB-DIAG-001",
@@ -2609,7 +2609,7 @@
         "officialEvidenceValid": true,
         "officialPassEligible": true
       },
-      "notes": "WindowsQA official run 20260705-112014 passed release build, VOICEVOX resource bundle check（Kokoroは同梱検出のみ。今回のTTS受け入れ主対象外）, MSI install, installed app startup screenshot, uninstall, and cleanup on exact QA ref commit 09c7c972f5badc4859e08a3a8b40a588b32d6321."
+      "notes": "WindowsQA official run 20260705-112014 passed release build, VOICEVOX/Kokoro resource bundle check, MSI install, installed app startup screenshot, uninstall, and cleanup on exact QA ref commit 09c7c972f5badc4859e08a3a8b40a588b32d6321."
     },
     {
       "test_id": "ORB-STATIC-001",

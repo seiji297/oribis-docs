@@ -19,7 +19,7 @@
   "acceptance": [
     "Release build completed on WindowsQA.",
     "Windows installer candidates were produced and MSI was selected for install/startup/uninstall verification.",
-    "VOICEVOX runtime resources were present in the packaged release resources; Kokoro resources were observed but are not the primary acceptance target for this release.",
+    "VOICEVOX and Kokoro runtime resources were present in the packaged release resources.",
     "Installed application launched from the installer output and produced startup evidence.",
     "Installer uninstall and cleanup completed."
   ],
