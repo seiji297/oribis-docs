@@ -82,7 +82,7 @@ codex-adviser確認:
 | Anima chat metadata regression | PASS_WITH_LIMITATION | required bug regression | `ORB-BUG-017`: WindowsQA official / commit `6f08c523c045d82afc8c7a9d45305883e9dcf8ae`。実チャット送信経路で `[好感度: ...]` が表示本文へ漏れないことを確認。音声読み上げの実出力確認は `ORB-AT-005` に残す |
 | AI-native App Operation official | PASS | required | `ORB-AT-001` / `ORB-BUG-018`: 決定的mock Anima応答でApp tool invoke 30件PASS。2026-07-05 WindowsQA official run `20260705-213712` / commit `b4601967900a4898d959b75bf4c8f78a92fdadfa` のreal LLM代表確認はOllama Vulkan GPU offloadで `passedCount=8/10`, `minPass=8` を満たしPASS。`affinity-off` / `model-off` はknown limitation/follow-up |
 | WebViewer AI-native official | PASS | required | `ORB-SIT-003` / `ORB-AT-004`: WindowsQA official / commit `96f5943445452f5988fc7ee7cacc4eef88681150`。実チャット送信からWebViewer URL表示、localhostページ読取、automation結果取得、WDIO個別PNG/JSON保存 |
-| Discord Relay surface closure | PASS_WITH_PENDING_REAL_RELAY_DEFERRED_BY_WAIVER | deferred | `ORB-BUG-019`: local-linuxで旧Worker Core outbox queue導線をDeveloper Console/CommandRegistry/TypingScript DSL/RootShellから削除確認。実Discord送受信/queue metricsはDiscord環境未準備のためProducer指示で今回scopeから延期 |
+| Discord Relay surface closure | DEFERRED_BY_WAIVER | deferred | `ORB-BUG-019`: local-linuxで旧Worker Core outbox queue導線をDeveloper Console/CommandRegistry/TypingScript DSL/RootShellから削除確認。実Discord送受信/queue metricsはDiscord環境未準備のためProducer指示で今回scopeから延期。Producerのwaiver受容判断は保留 |
 | Discord Relay supporting recheck | DEFERRED_BY_WAIVER | deferred | `ORB-SIT-002`: `cargo test agent_discord` 35 passed、Discord/outbox関連Vitest 9 passed。実Discord送受信とqueue metricsはwaiver `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` により今回scope外。PASS扱いにはしない |
 | Static smoke | PASS | required | `ORB-STATIC-001`: WindowsQA official / run `20260704-034448`。typecheck / targeted Vitest / cargo-check / frontend-build / tauri-debug-build PASS |
 | WindowsQA official smoke attempt | ABORTED | required attempt | `20260703-184522`: QA-ref `608e1258b14a04a69318a95b8ed83e74351cfbb4`で開始。clean checkout / pnpm install / typecheck / targeted Vitest通過後、cargo check中にProducer指示で中断。公式PASS扱いにしない |
@@ -152,7 +152,7 @@ Latest local gate audit:
   - 結論: manifest/QA監査処理は正常。Release Gateは未達。
 - `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。
 - `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files` summary now separates `requiredNotRun=["ORB-GATE-001"]` from host-caused `requiredBlocked`。2026-07-05 `ORB-AT-005` / `ORB-GATE-002` 解消後の残required blockedは `ORB-AT-001`。`ORB-SIT-002` はwaiverにより今回scope外。
-- latest rerun: `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。`testItems=69`, `requiredTestIds=19`, `failures=[]`。
+- latest rerun: `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。`tests=32`, `requiredTestIds=19`, `failures=[]`。legacy `testItems` は廃止済み。
 - 注意: このPASSはmanifest整合性のPASSであり、Release Gate PASSではない。`requiredBlocked` と未verified release-blocking bugが残るため、現状態は「RC候補作成可、Release承認不可」。
 - `rtk pnpm run test:qa-audit`: PASS。4 Node `node:test` QA audit tests。Vitest除外後も監査ツールの回帰テストを明示実行する。
 - latest rerun: `rtk pnpm run test:qa-audit`: PASS。4 tests。
@@ -277,7 +277,7 @@ sysdev-2第三者確認:
 - `manifest.json` の `officialSummaryFields` を新summary field定義へ更新。
 - `test-plan.md` にWindowsQA SSH timeout時の復旧Runbookを追記。復旧後の順序は Worker Chat -> real LLM App操作 -> Packaging Gate -> Onboarding/Workbench。
 - `audit-release-manifest.mjs` に `--verify-evidence-files` を追加。bug証跡のpath実在とsha256一致を機械確認する。
-- `manifest.json` はlegacyの `testItems` と詳細な `tests` を併用しているため、`audit-release-manifest.mjs` は `testItems` の後に `tests` を重ね、詳細レコードを実効状態として扱うよう修正。
+- `manifest.json` の正本は `tests` 単独。legacyの `testItems` は廃止し、残存時はschema violationとしてRelease Gate監査をFAILにする。後勝ちmergeロジックは廃止済み。
 - 検証:
 - `node --test scripts/qa/audit-windows-qa-summary.test.mjs`: 4 tests PASS。
 - `powershell.exe ... Parser::ParseFile("scripts/qa/run-windows-smoke.ps1")`: PASS。
@@ -285,7 +285,7 @@ sysdev-2第三者確認:
 - `node scripts/qa/audit-release-manifest.mjs`: PASS。
 - `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。
   - `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: PASS。
-  - required項目の実効状態確認: `ORB-ST-001` は `PASS_WITH_SCREENSHOT_WARN`、`ORB-ST-003` は `PASS_WITH_PARTIAL_SCENE_SCOPE`、`ORB-SIT-001` / `ORB-AT-003` / `ORB-ST-005` / `ORB-AT-002` は `PASS_WITH_WARNINGS` として認識。残る未完了は `ORB-GATE-001`、WindowsQA公式証跡未完了の `ORB-AT-001` real LLM, `ORB-AT-005`, `ORB-GATE-002`。Discord `ORB-SIT-002` real relayはwaiverで今回scope外。
+  - required項目の実効状態確認: `ORB-ST-001` は `PASS_WITH_SCREENSHOT_WARN`、`ORB-ST-003` は `PASS_WITH_LIMITATION`、`ORB-SIT-001` / `ORB-AT-003` / `ORB-ST-005` / `ORB-AT-002` は `PASS_WITH_WARNINGS` として認識。`ORB-ST-003` の受容理由は、オンボードScene単体とStage/Studio境界をofficial runで保証し、Workbench Scene App全体を `ORB-ST-004` と `ORB-BUG-006/007` で別保証するため。Discord `ORB-SIT-002` real relayはwaiverで今回scope外。
 - 既存公式summaryの監査:
   - `/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-startup-stage-guards-20260704-0345/latest-summary.json`: PASS。
   - `/mnt/c/Users/admin/Pictures/agante-projects/sysdev/oribis-core-workbench-scene-input-20260704-005006/latest-summary.json`: PASS。
@@ -413,7 +413,7 @@ clean checkout、`pnpm install --frozen-lockfile`、typecheck、targeted Vitest�
 - `rtk cargo test agent_discord --manifest-path src-tauri/Cargo.toml`: 35 passed / 2210 filtered out
 - 旧outbox command参照スキャン: 製品表面の参照なし。残存は低レベル内部実装と拒否検証テストのみ。
 
-結果: PASS_WITH_PENDING_REAL_RELAY_DEFERRED_BY_WAIVER。
+結果: DEFERRED_BY_WAIVER。
 ただし、実Discord送受信、queue metrics、送信失敗時に旧outboxへfallbackしないことのWindowsQA/relay証跡は未取得。Discord環境未準備のため、Producer指示により今回scopeからは `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` で延期する。これはPASS扱いではない。
 
 証跡:
