@@ -1,20 +1,20 @@
 {
   "test_id": "ORB-GATE-002",
   "result": "PASS",
-  "runId": "20260705-112014",
+  "runId": "20260705-225930",
   "environment": "WindowsQA Server",
   "mode": "official",
   "executionMode": "official",
   "sourceMode": "git",
-  "requestedCommit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
-  "resolvedCommit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
+  "requestedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
+  "resolvedCommit": "c70e372590fc3bf6e43f871002b10d78827a2c38",
   "summary": {
-    "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-112014.json",
-    "sha256": "59aeadc9d87055b1a27fe79f9cceb9627600dbf844a172a170bfb5beca7870d9"
+    "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-225930.json",
+    "sha256": "97155c58b6c7b8256946b19beb2127da416ffc693289714e7ff561a15f1a9473"
   },
   "artifactZip": {
-    "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-112014.zip",
-    "sha256": "d8b1eac7d0ef2c1f9b869dc1f43763734c544dbb9a4577a58eab93bc1389f329"
+    "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-225930.zip",
+    "sha256": "6f18dfd6ed7f9d890087b9b5394e4727a22e4e2ea73c3148fa7f59cb7f991716"
   },
   "acceptance": [
     "Release build completed on WindowsQA.",

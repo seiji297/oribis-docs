@@ -4,7 +4,7 @@
 
 現時点の判定: **PASS / Release Gate監査上は出荷可能**。
 
-対象QA evidence SHA: `b4601967900a4898d959b75bf4c8f78a92fdadfa`。
+対象QA evidence SHA: `c70e372590fc3bf6e43f871002b10d78827a2c38`。
 
 `manifest.json` のstrict監査はPASS。requiredBlocked / requiredNotRun / nonVerifiedBlockingBugs は0件。
 
@@ -20,7 +20,7 @@
 
 | test_id | Release Gate上の扱い | 直接原因 | 次のunblock条件 |
 |---|---|---|---|
-| `ORB-GATE-001` | `pass` | `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` PASS | 証跡 `evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2155.json` をSHA固定済み。最終develop commit `b4601967900a4898d959b75bf4c8f78a92fdadfa` の `ORB-AT-001` run `20260705-213712` も追加済み |
+| `ORB-GATE-001` | `pass` | `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` PASS | 証跡 `evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2318.json` をSHA固定済み。最終develop commit `c70e372590fc3bf6e43f871002b10d78827a2c38` の `ORB-GATE-002` run `20260705-225930` も追加済み |
 
 分類ルール:
 
@@ -28,7 +28,7 @@
 - `requiredBlocked` には、製品不具合だけでなく、official条件の環境・前提未充足でrequired PASSへ到達できないものも含める。原因種別は上の表で分離して読む。
 - `ORB-AT-001` は2026-07-05 official run `20260705-213712` / commit `b4601967900a4898d959b75bf4c8f78a92fdadfa` でthreshold PASSへ解消済み。deterministic mock 30件PASSに加え、real LLM代表10件で `passedCount=8/10`, `minPass=8` を満たした。
 - `ORB-AT-005` は2026-07-05 official run `20260705-111317` でPASS_WITH_WARNINGSへ解消済み。desktop screenshot warnは残るが、WDIO TTS playback 6件はPASS。
-- `ORB-GATE-002` は2026-07-05 official run `20260705-112014` でPASSへ解消済み。release build / installer install / installed app startup / uninstall を確認済み。
+- `ORB-GATE-002` は2026-07-05 official run `20260705-225930` / commit `c70e372590fc3bf6e43f871002b10d78827a2c38` でPASSへ解消済み。release build / VOICEVOX/Kokoro bundle check / installer install / installed app startup / uninstall を確認済み。
 - `ORB-GATE-001` は2026-07-05 strict auditでPASS。requiredBlocked / requiredNotRun / nonVerifiedBlockingBugs / failures は0件。
 - Discord waiverは今回scopeからの明示延期であり、Discord real relayのPASSではない。
 - Release承認時は `audit-release-manifest --require-release-pass` を必須にし、`requiredBlocked` / `requiredNotRun` / 未verified blocking bugが1件でもあればFAILにする。
@@ -93,11 +93,11 @@ codex-adviser確認:
 | Settings/Anima UX official | PASS_WITH_WARNINGS | required | `ORB-AT-002`: WindowsQA official runs `20260704-202324`, `20260704-202948` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Settings分割、白パネルなし、Prompts統合、Onboarding保存値 `characterName=anima` / `userName=User` / VRM pathを確認。desktop screenshotのみwarn |
 | Worker Chat UX official | PASS_WITH_WARNINGS | required | `ORB-SIT-001` / `ORB-AT-003`: WindowsQA official run `20260704-200036` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Worker terminal stream、worker_output本文、Anima入力欄非存在、送信後input空を確認。desktop screenshotのみwarn |
 | TTS voice acceptance official | PASS_WITH_WARNINGS | required | `ORB-AT-005`: WindowsQA official run `20260705-111317` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。VOICEVOX/Kokoro資産provision、typecheck、targeted Vitest、cargo-check、frontend-build、tauri-debug-build、WDIO `tts-voice-playback.spec.ts` 6件PASS。desktop screenshotのみwarn |
-| Release Packaging official | PASS | required | `ORB-GATE-002`: WindowsQA official run `20260705-112014` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。release build、VOICEVOX/Kokoro bundle check、MSI/NSIS生成、MSI install、installed exe startup screenshot、uninstall/cleanup PASS |
+| Release Packaging official | PASS | required | `ORB-GATE-002`: WindowsQA official run `20260705-225930` / commit `c70e372590fc3bf6e43f871002b10d78827a2c38`。release build、VOICEVOX/Kokoro bundle check、MSI/NSIS生成、MSI install、installed exe startup screenshot、uninstall/cleanup PASS |
 | Frontend full Vitest | PASS | supporting | `vitest.config.ts` でNode専用QA testをVitest対象から除外。`rtk pnpm vitest run --reporter=dot`: 133 files / 1590 tests PASS |
 | WindowsQA Server remaining AT/ST | PASS | required | Discord waiverを除く残required AT/STは解消済み。`ORB-AT-001` / `ORB-AT-005` / `ORB-GATE-002` はWindowsQA officialで解消済み |
 | local-windows devUrl diagnostic | BLOCKED_DIAGNOSTIC | diagnostic | local-windowsで`localhost:1420` timeout/black screenを確認。AT/STの代替にしない |
-| Release Gate | PASS | required | `ORB-GATE-001`: 2026-07-05 strict audit `20260705-2155` PASS。requiredBlocked=[] / requiredNotRun=[] / nonVerifiedBlockingBugs=[] / failures=[] |
+| Release Gate | PASS | required | `ORB-GATE-001`: 2026-07-05 strict audit `20260705-2318` PASS。requiredBlocked=[] / requiredNotRun=[] / nonVerifiedBlockingBugs=[] / failures=[] |
 
 WindowsQA connectivity latest:
 
@@ -1334,7 +1334,7 @@ WindowsQA:
 解消済み:
 
 - `ORB-AT-005`: 2026-07-05 WindowsQA official run `20260705-111317` でPASS_WITH_WARNINGS。VOICEVOX/Kokoro資産provisionとWDIO TTS playback 6件を確認。
-- `ORB-GATE-002`: 2026-07-05 WindowsQA official run `20260705-112014` でPASS。release build / installer install / installed app startup / uninstallを確認。
+- `ORB-GATE-002`: 2026-07-05 WindowsQA official run `20260705-225930` でPASS。release build / VOICEVOX/Kokoro bundle check / installer install / installed app startup / uninstallを確認。
 
 ## 未実行のsupporting項目
 
