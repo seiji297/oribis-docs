@@ -4,7 +4,7 @@
     "repository": "oribis",
     "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
     "worktree": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis",
-    "notes": "Current QA evidence target SHA includes ORB-AT-001 real LLM threshold PASS, ORB-AT-005 TTS, ORB-GATE-002 packaging with bundled VOICEVOX/Kokoro assets on the release-workflow commit, and ORB-GATE-001 strict release audit. Discord real relay remains scope-deferred by waiver and is not counted as PASS.",
+    "notes": "Current QA evidence target is no longer release-pass: ORB-PERF-001 WindowsQA official partial run 20260706-061348 is BLOCKED because Codex L2/L3 preflight timed out and D routes are still NOT_RUN. It also shows L1 internal Worker quality gaps: l1-instant 11/14 and l1-job 12/14 A+B+C tasks completed. Previous Release Gate PASS evidence is historical and must be rerun after PERF blocker resolution.",
     "rcCandidate": true,
     "previousTrackedCommit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
     "productCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
@@ -120,7 +120,8 @@
     "ORB-AT-004",
     "ORB-AT-005",
     "ORB-GATE-001",
-    "ORB-GATE-002"
+    "ORB-GATE-002",
+    "ORB-PERF-001"
   ],
   "bugRegressions": [
     {
@@ -1371,6 +1372,111 @@
       "evidence": []
     },
     {
+      "test_id": "ORB-PERF-001",
+      "area": "Coding Agent Performance",
+      "level": "AT",
+      "gate": "required",
+      "environmentClass": "official",
+      "sourceAnchors": [
+        "testing/release-checks/pre-release/orb-perf-001.md",
+        "scripts/qa/orb-perf-001.mjs",
+        "scripts/qa/run-windows-orb-perf-001.ps1",
+        "src-tauri/src/bin/oribis_worker_perf_lane.rs"
+      ],
+      "requiredEvidence": [
+        "WindowsQA official summary JSON",
+        "runId-specific artifact zip",
+        "fixture hash",
+        "harness hash",
+        "lane completion aggregates",
+        "routing check results"
+      ],
+      "lastExecution": {
+        "runId": "20260706-061348",
+        "result": "BLOCKED",
+        "status": "blocked",
+        "environment": "WindowsQA Server",
+        "runner": "windows-qa-server + ORB-PERF-001 harness",
+        "commit": "4eb43ff2c2eeee001597db5f351f140e3e86bc3f",
+        "requestedCommit": "4eb43ff2c2eeee001597db5f351f140e3e86bc3f",
+        "resolvedCommit": "4eb43ff2c2eeee001597db5f351f140e3e86bc3f",
+        "docsCommit": "c82dad29ebc2238eb02fd9463ab60bde4406f984",
+        "official": true,
+        "mode": "official",
+        "sourceMode": "git",
+        "skippedSteps": [],
+        "summary": "evidence/ORB-PERF-001/windowsqa-summary-20260706-061348.json",
+        "evidence": [
+          {
+            "path": "evidence/ORB-PERF-001/windowsqa-summary-20260706-061348.json",
+            "kind": "windowsqa-summary-json",
+            "sha256": "b43ceea828c1c29683255082f6647c0cbc908f7698bf044bbf43a5eb8dc74c60"
+          },
+          {
+            "path": "evidence/ORB-PERF-001/windowsqa-artifacts-20260706-061348.zip",
+            "kind": "windowsqa-artifact-zip",
+            "sha256": "f0693d0c0ae9786e10bccca9620c9741cb4f41917f23ed99547c46ba0baf9178"
+          }
+        ],
+        "fixtureHash": "addcc590be0465c2e6fdeeb1aa3c2db51ed93c3d4a4fbd045bd8db1059d366e1",
+        "harnessSha256": "a3000c80d46a7b2d400fb87319fa46e9e1ff29823972f3b6e109aac215b0c50c",
+        "aggregates": {
+          "l1-instant": {
+            "gateTaskCount": 14,
+            "completionCount": 11,
+            "completionRate": 0.7857142857142857,
+            "medianDurationMs": 60567
+          },
+          "l1-job": {
+            "gateTaskCount": 14,
+            "completionCount": 12,
+            "completionRate": 0.8571428571428571,
+            "medianDurationMs": 30484
+          },
+          "l2-codex-pty": {
+            "gateTaskCount": 14,
+            "completionCount": 0,
+            "completionRate": 0,
+            "blockedReason": "preflight_timeout"
+          },
+          "l3-codex-raw": {
+            "gateTaskCount": 14,
+            "completionCount": 0,
+            "completionRate": 0,
+            "blockedReason": "preflight_timeout"
+          }
+        },
+        "routingChecks": [
+          {
+            "taskId": "R1",
+            "pass": false,
+            "reason": "not included in this partial official run"
+          },
+          {
+            "taskId": "R2",
+            "pass": false,
+            "reason": "l1-instant/l1-job attempts failed content acceptance"
+          }
+        ],
+        "notRunTasks": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ],
+        "blocked": true,
+        "blockers": [
+          "L2/L3 Codex lane preflight_timeout on WindowsQA",
+          "D group route5/route6 not yet run",
+          "Producer approval required for WindowsQA Codex CLI auth"
+        ],
+        "secretScan": "pass"
+      },
+      "result": "BLOCKED",
+      "waiver": null,
+      "notes": "WindowsQA official partial run measured L1 internal Worker quality while blocking Codex lanes before task execution. L1 improved from the earlier 1/14 run but still has quality gaps: l1-instant failed A2/A5/B3/C2/C5 and R2; l1-job failed A1/A2/A5/B3/B4/C2 and R2. D routes were intentionally NOT_RUN in the first official run. L2/L3 Codex lanes remain blocked pending Producer approval for WindowsQA Codex CLI auth and a successful preflight."
+    },
+    {
       "test_id": "ORB-GATE-001",
       "area": "Release",
       "level": "Release Gate",
@@ -1388,7 +1494,7 @@
         "critical"
       ],
       "guarantee": "Required items have PASS evidence, NOT_RUN/BLOCKED/FAIL are explicit, manifest paths and hashes match evidence files.",
-      "result": "PASS",
+      "result": "NOT_RUN",
       "evidence": [
         {
           "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-011359.json",
@@ -1408,11 +1514,13 @@
         "mode": "official-evidence-audit",
         "sourceMode": "git-evidence-manifest",
         "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-011359.json",
-        "result": "PASS",
+        "result": "NOT_RUN",
         "requiredBlocked": [],
         "requiredNotRun": [],
         "nonVerifiedBlockingBugs": [],
-        "failures": []
+        "failures": [],
+        "status": "not_run",
+        "notes": "Blocked by ORB-PERF-001 BLOCKED state."
       },
       "run": {
         "runId": "20260706-011359",
@@ -1424,7 +1532,7 @@
         "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
         "skippedSteps": []
       },
-      "notes": "Strict audit PASS. target includes productCommit=48ea7fd64c5c59833962d6e1755d0d930d39764e, docsCommit=15301cdde53559aba1a50e4ff03a382e74ada97a, auditToolSha256=8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed. v0.1.0 tag target remains productCommit 48ea7fd, not audit/docs commits. Producer decisions for unsigned EA and Discord waiver acceptance remain pending.",
+      "notes": "Previous strict audit PASS is historical. ORB-PERF-001 was added as a required pre-release gate and is currently BLOCKED, so Release Gate audit must be rerun only after PERF blocker resolution.",
       "status": "PASS",
       "commands": [
         "node /home/mnadmin/agent-projects/sysdev/sysdev-1/oribis/scripts/qa/audit-release-manifest.mjs testing/release-checks/pre-release/manifest.json --require-release-pass --require-bug-evidence-sha --verify-evidence-files"
@@ -2231,10 +2339,14 @@
       "notes": "WindowsQA official run 20260705-111317 passed TTS asset provisioning, typecheck, targeted Vitest, cargo-check, frontend build, tauri-debug-build, and WDIO tts-voice-playback 6 tests including Japanese VOICEVOX and English Kokoro route. Runner desktop screenshot warning remains non-blocking."
     }
   ],
-  "requiredNotRun": [],
+  "requiredNotRun": [
+    "ORB-GATE-001"
+  ],
   "supportingNotRun": [],
-  "requiredBlocked": [],
+  "requiredBlocked": [
+    "ORB-PERF-001"
+  ],
   "meta": {
-    "notes": "Current QA evidence target SHA includes ORB-AT-001 real LLM threshold PASS, ORB-AT-005 TTS, ORB-GATE-002 packaging, and ORB-GATE-001 strict release audit."
+    "notes": "Current manifest intentionally blocks release on ORB-PERF-001 and requires ORB-GATE-001 rerun after blocker resolution."
   }
 }

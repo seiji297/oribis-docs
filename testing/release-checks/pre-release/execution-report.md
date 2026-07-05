@@ -2,25 +2,26 @@
 
 ## Release Gate 現在地
 
-現時点の判定: **PASS / Release Gate監査上は出荷可能**。
+現時点の判定: **BLOCKED / Release Gate停止**。
 
-対象QA evidence SHA: `48ea7fd64c5c59833962d6e1755d0d930d39764e`。
+直接原因: `ORB-PERF-001` のWindowsQA official partial runで、L2/L3 Codex laneがpreflight timeoutにより実行不能、D群route5/6が未実行であることを確認した。あわせて、L1内製Workerは測定済みだが、A+B+C 14件で `l1-instant=11/14`、`l1-job=12/14` に留まり、品質失敗が残る。
 
-`manifest.json` のstrict監査はPASS。requiredBlocked / requiredNotRun / nonVerifiedBlockingBugs は0件。
+`manifest.json` は `requiredBlocked=["ORB-PERF-001"]`、`requiredNotRun=["ORB-GATE-001"]`。以前のstrict監査PASSは、`ORB-PERF-001` 追加前の歴史的証跡であり、現時点のRelease承認根拠にしない。
 
 | 状態 | 件数 / 対象 |
 |---|---|
-| Required BLOCKED/FAIL | なし |
-| Required NOT_RUN | なし |
+| Required BLOCKED/FAIL | `ORB-PERF-001` |
+| Required NOT_RUN | `ORB-GATE-001`（`ORB-PERF-001` 解消後に再実行） |
 | 未verified release-blocking bug | なし |
 | 今回scope外 | `ORB-SIT-002` / `ORB-BUG-019`: Discord環境未準備のためProducer指示で延期。waiver `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` |
 | 代替不可 | Xvfb / CPU fallback / WSLg / local diagnostic は正式PASSにしない |
 
-現時点のFAIL分類:
+現時点の停止分類:
 
 | test_id | Release Gate上の扱い | 直接原因 | 次のunblock条件 |
 |---|---|---|---|
-| `ORB-GATE-001` | `pass` | `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` PASS | 証跡 `evidence/ORB-GATE-001/release-gate-strict-audit-20260706-011359.json` をSHA `9b6e2418bfefa9bb5d421c08fefe31732551774353cd52c4042852403f4fd1cf` 固定済み。target欄にproduct SHA `48ea7fd64c5c59833962d6e1755d0d930d39764e`、docs commit `15301cdde53559aba1a50e4ff03a382e74ada97a`、audit tool SHA `8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed` を併記。`ORB-GATE-002` run `20260705-234741` も追加済み |
+| `ORB-PERF-001` | `blocked` | WindowsQA official partial run `20260706-061348` で `l2-codex-pty` / `l3-codex-raw` がpreflight_timeoutにより全task skipped/BLOCKED。D群route5/6は第1回範囲外NOT_RUN。L1測定結果は `l1-instant=11/14`、`l1-job=12/14` で、A2/A5/B3/C2/C5/R2等に品質失敗が残る | Producer承認後にWindowsQA Codex CLI authを設定しL2/L3を再実行する。並行してL1失敗原因をプロダクト/fixture/採点に切り分け、D群route5/6を実装して第2回officialを完了する |
+| `ORB-GATE-001` | `not_run` | `ORB-PERF-001` がrequired blockerになったため、以前のstrict audit PASSは現Release承認に使えない | `ORB-PERF-001` 解消後に `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` を再実行する |
 
 分類ルール:
 
@@ -29,7 +30,8 @@
 - `ORB-AT-001` は2026-07-05 official run `20260705-213712` / commit `b4601967900a4898d959b75bf4c8f78a92fdadfa` でthreshold PASSへ解消済み。deterministic mock 30件PASSに加え、real LLM代表10件で `passedCount=8/10`, `minPass=8` を満たした。
 - `ORB-AT-005` は2026-07-05 official run `20260705-111317` でPASS_WITH_WARNINGSへ解消済み。desktop screenshot warnは残るが、WDIO TTS playback 6件はPASS。
 - `ORB-GATE-002` は2026-07-05 official run `20260705-234741` / commit `48ea7fd64c5c59833962d6e1755d0d930d39764e` でPASSへ解消済み。release build / VOICEVOX/Kokoro bundle check / installer install / installed app startup / uninstall を確認済み。
-- `ORB-GATE-001` は2026-07-05 strict auditでPASS。requiredBlocked / requiredNotRun / nonVerifiedBlockingBugs / failures は0件。
+- `ORB-PERF-001` は2026-07-06 WindowsQA official partial run `20260706-061348` でBLOCKED。L1は実測済み、L2/L3 Codex laneはpreflight_timeout、D群はNOT_RUN。これはRelease blocker。
+- `ORB-GATE-001` は `ORB-PERF-001` 追加前の2026-07-05 strict auditではPASSだったが、現時点では再実行待ち。
 - Discord waiverは今回scopeからの明示延期であり、Discord real relayのPASSではない。
 - Release承認時は `audit-release-manifest --require-release-pass` を必須にし、`requiredBlocked` / `requiredNotRun` / 未verified blocking bugが1件でもあればFAILにする。
 - Release Gate PASS証跡ではrunId固定summaryとrunId固定artifact zipを必須にする。`latest-*` はFAIL/BLOCKED診断証跡または便利用途に限り、PASS承認根拠にしない。
@@ -47,8 +49,10 @@ codex-adviser確認:
 
 次に実行する順序:
 
-1. release前の任意判断: Discord real relayはwaiverで今回scope外のため、Discord対応をrelease scopeに戻すなら別途環境準備して再Gateする。
-2. release作業へ進む前に、今回のdirty worktreeを通常commitへ整理する。
+1. `ORB-PERF-001` のBLOCKEDを解消する。Producer承認後、WindowsQAのCodex CLI認証を設定し、L2/L3 laneを実行する。
+2. L1失敗原因をプロダクト/fixture/採点に切り分け、必要な修正を行って同じfixtureで再測定する。
+3. D群route5/6の実アプリ接続を実装し、ORB-PERF-001第2回officialを完了する。
+4. `ORB-GATE-001` strict auditを再実行する。
 
 ## 現状サマリ
 
@@ -94,10 +98,11 @@ codex-adviser確認:
 | Worker Chat UX official | PASS_WITH_WARNINGS | required | `ORB-SIT-001` / `ORB-AT-003`: WindowsQA official run `20260704-200036` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Worker terminal stream、worker_output本文、Anima入力欄非存在、送信後input空を確認。desktop screenshotのみwarn |
 | TTS voice acceptance official | PASS_WITH_WARNINGS | required | `ORB-AT-005`: WindowsQA official run `20260705-111317` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。VOICEVOX/Kokoro資産provision、typecheck、targeted Vitest、cargo-check、frontend-build、tauri-debug-build、WDIO `tts-voice-playback.spec.ts` 6件PASS。desktop screenshotのみwarn |
 | Release Packaging official | PASS | required | `ORB-GATE-002`: WindowsQA official run `20260705-234741` / commit `48ea7fd64c5c59833962d6e1755d0d930d39764e`。release build、VOICEVOX/Kokoro bundle check、MSI/NSIS生成、MSI install、installed exe startup screenshot、uninstall/cleanup PASS |
+| Coding Agent Performance official | BLOCKED | required | `ORB-PERF-001`: WindowsQA official partial run `20260706-061348` / commit `4eb43ff2c2eeee001597db5f351f140e3e86bc3f`。L1-instant は11/14件成功、L1-job は12/14件成功。L2/L3 Codex laneはpreflight_timeoutでBLOCKED、D群はNOT_RUN。L1にもA2/A5/B3/C2/C5/R2等の品質失敗が残る |
 | Frontend full Vitest | PASS | supporting | `vitest.config.ts` でNode専用QA testをVitest対象から除外。`rtk pnpm vitest run --reporter=dot`: 133 files / 1590 tests PASS |
 | WindowsQA Server remaining AT/ST | PASS | required | Discord waiverを除く残required AT/STは解消済み。`ORB-AT-001` / `ORB-AT-005` / `ORB-GATE-002` はWindowsQA officialで解消済み |
 | local-windows devUrl diagnostic | BLOCKED_DIAGNOSTIC | diagnostic | local-windowsで`localhost:1420` timeout/black screenを確認。AT/STの代替にしない |
-| Release Gate | PASS | required | `ORB-GATE-001`: 2026-07-06 strict audit `20260706-011359` PASS。requiredBlocked=[] / requiredNotRun=[] / nonVerifiedBlockingBugs=[] / failures=[] |
+| Release Gate | NOT_RUN | required | `ORB-GATE-001`: `ORB-PERF-001` 追加後は未再実行。現manifestは requiredBlocked=`ORB-PERF-001`、requiredNotRun=`ORB-GATE-001` |
 
 WindowsQA connectivity latest:
 
