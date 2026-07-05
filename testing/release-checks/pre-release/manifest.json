@@ -11,7 +11,7 @@
     "releaseTagCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
     "auditToolCommit": "59017de",
     "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
-    "docsCommit": "PENDING_DOCS_CLEANUP_COMMIT",
+    "docsCommit": "15301cdde53559aba1a50e4ff03a382e74ada97a",
     "releaseTagPolicy": "v0.1.0 tag must be cut on product/releaseTagCommit 48ea7fd64c5c59833962d6e1755d0d930d39764e, not on later audit/docs commits."
   },
   "policy": {
@@ -22,7 +22,7 @@
     "testExpansionPolicy": "Human-readable test-matrix uses representative guarantee items. Detailed tests are linked through test-inventory and manifest commands.",
     "bugRegressionPolicy": "Producer/QA-reported bugs are tracked in bug-regressions.md and must link back to canonical test_id entries. Open release-blocking bug regressions block Release Gate.",
     "gateRules": {
-      "requiredPass": "Gate=required requires Result=PASS with evidence registered in this manifest.",
+      "requiredPass": "Gate=required requires a pass-class Result with evidence registered in this manifest. Pass-class results are PASS, PASS_WITH_WARNINGS, PASS_WITH_LIMITATION, and PASS_WITH_SCREENSHOT_WARN. DEFERRED_BY_WAIVER is not PASS and is allowed only when an active waiver lists the affected test id.",
       "officialVisualEvidence": "ST/AT items that verify Windows visual UX require windows-qa-server + real-gpu + actual-user-operation evidence.",
       "supportingNotSubstitute": "supporting and diagnostic runs cannot substitute required ST/AT evidence.",
       "diagnosticOnly": "PASS_WITH_DIAGNOSTIC_ONLY is never a Release Gate PASS.",
@@ -1391,19 +1391,23 @@
       "result": "PASS",
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
-          "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd",
-          "type": "release-gate-strict-audit"
+          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-011359.json",
+          "kind": "strict-release-audit-json",
+          "sha256": "9b6e2418bfefa9bb5d421c08fefe31732551774353cd52c4042852403f4fd1cf"
         }
       ],
       "lastExecution": {
-        "runId": "20260706-0008",
+        "runId": "20260706-011359",
         "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
         "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "productCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "docsCommit": "15301cdde53559aba1a50e4ff03a382e74ada97a",
+        "auditToolCommit": "59017de",
+        "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-011359.json",
         "result": "PASS",
         "requiredBlocked": [],
         "requiredNotRun": [],
@@ -1411,30 +1415,20 @@
         "failures": []
       },
       "run": {
-        "date": "2026-07-06",
-        "environment": "local-linux",
-        "mode": "official-evidence-audit",
-        "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
-        "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
-        "runId": "20260706-0008",
+        "runId": "20260706-011359",
         "official": true,
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
-        "evidence": [
-          {
-            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
-            "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
-          }
-        ],
-        "result": "PASS",
-        "status": "PASS",
-        "requiredBlocked": [],
-        "requiredNotRun": [],
-        "nonVerifiedBlockingBugs": [],
-        "failures": []
+        "productCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "docsCommit": "15301cdde53559aba1a50e4ff03a382e74ada97a",
+        "auditToolCommit": "59017de",
+        "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
+        "skippedSteps": []
       },
-      "notes": "Strict release audit passed after final 48ea7fd packaging evidence was registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS.",
-      "status": "PASS"
+      "notes": "Strict audit PASS. target includes productCommit=48ea7fd64c5c59833962d6e1755d0d930d39764e, docsCommit=15301cdde53559aba1a50e4ff03a382e74ada97a, auditToolSha256=8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed. v0.1.0 tag target remains productCommit 48ea7fd, not audit/docs commits. Producer decisions for unsigned EA and Discord waiver acceptance remain pending.",
+      "status": "PASS",
+      "commands": [
+        "node /home/mnadmin/agent-projects/sysdev/sysdev-1/oribis/scripts/qa/audit-release-manifest.mjs testing/release-checks/pre-release/manifest.json --require-release-pass --require-bug-evidence-sha --verify-evidence-files"
+      ]
     },
     {
       "test_id": "ORB-GATE-002",

@@ -1,14 +1,20 @@
 {
   "test_id": "ORB-GATE-001",
   "result": "PASS",
-  "runId": "20260706-0008",
+  "runId": "20260706-011359",
   "environment": "local-linux",
   "mode": "official-evidence-audit",
   "sourceMode": "git-evidence-manifest",
-  "targetCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
-  "audit": {
-    "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json",
-    "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
+  "target": {
+    "productCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+    "releaseTagCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+    "docsCommit": "15301cdde53559aba1a50e4ff03a382e74ada97a",
+    "auditToolCommit": "59017de",
+    "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed"
   },
-  "decision": "Release Gate strict audit passed: requiredBlocked=[], requiredNotRun=[], nonVerifiedBlockingBugs=[]. Discord real relay remains deferred by waiver and is not represented as PASS."
+  "audit": {
+    "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-011359.json",
+    "sha256": "9b6e2418bfefa9bb5d421c08fefe31732551774353cd52c4042852403f4fd1cf"
+  },
+  "decision": "Release Gate strict audit passed: requiredBlocked=[], requiredNotRun=[], nonVerifiedBlockingBugs=[], failures=[]. Discord real relay remains deferred by waiver and is not represented as PASS; Producer waiver acceptance remains pending."
 }

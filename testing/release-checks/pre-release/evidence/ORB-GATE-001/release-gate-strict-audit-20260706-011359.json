@@ -1,0 +1,32 @@
+{
+  "manifest": "/home/mnadmin/agent-projects/sysdev/shared/oribis-docs/testing/release-checks/pre-release/manifest.json",
+  "target": {
+    "repository": "oribis",
+    "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+    "worktree": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis",
+    "notes": "Current QA evidence target SHA includes ORB-AT-001 real LLM threshold PASS, ORB-AT-005 TTS, ORB-GATE-002 packaging with bundled VOICEVOX/Kokoro assets on the release-workflow commit, and ORB-GATE-001 strict release audit. Discord real relay remains scope-deferred by waiver and is not counted as PASS.",
+    "rcCandidate": true,
+    "previousTrackedCommit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
+    "productCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+    "releaseTagCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+    "auditToolCommit": "59017de",
+    "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
+    "docsCommit": "15301cdde53559aba1a50e4ff03a382e74ada97a",
+    "releaseTagPolicy": "v0.1.0 tag must be cut on product/releaseTagCommit 48ea7fd64c5c59833962d6e1755d0d930d39764e, not on later audit/docs commits."
+  },
+  "auditTool": {
+    "path": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis/scripts/qa/audit-release-manifest.mjs",
+    "sha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed"
+  },
+  "tests": 37,
+  "requiredTestIds": 19,
+  "requiredNotRun": [],
+  "requiredBlocked": [],
+  "duplicateTestIds": [],
+  "bugRegressions": 22,
+  "nonVerifiedBlockingBugs": [],
+  "strictBugEvidenceSha": true,
+  "verifyEvidenceFiles": true,
+  "requireReleasePass": true,
+  "failures": []
+}

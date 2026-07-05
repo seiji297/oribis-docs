@@ -20,7 +20,7 @@
 
 | test_id | Release Gate上の扱い | 直接原因 | 次のunblock条件 |
 |---|---|---|---|
-| `ORB-GATE-001` | `pass` | `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` PASS | 証跡 `evidence/ORB-GATE-001/release-gate-strict-audit-20260706-0008.json` をSHA固定済み。最終develop commit `48ea7fd64c5c59833962d6e1755d0d930d39764e` の `ORB-GATE-002` run `20260705-234741` も追加済み |
+| `ORB-GATE-001` | `pass` | `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` PASS | 証跡 `evidence/ORB-GATE-001/release-gate-strict-audit-20260706-011359.json` をSHA `9b6e2418bfefa9bb5d421c08fefe31732551774353cd52c4042852403f4fd1cf` 固定済み。target欄にproduct SHA `48ea7fd64c5c59833962d6e1755d0d930d39764e`、docs commit `15301cdde53559aba1a50e4ff03a382e74ada97a`、audit tool SHA `8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed` を併記。`ORB-GATE-002` run `20260705-234741` も追加済み |
 
 分類ルール:
 
@@ -97,7 +97,7 @@ codex-adviser確認:
 | Frontend full Vitest | PASS | supporting | `vitest.config.ts` でNode専用QA testをVitest対象から除外。`rtk pnpm vitest run --reporter=dot`: 133 files / 1590 tests PASS |
 | WindowsQA Server remaining AT/ST | PASS | required | Discord waiverを除く残required AT/STは解消済み。`ORB-AT-001` / `ORB-AT-005` / `ORB-GATE-002` はWindowsQA officialで解消済み |
 | local-windows devUrl diagnostic | BLOCKED_DIAGNOSTIC | diagnostic | local-windowsで`localhost:1420` timeout/black screenを確認。AT/STの代替にしない |
-| Release Gate | PASS | required | `ORB-GATE-001`: 2026-07-06 strict audit `20260706-0008` PASS。requiredBlocked=[] / requiredNotRun=[] / nonVerifiedBlockingBugs=[] / failures=[] |
+| Release Gate | PASS | required | `ORB-GATE-001`: 2026-07-06 strict audit `20260706-011359` PASS。requiredBlocked=[] / requiredNotRun=[] / nonVerifiedBlockingBugs=[] / failures=[] |
 
 WindowsQA connectivity latest:
 

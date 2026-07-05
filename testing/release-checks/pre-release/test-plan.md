@@ -79,20 +79,21 @@ Static -> UT -> IT -> SIT -> ST -> AT -> Release Gate
 ## Gate 判定ルール
 
 - `Release Owner` はProducerを指す。Producerが明示的に委任した場合だけ、委任先をRelease Ownerとして扱う。
-- `Gate=required` の項目は、`Result=PASS` かつ `manifest.json` に証跡が登録されていなければRelease Gateを通さない。
+- `Gate=required` の項目は、pass-class resultかつ `manifest.json` に証跡・受容理由が登録されていなければRelease Gateを通さない。pass-classは `PASS`、`PASS_WITH_WARNINGS`、`PASS_WITH_LIMITATION`、`PASS_WITH_SCREENSHOT_WARN`。`DEFERRED_BY_WAIVER` はPASSではなく、active waiverがある場合だけRelease Gate例外として扱う。
 - `audit-release-manifest.mjs --verify-evidence-files` のPASSは「manifest構造・証跡参照の整合性PASS」であり、Release Gate PASSではない。requiredに `BLOCKED` / `BLOCKED_ON_WINDOWSQA` / `NOT_RUN` / 未verified release-blocking bugが残る場合、Release Gateは未達。
 - `bug-regressions.md` の `release_blocking=true` は、`status=verified` かつ証跡が登録されていなければRelease Gateを通さない。
 - 不具合回帰台帳の各項目は、必ず `linked_test_ids` で `test-matrix.md` の保証項目へ紐づける。紐づかない不具合は未整理として扱う。
 - `Level=ST` または `Level=AT` でWindows実画面を含む項目は、`windows-qa-server + real-gpu + actual-user-operation` の証跡だけを正式PASS扱いにする。
 - WindowsQA Serverの公式実行は、対象repoのclean worktree、指定commit同期、runner repo外配置、summary自己記述を開始条件にする。条件を満たさない場合は即FAIL/BLOCKEDで、後続テストへ進まない。
-- `official=true` のWindowsQA summaryには `sourceMode`、`requestedCommit`、`resolvedCommit`、`cleanChecks`、`skippedSteps` を含める。official実行ではskip系フラグを使わない。
+- WindowsQAの自動実行・診断実行はSSH公開鍵認証だけを使う。RDPパスワード試行、空パスワード試行、認証再試行で復旧確認しない。
+- `official=true` のWindowsQA summaryには `sourceMode`、`requestedCommit`、`resolvedCommit`、`cleanChecks`、`skippedSteps`、`transportAuthMode=pubkey-only` を含める。official実行ではskip系フラグを使わない。
 - 未コミット作業はQA用refへ一時commitをpushし、そのSHAをWindowsQAへ渡す。source snapshotはdiagnostic/supportingのみにする。
 - Release Gateはdev/debug経路だけでなく、packaged release buildまたはinstallerの起動確認を必須にする。
 - `local-windows`、`wslg`、`wdio`、`source-snapshot`、`diagnostic` の成功はsupportingまたはdiagnosticであり、required ST/ATの代替にしない。
 - `PASS_WITH_DIAGNOSTIC_ONLY` はRelease GateのPASSではない。
-- `BLOCKED`、`FAIL`、`NOT_RUN`、`ABORTED`、required項目の `PASS_WITH_LIMITATION` はRelease Gateで明示し、未記録のまま通さない。
+- `BLOCKED`、`FAIL`、`NOT_RUN`、`ABORTED` はRelease Gateを止める。required項目の `PASS_WITH_LIMITATION` は受容理由、残条件、別保証項目が明示されている場合だけpass-classとして扱う。
 - `BLOCKED_ON_WINDOWSQA` は `BLOCKED` の原因付きサブ表記。意味は「WindowsQA host / real-gpu / actual-user-operation routeが外部要因で実行不能」であり、required PASSとして扱わない。
-- required項目の `PASS_WITH_LIMITATION` は「一部検証済み」ではあるが「出荷可のPASS」ではない。残条件を `requiredNotRun`、環境起因なら `requiredBlocked`、または期限付きwaiverへ明示する。
+- required項目の `PASS_WITH_LIMITATION` は「限定付き出荷可」。未検証の残条件がRelease Gate必須なら `requiredNotRun`、環境起因なら `requiredBlocked`、scope外なら期限付きwaiverへ明示する。
 - WindowsQAの公式証跡参照はrunId付き不変パスとhashで行う。`latest-*` aliasは正規証跡に使わない。
 - `ORB-GATE-001` 実行時は、`manifest.json` の `bugRegressions` について `release_blocking=true` 全件が `status=verified` であり、各 `verification_evidence` が再確認可能な `path + sha256` 形式でpin留めされていることを確認する。これを満たさない場合、bug台帳側の証跡は未達扱いにする。
 - summaryが欠落、不完全、またはrunId付きzipと対応しないrunは無効。完走したrunだけをRelease Gate証跡として扱う。
@@ -215,15 +216,16 @@ Markdownの `test-matrix.md` は人間向けの判断表、`test-inventory.md` �
 
 WindowsQA hostがSSH timeoutの場合、AT/STを代替実行せず、以下の順で復旧確認する。
 
-1. WSL側から `ssh -i ~/.ssh/oribis_windows_qa -o BatchMode=yes -o ConnectTimeout=8 admin@100.64.6.42 "echo windowsqa-ok"` を実行する。
+1. WSL側から `ssh -i ~/.ssh/oribis_windows_qa -o IdentitiesOnly=yes -o BatchMode=yes -o PasswordAuthentication=no -o KbdInteractiveAuthentication=no -o PubkeyAuthentication=yes -o ConnectTimeout=8 admin@100.64.6.42 "echo windowsqa-ok"` を実行する。
 2. timeoutする場合は、WindowsQA側のTailscale接続、OpenSSH Server、Windows Firewall、電源/スリープ、IP変更を確認する。
 3. 復旧直後に軽量host health checkを実行し、clean check、残留Oribis/Vite/node process、disk free、Tailscale/OpenSSH状態を確認する。このrunはdiagnostic/supportingであり、required AT/STの代替にしない。
 4. required公式runへ入る前に、出荷候補のRC SHAを確定する。QA-ref一時commitの証跡だけでRelease Gateを通さない。
 5. health check後、最初に `tests/worker-chat.spec.ts` をRC SHAのofficial commitで実行し、`ORB-SIT-001` と `ORB-AT-003` を同一runで満たせるか、かつ `ORB-BUG-015/016` をverifiedへ戻せるか確認する。`ORB-SIT-001` は配線/4点表示、`ORB-AT-003` はWorker UXの進捗/状態/結果の妥当性として別々に判定し、証跡は同一runへ紐づけてよい。
-6. 次に `run-windows-packaging.ps1` を実行し、Release Packaging Gateの初回完走可否を早期に出す。
-7. その後、`tests/app-ai-native-real-llm-representative.spec.ts`、Discord real relay、`tests/core-app-workbench.spec.ts`、`tests/onboarding-anima-visual.spec.ts`、`ORB-AT-005` TTS/audioの順で実行する。secret準備が未完の項目は後回しにし、WindowsQA host稼働時間を空転させない。
-8. 各runのsummaryは `audit-windows-qa-summary.mjs` で監査してからmanifestへ登録する。bug証跡は `audit-release-manifest.mjs --verify-evidence-files` で実ファイルとsha256を照合する。
-9. Xvfb/CPU fallback、local-windows diagnostic、WSLgは正式AT/STの代替にしない。
+6. Discord real relayは、Discord環境未準備のため今回runではProducer指示により延期する。`WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` が有効な間もPASS扱いにはせず、Discord環境を用意したreleaseでは `ORB-SIT-002` と `ORB-BUG-019` を再開する。
+7. 次に `ORB-ST-005` Console/Log、`ORB-AT-002` Settings/Anima UX、`ORB-AT-005` TTS/audio、`ORB-AT-001` real LLM representative の順で実行する。secret準備が未完の項目は後回しにし、WindowsQA host稼働時間を空転させない。
+8. `run-windows-packaging.ps1` は、機能/UX/外部連携のrequired確認後に正式 `ORB-GATE-002` として実行する。packaging runner自体の疎通確認が必要な場合はdiagnostic packaging smokeを先に走らせてよいが、正式Gateは最終RC SHAで再実行する。
+9. 各runのsummaryは `audit-windows-qa-summary.mjs` で監査してからmanifestへ登録する。bug証跡は `audit-release-manifest.mjs --verify-evidence-files` で実ファイルとsha256を照合する。
+10. Xvfb/CPU fallback、local-windows diagnostic、WSLgは正式AT/STの代替にしない。
 
 Escalation:
 
