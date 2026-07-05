@@ -4,7 +4,7 @@
 
 現時点の判定: **BLOCKED / Release Gate停止**。
 
-直接原因: `ORB-PERF-001` のWindowsQA official partial runで、L2/L3 Codex laneがpreflight timeoutにより実行不能、D群route5/6が未実行であることを確認した。あわせて、L1内製Workerは測定済みだが、A+B+C 14件で `l1-instant=11/14`、`l1-job=12/14` に留まり、品質失敗が残る。
+直接原因: `ORB-PERF-001` が未完了。2026-07-06の旧Codex/7B local構成runはProducer/sysdev-2指示によりdiagnostic参考値へ降格し、Release Gate判定に使わない。現在はKimi統一3レーン（`l1-job` / `l2-opencode-pty` / `l3-opencode-raw`）でA+B+C+R officialを取り直す準備中。
 
 `manifest.json` は `requiredBlocked=["ORB-PERF-001"]`、`requiredNotRun=["ORB-GATE-001"]`。以前のstrict監査PASSは、`ORB-PERF-001` 追加前の歴史的証跡であり、現時点のRelease承認根拠にしない。
 
@@ -20,7 +20,7 @@
 
 | test_id | Release Gate上の扱い | 直接原因 | 次のunblock条件 |
 |---|---|---|---|
-| `ORB-PERF-001` | `blocked` | WindowsQA official partial run `20260706-061348` で `l2-codex-pty` / `l3-codex-raw` がpreflight_timeoutにより全task skipped/BLOCKED。D群route5/6は第1回範囲外NOT_RUN。L1測定結果は `l1-instant=11/14`、`l1-job=12/14` で、A2/A5/B3/C2/C5/R2等に品質失敗が残る | Producer承認後にWindowsQA Codex CLI authを設定しL2/L3を再実行する。並行してL1失敗原因をプロダクト/fixture/採点に切り分け、D群route5/6を実装して第2回officialを完了する |
+| `ORB-PERF-001` | `blocked` | 旧Codex/7B local構成runはdiagnosticへ降格。新Kimi統一3レーンのofficial証跡がまだ未取得。D群route5/6は第1回範囲外NOT_RUN予定 | Kimi統一3レーン（`l1-job` / `l2-opencode-pty` / `l3-opencode-raw`）でA+B+C+R officialを実行する。D群route5/6は第2回officialで完了する |
 | `ORB-GATE-001` | `not_run` | `ORB-PERF-001` がrequired blockerになったため、以前のstrict audit PASSは現Release承認に使えない | `ORB-PERF-001` 解消後に `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` を再実行する |
 
 分類ルール:
@@ -30,7 +30,7 @@
 - `ORB-AT-001` は2026-07-05 official run `20260705-213712` / commit `b4601967900a4898d959b75bf4c8f78a92fdadfa` でthreshold PASSへ解消済み。deterministic mock 30件PASSに加え、real LLM代表10件で `passedCount=8/10`, `minPass=8` を満たした。
 - `ORB-AT-005` は2026-07-05 official run `20260705-111317` でPASS_WITH_WARNINGSへ解消済み。desktop screenshot warnは残るが、WDIO TTS playback 6件はPASS。
 - `ORB-GATE-002` は2026-07-05 official run `20260705-234741` / commit `48ea7fd64c5c59833962d6e1755d0d930d39764e` でPASSへ解消済み。release build / VOICEVOX/Kokoro bundle check / installer install / installed app startup / uninstall を確認済み。
-- `ORB-PERF-001` は2026-07-06 WindowsQA official partial run `20260706-061348` でBLOCKED。L1は実測済み、L2/L3 Codex laneはpreflight_timeout、D群はNOT_RUN。これはRelease blocker。
+- `ORB-PERF-001` はKimi統一3レーンへ再定義済み。旧runはdiagnostic参考値のみ。新official証跡未取得のためRelease blocker。
 - `ORB-GATE-001` は `ORB-PERF-001` 追加前の2026-07-05 strict auditではPASSだったが、現時点では再実行待ち。
 - Discord waiverは今回scopeからの明示延期であり、Discord real relayのPASSではない。
 - Release承認時は `audit-release-manifest --require-release-pass` を必須にし、`requiredBlocked` / `requiredNotRun` / 未verified blocking bugが1件でもあればFAILにする。
@@ -49,8 +49,8 @@ codex-adviser確認:
 
 次に実行する順序:
 
-1. `ORB-PERF-001` のBLOCKEDを解消する。Producer承認後、WindowsQAのCodex CLI認証を設定し、L2/L3 laneを実行する。
-2. L1失敗原因をプロダクト/fixture/採点に切り分け、必要な修正を行って同じfixtureで再測定する。
+1. `ORB-PERF-001` のBLOCKEDを解消する。Kimi統一3レーンでA+B+C+R officialを実行する。
+2. 失敗原因をプロダクト/fixture/採点に切り分け、必要な修正を行って同じfixtureで再測定する。
 3. D群route5/6の実アプリ接続を実装し、ORB-PERF-001第2回officialを完了する。
 4. `ORB-GATE-001` strict auditを再実行する。
 
@@ -98,7 +98,7 @@ codex-adviser確認:
 | Worker Chat UX official | PASS_WITH_WARNINGS | required | `ORB-SIT-001` / `ORB-AT-003`: WindowsQA official run `20260704-200036` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Worker terminal stream、worker_output本文、Anima入力欄非存在、送信後input空を確認。desktop screenshotのみwarn |
 | TTS voice acceptance official | PASS_WITH_WARNINGS | required | `ORB-AT-005`: WindowsQA official run `20260705-111317` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。VOICEVOX/Kokoro資産provision、typecheck、targeted Vitest、cargo-check、frontend-build、tauri-debug-build、WDIO `tts-voice-playback.spec.ts` 6件PASS。desktop screenshotのみwarn |
 | Release Packaging official | PASS | required | `ORB-GATE-002`: WindowsQA official run `20260705-234741` / commit `48ea7fd64c5c59833962d6e1755d0d930d39764e`。release build、VOICEVOX/Kokoro bundle check、MSI/NSIS生成、MSI install、installed exe startup screenshot、uninstall/cleanup PASS |
-| Coding Agent Performance official | BLOCKED | required | `ORB-PERF-001`: WindowsQA official partial run `20260706-061348` / commit `4eb43ff2c2eeee001597db5f351f140e3e86bc3f`。L1-instant は11/14件成功、L1-job は12/14件成功。L2/L3 Codex laneはpreflight_timeoutでBLOCKED、D群はNOT_RUN。L1にもA2/A5/B3/C2/C5/R2等の品質失敗が残る |
+| Coding Agent Performance official | BLOCKED | required | `ORB-PERF-001`: 旧Codex/7B local構成runはdiagnostic参考値へ降格。新Kimi統一3レーン（`l1-job` / `l2-opencode-pty` / `l3-opencode-raw`）でofficial証跡を取り直す。D群は第2回official範囲 |
 | Frontend full Vitest | PASS | supporting | `vitest.config.ts` でNode専用QA testをVitest対象から除外。`rtk pnpm vitest run --reporter=dot`: 133 files / 1590 tests PASS |
 | WindowsQA Server remaining AT/ST | PASS | required | Discord waiverを除く残required AT/STは解消済み。`ORB-AT-001` / `ORB-AT-005` / `ORB-GATE-002` はWindowsQA officialで解消済み |
 | local-windows devUrl diagnostic | BLOCKED_DIAGNOSTIC | diagnostic | local-windowsで`localhost:1420` timeout/black screenを確認。AT/STの代替にしない |
