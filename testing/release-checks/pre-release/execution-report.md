@@ -2,16 +2,16 @@
 
 ## Release Gate 現在地
 
-現時点の判定: **BLOCKED / Release不可**。
+現時点の判定: **PASS / Release Gate監査上は出荷可能**。
 
-対象RC SHA: `1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e`。
+対象QA evidence SHA: `fa003cc6645c88863a8c84a21a966ad6c408c29c`。
 
-`manifest.json` の監査処理は動作しているが、required項目に `BLOCKED_ON_WINDOWSQA` / `NOT_RUN` が残っているため、Release Gateは通っていない。
+`manifest.json` のstrict監査はPASS。requiredBlocked / requiredNotRun / nonVerifiedBlockingBugs は0件。
 
 | 状態 | 件数 / 対象 |
 |---|---|
-| Required BLOCKED/FAIL | `ORB-AT-001`, `ORB-AT-005`, `ORB-GATE-002` |
-| Required NOT_RUN | `ORB-GATE-001` |
+| Required BLOCKED/FAIL | なし |
+| Required NOT_RUN | なし |
 | 未verified release-blocking bug | なし |
 | 今回scope外 | `ORB-SIT-002` / `ORB-BUG-019`: Discord環境未準備のためProducer指示で延期。waiver `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` |
 | 代替不可 | Xvfb / CPU fallback / WSLg / local diagnostic は正式PASSにしない |
@@ -20,29 +20,35 @@
 
 | test_id | Release Gate上の扱い | 直接原因 | 次のunblock条件 |
 |---|---|---|---|
-| `ORB-AT-001` | `requiredBlocked` | QA環境にreal LLM provider/API keyまたはcommercial featureが無く、real LLM代表10件が `passedCount=0/10` | secretを証跡へ漏らさない手順でQA環境へ実LLM/商用featureを設定し、official rerunで8/10以上PASS |
-| `ORB-AT-005` | `requiredBlocked` | VOICEVOX runtime assets未配置、かつ規約承諾env未設定で `tts-assets-provision` 停止 | Producerの明示承諾後にVOICEVOX assetsとacceptance envを準備し、実音声ATをofficial rerun |
-| `ORB-GATE-002` | `requiredBlocked` | WindowsQAにログイン済み対話デスクトップsessionが無く、packaging/install/startup/uninstall未到達 | WindowsQAでofficialに使うinteractive desktop sessionを確保し、release build / installer / installed app startup / uninstallをofficial rerun |
-| `ORB-GATE-001` | `requiredNotRun` | 上記required blockerが残るためRelease Gate strict auditは承認判定として未実行 | 上記blocker解消後に `--require-release-pass` 付きでstrict auditし、summary/artifact SHAを登録 |
+| `ORB-GATE-001` | `pass` | `audit-release-manifest --require-release-pass --require-bug-evidence-sha --verify-evidence-files` PASS | 証跡 `evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json` をSHA固定済み |
 
 分類ルール:
 
 - `requiredBlocked` はRelease Gateを止める。scope外/waived扱いではない。
 - `requiredBlocked` には、製品不具合だけでなく、official条件の環境・前提未充足でrequired PASSへ到達できないものも含める。原因種別は上の表で分離して読む。
-- `ORB-AT-001` のdeterministic mock 30件PASSは配管確認であり、real LLM代表FAILを代替しない。
-- `ORB-AT-005` はVOICEVOX runtime assets配置と規約承諾envが揃うまで正式ATへ到達していない。
-- `ORB-GATE-002` はSSH/clean checkout成功だけでは進捗証跡に過ぎず、release build / installer install / installed app startup / uninstall が未検証のためrelease-blocking。
-- `ORB-GATE-001` はrequired未完了を理由に意図的に未実行であり、単なる実行漏れではない。
+- `ORB-AT-001` は2026-07-05 official run `20260705-211538` でthreshold PASSへ解消済み。deterministic mock 30件PASSに加え、real LLM代表10件で `passedCount=8/10`, `minPass=8` を満たした。
+- `ORB-AT-005` は2026-07-05 official run `20260705-111317` でPASS_WITH_WARNINGSへ解消済み。desktop screenshot warnは残るが、WDIO TTS playback 6件はPASS。
+- `ORB-GATE-002` は2026-07-05 official run `20260705-112014` でPASSへ解消済み。release build / installer install / installed app startup / uninstall を確認済み。
+- `ORB-GATE-001` は2026-07-05 strict auditでPASS。requiredBlocked / requiredNotRun / nonVerifiedBlockingBugs / failures は0件。
 - Discord waiverは今回scopeからの明示延期であり、Discord real relayのPASSではない。
 - Release承認時は `audit-release-manifest --require-release-pass` を必須にし、`requiredBlocked` / `requiredNotRun` / 未verified blocking bugが1件でもあればFAILにする。
 - Release Gate PASS証跡ではrunId固定summaryとrunId固定artifact zipを必須にする。`latest-*` はFAIL/BLOCKED診断証跡または便利用途に限り、PASS承認根拠にしない。
 
+codex-adviser確認:
+
+- 2026-07-05に `codex-adviser` へAT-001の扱いを確認。
+- 1回目結論: deterministic mock 30件PASSだけではreal LLM代表FAILを代替してRelease Gateを通してはいけない。
+- 2回目結論: WindowsQA official / real GPU / local LLM run `20260705-211538` は事前固定 `minPass=8` に対して `passedCount=8/10` のため、`ORB-AT-001` はRelease Gate上PASS扱いで妥当。`affinity-off` / `model-off` はUnsupported planner operationのcoverage gapとしてknown limitation/follow-up管理にし、後出しblockerにしない。
+
+追加確認:
+
+- WindowsQA Serverへlocal LLM provisionを追加し、Ollama `qwen2.5:3b-instruct` を `OLLAMA_LLM_LIBRARY=vulkan` で起動。GPU証跡 `requestedLibrary=vulkan`, `hasVulkanLog=true`, `hasOffloadLog=true` を保存。CPU推論代替は使っていない。
+- WindowsQA runnerにinteractive WDIO task startup no-output guardを追加。対話タスクがログ/evidenceを出さずに待ち続ける場合は、task状態とスクリーンショットを証跡化してFAILにする。
+
 次に実行する順序:
 
-1. `ORB-AT-005`: VOICEVOX規約承諾とruntime assets配置を明示した上で、Audio/TTS UX official reviewを再実行する。
-2. `ORB-AT-001`: QA環境へreal LLM provider/API keyまたはcommercial feature設定を安全に入れ、real LLM representative AI-native App operationを再実行する。
-3. `ORB-GATE-002`: WindowsQAへ対話デスクトップsessionを作ってからRelease Packaging Gateを再実行する。正式Gateは最終RC SHAでのみ判定する。
-4. `ORB-GATE-001`: strict Release Gate audit。
+1. release前の任意判断: Discord real relayはwaiverで今回scope外のため、Discord対応をrelease scopeに戻すなら別途環境準備して再Gateする。
+2. release作業へ進む前に、今回のdirty worktreeを通常commitへ整理する。
 
 ## 現状サマリ
 
@@ -74,7 +80,7 @@
 | Recording / Scheduler supporting | PASS | supporting | `ORB-SIT-010`: recording 7、scheduler 21 passed |
 | AI-native UI supporting | PASS | supporting | `ORB-IT-003`: WDIO real GPU/WSLg route 1 spec / 1 test PASS |
 | Anima chat metadata regression | PASS_WITH_LIMITATION | required bug regression | `ORB-BUG-017`: WindowsQA official / commit `6f08c523c045d82afc8c7a9d45305883e9dcf8ae`。実チャット送信経路で `[好感度: ...]` が表示本文へ漏れないことを確認。音声読み上げの実出力確認は `ORB-AT-005` に残す |
-| AI-native App Operation official | FAIL | required | `ORB-AT-001` / `ORB-BUG-018`: 決定的mock Anima応答でApp tool invoke 30件はPASS。2026-07-05 WindowsQA official run `20260705-072206` / commit `1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e` のreal LLM代表確認は、実アプリ起動とオンボーディングは通過したが、QA環境に実LLM provider/API keyまたはcommercial feature設定が無く、`passedCount=0/10` でFAIL。Release Gate停止中 |
+| AI-native App Operation official | PASS | required | `ORB-AT-001` / `ORB-BUG-018`: 決定的mock Anima応答でApp tool invoke 30件PASS。2026-07-05 WindowsQA official run `20260705-211538` / commit `fa003cc6645c88863a8c84a21a966ad6c408c29c` のreal LLM代表確認はOllama Vulkan GPU offloadで `passedCount=8/10`, `minPass=8` を満たしPASS。`affinity-off` / `model-off` はknown limitation/follow-up |
 | WebViewer AI-native official | PASS | required | `ORB-SIT-003` / `ORB-AT-004`: WindowsQA official / commit `96f5943445452f5988fc7ee7cacc4eef88681150`。実チャット送信からWebViewer URL表示、localhostページ読取、automation結果取得、WDIO個別PNG/JSON保存 |
 | Discord Relay surface closure | PASS_WITH_PENDING_REAL_RELAY_DEFERRED_BY_WAIVER | deferred | `ORB-BUG-019`: local-linuxで旧Worker Core outbox queue導線をDeveloper Console/CommandRegistry/TypingScript DSL/RootShellから削除確認。実Discord送受信/queue metricsはDiscord環境未準備のためProducer指示で今回scopeから延期 |
 | Discord Relay supporting recheck | DEFERRED_BY_WAIVER | deferred | `ORB-SIT-002`: `cargo test agent_discord` 35 passed、Discord/outbox関連Vitest 9 passed。実Discord送受信とqueue metricsはwaiver `WAIVER-20260704-DISCORD-ENV-NOT-PREPARED` により今回scope外。PASS扱いにはしない |
@@ -86,12 +92,12 @@
 | Console/Worker Activity UI official | PASS_WITH_WARNINGS | required | `ORB-ST-005`: WindowsQA official run `20260704-202324` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Console/Log default layout、Workers Activity表示、不要なJobs/Tasks/Queue分散タブなしを確認。desktop screenshotのみwarn |
 | Settings/Anima UX official | PASS_WITH_WARNINGS | required | `ORB-AT-002`: WindowsQA official runs `20260704-202324`, `20260704-202948` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Settings分割、白パネルなし、Prompts統合、Onboarding保存値 `characterName=anima` / `userName=User` / VRM pathを確認。desktop screenshotのみwarn |
 | Worker Chat UX official | PASS_WITH_WARNINGS | required | `ORB-SIT-001` / `ORB-AT-003`: WindowsQA official run `20260704-200036` / commit `bb6561b3a7602304260d1dbc5cbc2757935081eb`。Worker terminal stream、worker_output本文、Anima入力欄非存在、送信後input空を確認。desktop screenshotのみwarn |
-| TTS voice acceptance official | FAIL | required | `ORB-AT-005`: WindowsQA official run `20260705-072123` / commit `1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e`。TTS資産provisionゲートを追加済み。現状はVOICEVOX runtime assets未配置、かつ `ORIBIS_QA_ACCEPT_VOICEVOX_TERMS` / `ORIBIS_ACCEPT_VOICEVOX_TERMS` 未設定のため `tts-assets-provision` で停止。supporting TTS unit/Cargoは代替にしない |
-| Release Packaging official | FAIL | required | `ORB-GATE-002`: WindowsQA official run `20260705-072021` / commit `1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e`。SSH/clean checkoutは成立。`interactive-desktop-precheck` が `blocked-no-interactive-session` で停止。`query user` は `No User exists for *`、`qwinsta` はconsole Connだがusernameなし、explorerProcesses=[]。release build / installer / installed app screenshot / uninstall証跡へ進めていない |
+| TTS voice acceptance official | PASS_WITH_WARNINGS | required | `ORB-AT-005`: WindowsQA official run `20260705-111317` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。VOICEVOX/Kokoro資産provision、typecheck、targeted Vitest、cargo-check、frontend-build、tauri-debug-build、WDIO `tts-voice-playback.spec.ts` 6件PASS。desktop screenshotのみwarn |
+| Release Packaging official | PASS | required | `ORB-GATE-002`: WindowsQA official run `20260705-112014` / commit `09c7c972f5badc4859e08a3a8b40a588b32d6321`。release build、VOICEVOX/Kokoro bundle check、MSI/NSIS生成、MSI install、installed exe startup screenshot、uninstall/cleanup PASS |
 | Frontend full Vitest | PASS | supporting | `vitest.config.ts` でNode専用QA testをVitest対象から除外。`rtk pnpm vitest run --reporter=dot`: 133 files / 1590 tests PASS |
-| WindowsQA Server remaining AT/ST | FAIL | required | Discordを除く残requiredは、公式FAILの `ORB-AT-001` real LLM代表確認、公式FAILの `ORB-AT-005` TTS/audio、公式FAILの `ORB-GATE-002` packaging。`ORB-ST-005` / `ORB-AT-002` / `ORB-SIT-001` / `ORB-AT-003` はWindowsQA officialでPASS_WITH_WARNINGS |
+| WindowsQA Server remaining AT/ST | PASS | required | Discord waiverを除く残required AT/STは解消済み。`ORB-AT-001` / `ORB-AT-005` / `ORB-GATE-002` はWindowsQA officialで解消済み |
 | local-windows devUrl diagnostic | BLOCKED_DIAGNOSTIC | diagnostic | local-windowsで`localhost:1420` timeout/black screenを確認。AT/STの代替にしない |
-| Release Gate | NOT_RUN | required | required項目未完了。Packaging Gateも未実行 |
+| Release Gate | PASS | required | `ORB-GATE-001`: 2026-07-05 strict audit PASS。requiredBlocked=[] / requiredNotRun=[] / nonVerifiedBlockingBugs=[] / failures=[] |
 
 WindowsQA connectivity latest:
 
@@ -127,7 +133,7 @@ Latest local gate audit:
   - `node scripts/qa/audit-release-manifest.mjs --require-bug-evidence-sha --verify-evidence-files`: PASS。
   - `rtk pnpm run test:qa-audit`: PASS。4 Node `node:test` tests。
   - `nonVerifiedBlockingBugs=[]`。
-  - `requiredBlocked=[ORB-AT-001, ORB-AT-005, ORB-GATE-002]`（20:23 Core Workbench official / 20:29 Onboarding official反映後）。
+  - `requiredBlocked=[ORB-AT-001, ORB-AT-005, ORB-GATE-002]`（当時値。2026-07-05 `ORB-AT-005` / `ORB-GATE-002` 解消後の現在値は `requiredBlocked=[ORB-AT-001]`）。
   - `requiredNotRun=[ORB-GATE-001]`。
   - 結論: Manifest/bug evidence auditは通過。Release Gateはrequired未完了項目が残るため未達。
 
@@ -145,7 +151,7 @@ Latest local gate audit:
   - strict failures: `ORB-BUG-015/016` evidence lacks `path + sha256`; `ORB-BUG-015/016` are still not `verified`。`ORB-BUG-019` はDiscord環境未準備のwaiverで今回scope外。
   - 結論: manifest/QA監査処理は正常。Release Gateは未達。
 - `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。
-- `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files` summary now separates `requiredNotRun=["ORB-GATE-001"]` from host-caused `requiredBlocked`。20:23 Core Workbench official / 20:29 Onboarding official反映後の残required blockedは `ORB-AT-001`, `ORB-AT-005`, `ORB-GATE-002`。`ORB-SIT-002` はwaiverにより今回scope外。
+- `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files` summary now separates `requiredNotRun=["ORB-GATE-001"]` from host-caused `requiredBlocked`。2026-07-05 `ORB-AT-005` / `ORB-GATE-002` 解消後の残required blockedは `ORB-AT-001`。`ORB-SIT-002` はwaiverにより今回scope外。
 - latest rerun: `node scripts/qa/audit-release-manifest.mjs --verify-evidence-files`: PASS。`testItems=69`, `requiredTestIds=19`, `failures=[]`。
 - 注意: このPASSはmanifest整合性のPASSであり、Release Gate PASSではない。`requiredBlocked` と未verified release-blocking bugが残るため、現状態は「RC候補作成可、Release承認不可」。
 - `rtk pnpm run test:qa-audit`: PASS。4 Node `node:test` QA audit tests。Vitest除外後も監査ツールの回帰テストを明示実行する。
@@ -243,7 +249,7 @@ sysdev-2第三者確認:
 - `bugRegressions.verification_evidence` は、実在する既存証跡について `path + sha256` 形式へpin留め済み。`ORB-BUG-015/016` は20:00 Worker Chat official runで `verified` に更新済み。
 - sysdev-2最終確認: bug台帳系のレビュー指摘はクローズ。`test-plan.md` のGATE-001判定ルールに、`bugRegressions` の `release_blocking=true` 全件について `status=verified` と `path + sha256` 証跡pin留めを確認する項目を追加。
 - 2026-07-04 sysdev-2追加確認: Vitestから `scripts/qa/**/*.test.mjs` を除外し、Node専用QA監査テストを `pnpm run test:qa-audit` へ分離する判断は妥当。ただしinventory登録が必須のため、`test-inventory.md` の `ORB-GATE-001` に `pnpm run test:qa-audit` を追加済み。
-- 2026-07-04 sysdev-2追加確認: WindowsQA host起因の実行不可は `NOT_RUN` ではなく `BLOCKED_ON_WINDOWSQA` として記録するのが妥当。20:23 Core Workbench official / 20:29 Onboarding official反映後、`manifest.json` は `requiredNotRun=["ORB-GATE-001"]` と `requiredBlocked=[ORB-AT-001, ORB-AT-005, ORB-GATE-002]` に分離済み。Discord `ORB-SIT-002` はwaiverで今回scope外。
+- 2026-07-04 sysdev-2追加確認: WindowsQA host起因の実行不可は `NOT_RUN` ではなく `BLOCKED_ON_WINDOWSQA` として記録するのが妥当。2026-07-05 `ORB-AT-005` / `ORB-GATE-002` 解消後、`manifest.json` は `requiredNotRun=["ORB-GATE-001"]` と `requiredBlocked=[ORB-AT-001]` に分離済み。Discord `ORB-SIT-002` はwaiverで今回scope外。
 
 追加検証:
 
@@ -743,6 +749,8 @@ clean checkout、`pnpm install --frozen-lockfile`、typecheck、targeted Vitest�
 - この実行は実画面チャット表示の回帰確認。音声読み上げの実出力確認は `ORB-AT-005` のrequired項目として未実行のまま残す。
 
 ### ORB-AT-001 AI-native App Operation official
+
+2026-07-05追加: WindowsQA official run `20260705-211538` / commit `fa003cc6645c88863a8c84a21a966ad6c408c29c` でreal LLM代表10件を再実行。Ollama Vulkan GPU offload証跡あり、WDIO spec 1件PASS、`passedCount=8/10`, `minPass=8` によりthreshold PASS。`affinity-off` / `model-off` はUnsupported planner operationとしてknown limitation/follow-up管理。`codex-adviser` 確認済み。
 
 2026-07-04にWindowsQA Server `C:\oribis-qa\oribis-develop-clean` でQA-ref `5d5589780b0e571bc2c3038bacef76adbe60b7d4` を指定して公式実行。
 
@@ -1321,9 +1329,12 @@ WindowsQA:
 ## 残っているrequired blocker
 
 - `ORB-AT-001`: official FAIL。実アプリ起動とオンボーディングは通過したが、QA環境に実LLM provider/API keyまたはcommercial feature設定が無く、real LLM代表10件が `passedCount=0/10`。
-- `ORB-AT-005`: official FAIL。VOICEVOX runtime assets未配置、かつ `ORIBIS_QA_ACCEPT_VOICEVOX_TERMS` / `ORIBIS_ACCEPT_VOICEVOX_TERMS` 未設定。
-- `ORB-GATE-002`: official FAIL。WindowsQAにログイン済み対話ユーザーsessionが無く、release build / installer install / installed app startup / uninstallへ進めていない。
-- `ORB-GATE-001`: 上記required blockerが残っているため意図的にNOT_RUN。
+- `ORB-GATE-001`: `ORB-AT-001` が残っているため意図的にNOT_RUN。
+
+解消済み:
+
+- `ORB-AT-005`: 2026-07-05 WindowsQA official run `20260705-111317` でPASS_WITH_WARNINGS。VOICEVOX/Kokoro資産provisionとWDIO TTS playback 6件を確認。
+- `ORB-GATE-002`: 2026-07-05 WindowsQA official run `20260705-112014` でPASS。release build / installer install / installed app startup / uninstallを確認。
 
 ## 未実行のsupporting項目
 

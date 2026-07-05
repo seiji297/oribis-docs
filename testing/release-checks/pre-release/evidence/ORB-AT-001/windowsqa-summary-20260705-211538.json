@@ -1,0 +1,345 @@
+﻿{
+    "schemaVersion":  1,
+    "qaProfile":  "WindowsQASmoke",
+    "runId":  "20260705-211538",
+    "startedAt":  "2026-07-05T21:15:38.7907433+09:00",
+    "endedAt":  "2026-07-05T21:27:47.2248202+09:00",
+    "durationSeconds":  728.434,
+    "status":  "pass",
+    "official":  true,
+    "sourceMode":  "git",
+    "mode":  "official",
+    "transportAuthMode":  "pubkey-only",
+    "branch":  "develop",
+    "requestedCommit":  "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+    "resolvedCommit":  "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+    "commit":  "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+    "cleanChecks":  [
+                        {
+                            "context":  "repo-check before git update",
+                            "status":  "clean",
+                            "at":  "2026-07-05T21:15:41.3982146+09:00"
+                        },
+                        {
+                            "context":  "git-update after origin branch sync",
+                            "status":  "clean",
+                            "at":  "2026-07-05T21:15:48.8389339+09:00"
+                        }
+                    ],
+    "processChecks":  [
+                          {
+                              "name":  "preflight-before-cleanup",
+                              "status":  "warn",
+                              "count":  14,
+                              "details":  "",
+                              "processes":  [
+                                                {
+                                                    "processId":  1496,
+                                                    "parentProcessId":  11056,
+                                                    "name":  "msedgewebview2.exe",
+                                                    "executablePath":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe",
+                                                    "commandLine":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe\" --type=utility --utility-sub-type=storage.mojom.StorageService --lang=en-US --service-sandbox-type=service --noerrdialogs --user-data-dir=\"C:\\Users\\admin\\AppData\\Local\\...",
+                                                    "creationDate":  "07/05/2026 21:07:37",
+                                                    "reason":  "childOfOribisQaProcess"
+                                                },
+                                                {
+                                                    "processId":  3732,
+                                                    "parentProcessId":  10400,
+                                                    "name":  "msedgedriver.exe",
+                                                    "executablePath":  "C:\\oribis-qa\\tools\\msedgedriver\\msedgedriver.exe",
+                                                    "commandLine":  "\"C:\\oribis-qa\\tools\\msedgedriver\\msedgedriver.exe\" --port=4445 --host=127.0.0.1",
+                                                    "creationDate":  "07/05/2026 21:07:29",
+                                                    "reason":  "childOfOribisQaProcess"
+                                                },
+                                                {
+                                                    "processId":  4832,
+                                                    "parentProcessId":  9432,
+                                                    "name":  "node.exe",
+                                                    "executablePath":  "C:\\Program Files\\nodejs\\node.exe",
+                                                    "commandLine":  "node   \"C:\\oribis-qa\\oribis\\node_modules\\.bin\\\\..\\vite\\bin\\vite.js\" \"--port\" \"1420\"",
+                                                    "creationDate":  "07/05/2026 21:07:15",
+                                                    "reason":  "repoNodeToolMatch"
+                                                },
+                                                {
+                                                    "processId":  5032,
+                                                    "parentProcessId":  11056,
+                                                    "name":  "msedgewebview2.exe",
+                                                    "executablePath":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe",
+                                                    "commandLine":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe\" --type=gpu-process --noerrdialogs --user-data-dir=\"C:\\Users\\admin\\AppData\\Local\\Temp\\scoped_dir3732_1502375805\\EBWebView\" --webview-exe-name=oribis.exe --webview-exe-ve...",
+                                                    "creationDate":  "07/05/2026 21:07:37",
+                                                    "reason":  "childOfOribisQaProcess"
+                                                },
+                                                {
+                                                    "processId":  5776,
+                                                    "parentProcessId":  4832,
+                                                    "name":  "esbuild.exe",
+                                                    "executablePath":  "C:\\oribis-qa\\oribis\\node_modules\\.pnpm\\@esbuild+win32-x64@0.27.7\\node_modules\\@esbuild\\win32-x64\\esbuild.exe",
+                                                    "commandLine":  "C:\\oribis-qa\\oribis\\node_modules\\.pnpm\\@esbuild+win32-x64@0.27.7\\node_modules\\@esbuild\\win32-x64\\esbuild.exe --service=0.27.7 --ping",
+                                                    "creationDate":  "07/05/2026 21:07:15",
+                                                    "reason":  "childOfOribisQaProcess"
+                                                },
+                                                {
+                                                    "processId":  9456,
+                                                    "parentProcessId":  11056,
+                                                    "name":  "msedgewebview2.exe",
+                                                    "executablePath":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe",
+                                                    "commandLine":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe\" --type=utility --utility-sub-type=network.mojom.NetworkService --lang=en-US --service-sandbox-type=none --noerrdialogs --user-data-dir=\"C:\\Users\\admin\\AppData\\Local\\Tem...",
+                                                    "creationDate":  "07/05/2026 21:07:37",
+                                                    "reason":  "childOfOribisQaProcess"
+                                                },
+                                                {
+                                                    "processId":  9820,
+                                                    "parentProcessId":  7720,
+                                                    "name":  "node.exe",
+                                                    "executablePath":  "C:\\Program Files\\nodejs\\node.exe",
+                                                    "commandLine":  "node   \"C:\\oribis-qa\\oribis\\e2e\\wdio\\node_modules\\.bin\\\\..\\.pnpm\\@wdio+cli@8.46.0\\node_modules\\@wdio\\cli\\bin\\wdio.js\" run wdio.conf.ts --spec tests\\app-ai-native-real-llm-representative.spec.ts",
+                                                    "creationDate":  "07/05/2026 21:07:17",
+                                                    "reason":  "repoNodeToolMatch"
+                                                },
+                                                {
+                                                    "processId":  9976,
+                                                    "parentProcessId":  11056,
+                                                    "name":  "msedgewebview2.exe",
+                                                    "executablePath":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe",
+                                                    "commandLine":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe\" --type=renderer --noerrdialogs --user-data-dir=\"C:\\Users\\admin\\AppData\\Local\\Temp\\scoped_dir3732_1502375805\\EBWebView\" --webview-exe-name=oribis.exe --webview-exe-versi...",
+                                                    "creationDate":  "07/05/2026 21:07:37",
+                                                    "reason":  "childOfOribisQaProcess"
+                                                },
+                                                {
+                                                    "processId":  10400,
+                                                    "parentProcessId":  11596,
+                                                    "name":  "tauri-driver.exe",
+                                                    "executablePath":  "C:\\Users\\admin\\.cargo\\bin\\tauri-driver.exe",
+                                                    "commandLine":  "tauri-driver --port 4444 --native-port 4445 --native-driver C:\\oribis-qa\\tools\\msedgedriver\\msedgedriver.exe",
+                                                    "creationDate":  "07/05/2026 21:07:29",
+                                                    "reason":  "childOfOribisQaProcess"
+                                                },
+                                                {
+                                                    "processId":  10672,
+                                                    "parentProcessId":  3732,
+                                                    "name":  "oribis.exe",
+                                                    "executablePath":  "C:\\oribis-qa\\oribis\\src-tauri\\target\\debug\\oribis.exe",
+                                                    "commandLine":  "\"C:\\oribis-qa\\oribis\\src-tauri\\target\\debug\\oribis.exe\"",
+                                                    "creationDate":  "07/05/2026 21:07:37",
+                                                    "reason":  "oribisExecutableRepoMatch"
+                                                },
+                                                {
+                                                    "processId":  11056,
+                                                    "parentProcessId":  10672,
+                                                    "name":  "msedgewebview2.exe",
+                                                    "executablePath":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe",
+                                                    "commandLine":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe\" --embedded-browser-webview=1 --webview-exe-name=oribis.exe --webview-exe-version=0.1.0 --user-data-dir=\"C:\\Users\\admin\\AppData\\Local\\Temp\\scoped_dir3732_1502375805\\EBWe...",
+                                                    "creationDate":  "07/05/2026 21:07:37",
+                                                    "reason":  "childOfOribisQaProcess"
+                                                },
+                                                {
+                                                    "processId":  11596,
+                                                    "parentProcessId":  9820,
+                                                    "name":  "node.exe",
+                                                    "executablePath":  "C:\\Program Files\\nodejs\\node.exe",
+                                                    "commandLine":  "\"C:\\Program Files\\nodejs\\node.exe\" C:\\oribis-qa\\oribis\\e2e\\wdio\\node_modules\\.pnpm\\@wdio+cli@8.46.0\\node_modules\\@wdio\\cli\\bin\\wdio.js run wdio.conf.ts --spec tests\\app-ai-native-real-llm-representative.spec.ts",
+                                                    "creationDate":  "07/05/2026 21:07:21",
+                                                    "reason":  "repoNodeToolMatch"
+                                                },
+                                                {
+                                                    "processId":  11992,
+                                                    "parentProcessId":  11056,
+                                                    "name":  "msedgewebview2.exe",
+                                                    "executablePath":  "C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe",
+                                                    "commandLine":  "\"C:\\Program Files (x86)\\Microsoft\\EdgeWebView\\Application\\149.0.4022.98\\msedgewebview2.exe\" --type=crashpad-handler --user-data-dir=C:\\Users\\admin\\AppData\\Local\\Temp\\scoped_dir3732_1502375805\\EBWebView /prefetch:4 --monitor-self-annotation=ptype=crashpad-handl...",
+                                                    "creationDate":  "07/05/2026 21:07:37",
+                                                    "reason":  "childOfOribisQaProcess"
+                                                },
+                                                {
+                                                    "processId":  12604,
+                                                    "parentProcessId":  11596,
+                                                    "name":  "node.exe",
+                                                    "executablePath":  "C:\\Program Files\\nodejs\\node.exe",
+                                                    "commandLine":  "\"C:\\Program Files\\nodejs\\node.exe\" C:\\oribis-qa\\oribis\\e2e\\wdio\\node_modules\\.pnpm\\@wdio+local-runner@8.46.0\\node_modules\\@wdio\\local-runner\\build\\run.js run wdio.conf.ts --spec tests\\app-ai-native-real-llm-representative.spec.ts",
+                                                    "creationDate":  "07/05/2026 21:07:31",
+                                                    "reason":  "repoNodeToolMatch"
+                                                }
+                                            ],
+                              "at":  "2026-07-05T21:15:41.5658429+09:00"
+                          },
+                          {
+                              "name":  "preflight-after-cleanup",
+                              "status":  "pass",
+                              "count":  0,
+                              "details":  "",
+                              "processes":  [
+
+                                            ],
+                              "at":  "2026-07-05T21:15:43.2654714+09:00"
+                          },
+                          {
+                              "name":  "post-run-before-cleanup",
+                              "status":  "pass",
+                              "count":  0,
+                              "details":  "",
+                              "processes":  [
+
+                                            ],
+                              "at":  "2026-07-05T21:27:47.3708657+09:00"
+                          },
+                          {
+                              "name":  "post-run-after-cleanup",
+                              "status":  "pass",
+                              "count":  0,
+                              "details":  "",
+                              "processes":  [
+
+                                            ],
+                              "at":  "2026-07-05T21:27:48.2896615+09:00"
+                          }
+                      ],
+    "systemSnapshot":  {
+                           "host":  "DESKTOP-TEST001",
+                           "user":  "DESKTOP-TEST001\\admin",
+                           "powershell":  "5.1.19041.6456",
+                           "os":  {
+                                      "Caption":  "Microsoft Windows 10 Pro",
+                                      "Version":  "10.0.19045",
+                                      "BuildNumber":  "19045",
+                                      "TotalVisibleMemorySize":  16717732,
+                                      "FreePhysicalMemory":  8184576
+                                  },
+                           "cpu":  {
+                                       "Name":  "Intel(R) Core(TM) i5-4590 CPU @ 3.30GHz",
+                                       "NumberOfCores":  4,
+                                       "NumberOfLogicalProcessors":  4
+                                   },
+                           "gpu":  {
+                                       "Name":  "NVIDIA GeForce GTX 980",
+                                       "DriverVersion":  "32.0.15.6094",
+                                       "AdapterRAM":  4293918720
+                                   },
+                           "repoRoot":  "C:\\oribis-qa\\oribis",
+                           "branch":  "develop",
+                           "commit":  "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+                           "webView2Version":  "149.0.4022.98",
+                           "nodeVersion":  "v24.17.0",
+                           "pnpmVersion":  "11.8.0",
+                           "rustcVersion":  "rustc 1.96.0 (ac68faa20 2026-05-25)",
+                           "cargoVersion":  "cargo 1.96.0 (30a34c682 2026-05-25)"
+                       },
+    "runnerScriptSha256":  "babd0dca551606625d6d91d1aea6dc88d633ed38c6ae2af631e3caadc9cd8fa1",
+    "skippedSteps":  [
+
+                     ],
+    "artifactDir":  "C:\\oribis-qa\\artifacts\\20260705-211538",
+    "steps":  [
+                  {
+                      "name":  "system-snapshot",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:15:41.1937410+09:00"
+                  },
+                  {
+                      "name":  "prerequisites",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:15:41.2461176+09:00"
+                  },
+                  {
+                      "name":  "repo-check",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:15:41.3982146+09:00"
+                  },
+                  {
+                      "name":  "oribis-preflight-cleanup",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:15:43.2654714+09:00"
+                  },
+                  {
+                      "name":  "git-update",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:15:48.8774940+09:00"
+                  },
+                  {
+                      "name":  "pnpm-install",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:15:49.4654409+09:00"
+                  },
+                  {
+                      "name":  "local-llm-provision",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:15:59.8984613+09:00"
+                  },
+                  {
+                      "name":  "typecheck",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:16:02.5380107+09:00"
+                  },
+                  {
+                      "name":  "targeted-vitest",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:16:36.9127180+09:00"
+                  },
+                  {
+                      "name":  "cargo-check",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:16:38.0078888+09:00"
+                  },
+                  {
+                      "name":  "frontend-build",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:19:25.8573335+09:00"
+                  },
+                  {
+                      "name":  "tauri-debug-build",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:19:26.8930621+09:00"
+                  },
+                  {
+                      "name":  "wdio",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:27:47.1495891+09:00"
+                  },
+                  {
+                      "name":  "desktop-screenshot",
+                      "status":  "warn",
+                      "exitCode":  0,
+                      "details":  "Exception calling \"CopyFromScreen\" with \"3\" argument(s): \"The handle is invalid\"",
+                      "at":  "2026-07-05T21:27:47.2212922+09:00"
+                  },
+                  {
+                      "name":  "oribis-post-run-cleanup",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:27:48.2896615+09:00"
+                  },
+                  {
+                      "name":  "diagnostics",
+                      "status":  "pass",
+                      "exitCode":  0,
+                      "details":  "",
+                      "at":  "2026-07-05T21:27:48.9786859+09:00"
+                  }
+              ]
+}

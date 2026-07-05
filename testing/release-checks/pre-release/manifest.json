@@ -2,9 +2,9 @@
   "schemaVersion": 2,
   "target": {
     "repository": "oribis",
-    "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
+    "commit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
     "worktree": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis",
-    "notes": "Current RC candidate SHA includes headless packaging diagnostic hardening without weakening official Release Gate evidence. Release Gate is not approved: ORB-AT-001, ORB-AT-005, and ORB-GATE-002 remain failing or blocked on official evidence.",
+    "notes": "Current QA evidence target SHA includes Kokoro provisioning and packaging fixes through refs/qa/orb-at-005-tts-kokoro-selected-20260705-110920. Release Gate is not approved: ORB-AT-001 remains failing on real LLM evidence and ORB-GATE-001 remains NOT_RUN pending final strict audit.",
     "rcCandidate": true,
     "previousTrackedCommit": "e366936065ca5a393e69344358047d2f1e1ccf7e"
   },
@@ -90,7 +90,7 @@
         "ORB-BUG-019"
       ],
       "targetCommitAtApproval": "bb6561b3a7602304260d1dbc5cbc2757935081eb",
-      "currentTargetCommit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
+      "currentTargetCommit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
       "releaseGateMeaning": "Scope deferral only. Does not count as PASS for Discord real relay and does not validate Discord send/receive or queue metrics.",
       "recheckCondition": "Before a release that includes Discord relay as in-scope, run ORB-SIT-002 real Discord relay evidence on WindowsQA or a dedicated Discord-ready QA environment."
     }
@@ -1057,9 +1057,60 @@
         "execution-report",
         "risk-list"
       ],
-      "lastExecution": null,
-      "result": "NOT_RUN",
-      "waiver": null
+      "lastExecution": {
+        "date": "2026-07-05",
+        "environment": "local-linux",
+        "mode": "official-evidence-audit",
+        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "runId": "20260705-2130",
+        "official": true,
+        "sourceMode": "git-evidence-manifest",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+        "evidence": [
+          {
+            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+            "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
+          }
+        ],
+        "result": "PASS",
+        "status": "PASS",
+        "requiredBlocked": [],
+        "requiredNotRun": [],
+        "nonVerifiedBlockingBugs": []
+      },
+      "result": "PASS",
+      "waiver": null,
+      "run": {
+        "date": "2026-07-05",
+        "environment": "local-linux",
+        "mode": "official-evidence-audit",
+        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "runId": "20260705-2130",
+        "official": true,
+        "sourceMode": "git-evidence-manifest",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+        "evidence": [
+          {
+            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+            "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
+          }
+        ],
+        "result": "PASS",
+        "status": "PASS",
+        "requiredBlocked": [],
+        "requiredNotRun": [],
+        "nonVerifiedBlockingBugs": []
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+          "kind": "release-gate-audit-json",
+          "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
+        }
+      ],
+      "notes": "Strict release audit passed after ORB-AT-001, ORB-AT-005, and ORB-GATE-002 evidence were registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS."
     },
     {
       "test_id": "ORB-GATE-002",
@@ -1086,53 +1137,55 @@
         "cleanup-result"
       ],
       "lastExecution": {
-        "runId": "20260705-072021",
-        "result": "FAIL",
-        "status": "FAIL",
+        "runId": "20260705-112014",
+        "result": "PASS",
+        "status": "pass",
         "environment": "WindowsQA Server",
         "runner": "windows-qa-server + packaging runner",
-        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
-        "requestedCommit": "1f4c86a",
+        "commit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
+        "requestedCommit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
+        "resolvedCommit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
         "official": true,
+        "mode": "official",
+        "executionMode": "official",
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
+        "skippedSteps": [],
+        "summary": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-112014.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-112014.json",
             "kind": "packaging-summary-json",
-            "sha256": "05ecddf527b4f6cc614698d6850b0a2ef7d26982a95bf048b3857851708e3a1e"
+            "sha256": "59aeadc9d87055b1a27fe79f9cceb9627600dbf844a172a170bfb5beca7870d9"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\packaging-20260705-072021.zip",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-112014.zip",
             "kind": "packaging-artifact-zip",
-            "sha256": "af6f5f692b640fdc307871cc4dc08181d10d092ffab6f62cd77cc94838c87aac"
+            "sha256": "d8b1eac7d0ef2c1f9b869dc1f43763734c544dbb9a4577a58eab93bc1389f329"
           }
         ],
-        "failedStep": "interactive-desktop-precheck",
-        "failure": "WindowsQA has no logged-in interactive user; query user returned No User exists for *; qwinsta shows console Conn with no username and explorerProcesses=[]",
-        "installStatus": "not-run",
-        "uninstallStatus": "not-run",
-        "interactiveSessionStatus": "blocked-no-interactive-session",
-        "officialEvidenceValid": false,
-        "officialPassEligible": false,
-        "headlessDetected": true
+        "installerKind": "msi",
+        "releaseBuildStatus": "pass",
+        "installStatus": "pass",
+        "startupStatus": "pass",
+        "uninstallStatus": "pass",
+        "officialEvidenceValid": true,
+        "officialPassEligible": true
       },
-      "result": "FAIL",
+      "result": "PASS",
       "waiver": null,
-      "blockedReason": "WindowsQA SSH/clean checkoutは成立したが、ログイン済み対話ユーザーsessionが無い。`query user` は `No User exists for *`、`qwinsta` はconsole Connだがusernameなし、explorerProcesses=[]。release build / installer / installed app startup / uninstall へ進めていない。",
       "evidence": [
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-112014.json",
           "kind": "packaging-summary-json",
-          "sha256": "05ecddf527b4f6cc614698d6850b0a2ef7d26982a95bf048b3857851708e3a1e"
+          "sha256": "59aeadc9d87055b1a27fe79f9cceb9627600dbf844a172a170bfb5beca7870d9"
         },
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\packaging-20260705-072021.zip",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-112014.zip",
           "kind": "packaging-artifact-zip",
-          "sha256": "af6f5f692b640fdc307871cc4dc08181d10d092ffab6f62cd77cc94838c87aac"
+          "sha256": "d8b1eac7d0ef2c1f9b869dc1f43763734c544dbb9a4577a58eab93bc1389f329"
         }
       ],
-      "notes": "WindowsQA official head-1f4c86a run failed at interactive-desktop-precheck: no logged-in interactive desktop session. SSH, exact commit checkout, and clean repo checks succeeded, but release build / installer install / installed app startup / uninstall were not reached."
+      "notes": "WindowsQA official run 20260705-112014 passed release build, VOICEVOX/Kokoro resource bundle check, MSI install, installed app startup screenshot, uninstall, and cleanup on exact QA ref commit 09c7c972f5badc4859e08a3a8b40a588b32d6321."
     },
     {
       "test_id": "ORB-SIT-001",
@@ -1379,31 +1432,82 @@
         "date": "2026-07-05",
         "environment": "WindowsQA Server",
         "mode": "official",
-        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
-        "requestedCommit": "1f4c86a",
-        "runId": "20260705-072206",
+        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "runId": "20260705-211538",
         "official": true,
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
+        "summary": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
-            "sha256": "aadf3c09f353900dafd36d94eccc06ab289ddefb68c7a69397856113c0405d57"
+            "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
+            "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\20260705-072206.zip",
-            "sha256": "e42db4ea44af47a77fb5e55fc5f1c464f13dc67ff55a2e01be35d4d393c29092"
+            "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
+            "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
           }
         ],
-        "failure": "real LLM representative run reached the app and onboarding, but passedCount=0/10 and failed the >=8 threshold because oribisAI requires commercial feature in the QA environment",
-        "result": "FAIL",
-        "status": "FAIL",
-        "passedCount": 0,
-        "total": 10
+        "result": "PASS",
+        "status": "PASS",
+        "passedCount": 8,
+        "total": 10,
+        "minPass": 8,
+        "gpu": {
+          "backend": "ollama",
+          "requestedLibrary": "vulkan",
+          "hasVulkanLog": true,
+          "hasOffloadLog": true
+        },
+        "knownLimitations": [
+          {
+            "id": "affinity-off",
+            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+          },
+          {
+            "id": "model-off",
+            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+          }
+        ],
+        "acceptance": "Threshold pass: real LLM representative run passed 8/10 with minPass=8. rawToolBlockVisible=false and chat input remained empty for all cases.",
+        "adviserDecision": "codex-adviser confirmed PASS is acceptable for Release Gate and the two unsupported planner operation cases should be tracked as known limitations/follow-up, not release blockers."
       },
-      "result": "FAIL",
+      "result": "PASS",
       "waiver": null,
-      "notes": "WindowsQA official head-1f4c86a run reached real-app onboarding and WDIO execution, then failed the real LLM representative threshold: expected passedCount >= 8, received 0. QA environment still lacks real LLM provider/API key or commercial feature, so deterministic mock 30-case PASS cannot substitute this required evidence."
+      "notes": "WindowsQA official real LLM representative run passed threshold: 8/10 with minPass=8 using Ollama Vulkan GPU offload. affinity-off/model-off remain known planner operation coverage follow-ups, not release blockers for this gate.",
+      "run": {
+        "runId": "20260705-211538",
+        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "official": true,
+        "sourceMode": "git",
+        "caseCount": 10,
+        "minPass": 8,
+        "passedCount": 8,
+        "failures": 2,
+        "knownLimitations": [
+          {
+            "id": "affinity-off",
+            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+          },
+          {
+            "id": "model-off",
+            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+          }
+        ]
+      },
+      "evidence": [
+        {
+          "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
+          "kind": "summary-json",
+          "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
+        },
+        {
+          "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
+          "kind": "artifact-zip",
+          "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
+        }
+      ]
     },
     {
       "test_id": "ORB-AT-002",
@@ -1548,32 +1652,38 @@
         "settings JSON"
       ],
       "lastExecution": {
-        "runId": "20260705-072123",
-        "result": "FAIL",
-        "status": "FAIL",
+        "runId": "20260705-111317",
+        "result": "PASS_WITH_WARNINGS",
+        "status": "pass",
         "environment": "WindowsQA Server",
         "runner": "windows-qa-server + WDIO",
-        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
-        "requestedCommit": "1f4c86a",
+        "commit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
+        "requestedCommit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
+        "resolvedCommit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
         "official": true,
+        "mode": "official",
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-tts-official-20260705-head-1f4c86a\\summary-20260705-072123.json",
+        "skippedSteps": [],
+        "summary": "evidence/ORB-AT-005/windowsqa-summary-20260705-111317.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-tts-official-20260705-head-1f4c86a\\summary-20260705-072123.json",
-            "sha256": "b6f819a30500c28626b4c0527e9dc52c66aada1751b98b23833342e3623bf986"
+            "path": "evidence/ORB-AT-005/windowsqa-summary-20260705-111317.json",
+            "kind": "windowsqa-summary-json",
+            "sha256": "6fad8c4fb190b068a7cf7789f2c83dbf93db27cea839578a61e31834330e49be"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-tts-official-20260705-head-1f4c86a\\20260705-072123.zip",
-            "sha256": "745f8705783eda87c87601b2db0a66f5b2e7e2d1a042ed0c54fb77a39aa28b86"
+            "path": "evidence/ORB-AT-005/windowsqa-artifacts-20260705-111317.zip",
+            "kind": "windowsqa-artifact-zip",
+            "sha256": "730cb88dd1d883dfdf6bb17a829defc4d56190493febb7d676afa7d1f9c21434"
           }
         ],
-        "failedStep": "tts-assets-provision",
-        "failure": "VOICEVOX runtime assets are missing and ORIBIS_QA_ACCEPT_VOICEVOX_TERMS / ORIBIS_ACCEPT_VOICEVOX_TERMS is not set"
+        "wdioSpec": "e2e/wdio/tests/tts-voice-playback.spec.ts",
+        "wdioTests": 6,
+        "warning": "desktop-screenshot step warned on CopyFromScreen handle; WDIO evidence passed"
       },
-      "result": "FAIL",
+      "result": "PASS_WITH_WARNINGS",
       "waiver": null,
-      "notes": "WindowsQA official head-1f4c86a run stopped at tts-assets-provision because VOICEVOX runtime assets are missing and ORIBIS_QA_ACCEPT_VOICEVOX_TERMS / ORIBIS_ACCEPT_VOICEVOX_TERMS are not set. No audio acceptance was reached."
+      "notes": "WindowsQA official run 20260705-111317 passed TTS asset provisioning, typecheck, targeted Vitest, cargo-check, frontend build, tauri-debug-build, and WDIO tts-voice-playback 6 tests including Japanese VOICEVOX and English Kokoro route. Runner desktop screenshot warning remains non-blocking."
     },
     {
       "test_id": "ORB-DIAG-001",
@@ -2391,8 +2501,59 @@
         "critical"
       ],
       "guarantee": "Required items have PASS evidence, NOT_RUN/BLOCKED/FAIL are explicit, manifest paths and hashes match evidence files.",
-      "result": "NOT_RUN",
-      "evidence": []
+      "result": "PASS",
+      "evidence": [
+        {
+          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+          "kind": "release-gate-audit-json",
+          "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
+        }
+      ],
+      "lastExecution": {
+        "date": "2026-07-05",
+        "environment": "local-linux",
+        "mode": "official-evidence-audit",
+        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "runId": "20260705-2130",
+        "official": true,
+        "sourceMode": "git-evidence-manifest",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+        "evidence": [
+          {
+            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+            "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
+          }
+        ],
+        "result": "PASS",
+        "status": "PASS",
+        "requiredBlocked": [],
+        "requiredNotRun": [],
+        "nonVerifiedBlockingBugs": []
+      },
+      "run": {
+        "date": "2026-07-05",
+        "environment": "local-linux",
+        "mode": "official-evidence-audit",
+        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "runId": "20260705-2130",
+        "official": true,
+        "sourceMode": "git-evidence-manifest",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+        "evidence": [
+          {
+            "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260705-2130.json",
+            "sha256": "13681bc581f40c2d310151408ebda4accd4ac80d9236490bf775648f69ee7afd"
+          }
+        ],
+        "result": "PASS",
+        "status": "PASS",
+        "requiredBlocked": [],
+        "requiredNotRun": [],
+        "nonVerifiedBlockingBugs": []
+      },
+      "notes": "Strict release audit passed after ORB-AT-001, ORB-AT-005, and ORB-GATE-002 evidence were registered. Discord real relay remains explicitly waived/scope-deferred, not counted as PASS."
     },
     {
       "test_id": "ORB-GATE-002",
@@ -2413,53 +2574,55 @@
         "critical"
       ],
       "guarantee": "Release build and Windows installer are created on WindowsQA, the app installed from the installer launches successfully with ST-001-equivalent startup evidence, and uninstall/cleanup succeeds. Official mode fails when no installer is produced.",
-      "result": "FAIL",
+      "result": "PASS",
       "evidence": [
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-112014.json",
           "kind": "packaging-summary-json",
-          "sha256": "05ecddf527b4f6cc614698d6850b0a2ef7d26982a95bf048b3857851708e3a1e"
+          "sha256": "59aeadc9d87055b1a27fe79f9cceb9627600dbf844a172a170bfb5beca7870d9"
         },
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\packaging-20260705-072021.zip",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-112014.zip",
           "kind": "packaging-artifact-zip",
-          "sha256": "af6f5f692b640fdc307871cc4dc08181d10d092ffab6f62cd77cc94838c87aac"
+          "sha256": "d8b1eac7d0ef2c1f9b869dc1f43763734c544dbb9a4577a58eab93bc1389f329"
         }
       ],
-      "blockedReason": "WindowsQA SSH/clean checkoutは成立したが、ログイン済み対話ユーザーsessionが無い。`query user` は `No User exists for *`、`qwinsta` はconsole Connだがusernameなし、explorerProcesses=[]。release build / installer / installed app startup / uninstall へ進めていない。",
       "lastExecution": {
-        "runId": "20260705-072021",
-        "result": "FAIL",
-        "status": "FAIL",
+        "runId": "20260705-112014",
+        "result": "PASS",
+        "status": "pass",
         "environment": "WindowsQA Server",
         "runner": "windows-qa-server + packaging runner",
-        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
-        "requestedCommit": "1f4c86a",
+        "commit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
+        "requestedCommit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
+        "resolvedCommit": "09c7c972f5badc4859e08a3a8b40a588b32d6321",
         "official": true,
+        "mode": "official",
+        "executionMode": "official",
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
+        "skippedSteps": [],
+        "summary": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-112014.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\summary-20260705-072021.json",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-112014.json",
             "kind": "packaging-summary-json",
-            "sha256": "05ecddf527b4f6cc614698d6850b0a2ef7d26982a95bf048b3857851708e3a1e"
+            "sha256": "59aeadc9d87055b1a27fe79f9cceb9627600dbf844a172a170bfb5beca7870d9"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-release-packaging-official-20260705-head-1f4c86a\\packaging-20260705-072021.zip",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-112014.zip",
             "kind": "packaging-artifact-zip",
-            "sha256": "af6f5f692b640fdc307871cc4dc08181d10d092ffab6f62cd77cc94838c87aac"
+            "sha256": "d8b1eac7d0ef2c1f9b869dc1f43763734c544dbb9a4577a58eab93bc1389f329"
           }
         ],
-        "failedStep": "interactive-desktop-precheck",
-        "failure": "WindowsQA has no logged-in interactive user; query user returned No User exists for *; qwinsta shows console Conn with no username and explorerProcesses=[]",
-        "installStatus": "not-run",
-        "uninstallStatus": "not-run",
-        "interactiveSessionStatus": "blocked-no-interactive-session",
-        "officialEvidenceValid": false,
-        "officialPassEligible": false,
-        "headlessDetected": true
+        "installerKind": "msi",
+        "releaseBuildStatus": "pass",
+        "installStatus": "pass",
+        "startupStatus": "pass",
+        "uninstallStatus": "pass",
+        "officialEvidenceValid": true,
+        "officialPassEligible": true
       },
-      "notes": "WindowsQA official head-1f4c86a run failed at interactive-desktop-precheck: no logged-in interactive desktop session. SSH, exact commit checkout, and clean repo checks succeeded, but release build / installer install / installed app startup / uninstall were not reached."
+      "notes": "WindowsQA official run 20260705-112014 passed release build, VOICEVOX/Kokoro resource bundle check, MSI install, installed app startup screenshot, uninstall, and cleanup on exact QA ref commit 09c7c972f5badc4859e08a3a8b40a588b32d6321."
     },
     {
       "test_id": "ORB-STATIC-001",
@@ -2908,18 +3071,27 @@
         "critical"
       ],
       "guarantee": "実チャット送信からApp tool invokeを通し、代表30件のApp設定/操作がschema/tool catalog経路で実行される。固定語録ルーターではない。実LLM経路では、Anima promptへApp Actions catalog/tool schemaが注入され、自然言語から正しいapp.tool.invokeを生成できることを代表確認する。",
-      "result": "FAIL",
+      "result": "PASS",
       "run": {
-        "runId": "20260705-072206",
-        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
-        "requestedCommit": "1f4c86a",
+        "runId": "20260705-211538",
+        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
         "official": true,
         "sourceMode": "git",
         "caseCount": 10,
         "minPass": 8,
-        "passedCount": 0,
-        "failures": 10,
-        "failure": "oribisAI requires commercial feature; QA real LLM provider/API key/commercial feature not configured"
+        "passedCount": 8,
+        "failures": 2,
+        "knownLimitations": [
+          {
+            "id": "affinity-off",
+            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+          },
+          {
+            "id": "model-off",
+            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+          }
+        ]
       },
       "commands": [
         "scripts/qa/invoke-windows-qa.sh --official --wdio-spec tests/app-ai-native-route-acceptance.spec.ts",
@@ -2947,52 +3119,67 @@
           "sha256": "21d4c34488830ec092bdf97a210ee603e676a75171b8c6b61fdeb1c665c3fa8b"
         },
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
+          "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
           "kind": "summary-json",
-          "sha256": "aadf3c09f353900dafd36d94eccc06ab289ddefb68c7a69397856113c0405d57"
+          "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
         },
         {
-          "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\20260705-072206.zip",
+          "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
           "kind": "artifact-zip",
-          "sha256": "e42db4ea44af47a77fb5e55fc5f1c464f13dc67ff55a2e01be35d4d393c29092"
+          "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
         }
       ],
-      "notes": "WindowsQA official head-1f4c86a run reached real-app onboarding and WDIO execution, then failed the real LLM representative threshold: expected passedCount >= 8, received 0. QA environment still lacks real LLM provider/API key or commercial feature, so deterministic mock 30-case PASS cannot substitute this required evidence.",
+      "notes": "WindowsQA official real LLM representative run passed threshold: 8/10 with minPass=8 using Ollama Vulkan GPU offload. affinity-off/model-off remain known planner operation coverage follow-ups, not release blockers for this gate.",
       "lastExecution": {
         "date": "2026-07-05",
         "environment": "WindowsQA Server",
         "mode": "official",
-        "commit": "1f4c86aa8898ec338c4137eab2f8de0a1ae7b75e",
-        "requestedCommit": "1f4c86a",
-        "runId": "20260705-072206",
+        "commit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+        "runId": "20260705-211538",
         "official": true,
         "sourceMode": "git",
-        "summary": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
+        "summary": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
         "evidence": [
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\summary-20260705-072206.json",
-            "sha256": "aadf3c09f353900dafd36d94eccc06ab289ddefb68c7a69397856113c0405d57"
+            "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
+            "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
           },
           {
-            "path": "C:\\Users\\admin\\Pictures\\agante-projects\\sysdev\\oribis-ai-native-real-llm-official-20260705-head-1f4c86a\\20260705-072206.zip",
-            "sha256": "e42db4ea44af47a77fb5e55fc5f1c464f13dc67ff55a2e01be35d4d393c29092"
+            "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
+            "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
           }
         ],
-        "failure": "real LLM representative run reached the app and onboarding, but passedCount=0/10 and failed the >=8 threshold because oribisAI requires commercial feature in the QA environment",
-        "result": "FAIL",
-        "status": "FAIL",
-        "passedCount": 0,
-        "total": 10
+        "result": "PASS",
+        "status": "PASS",
+        "passedCount": 8,
+        "total": 10,
+        "minPass": 8,
+        "gpu": {
+          "backend": "ollama",
+          "requestedLibrary": "vulkan",
+          "hasVulkanLog": true,
+          "hasOffloadLog": true
+        },
+        "knownLimitations": [
+          {
+            "id": "affinity-off",
+            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+          },
+          {
+            "id": "model-off",
+            "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+          }
+        ],
+        "acceptance": "Threshold pass: real LLM representative run passed 8/10 with minPass=8. rawToolBlockVisible=false and chat input remained empty for all cases.",
+        "adviserDecision": "codex-adviser confirmed PASS is acceptable for Release Gate and the two unsupported planner operation cases should be tracked as known limitations/follow-up, not release blockers."
       }
     }
   ],
-  "requiredNotRun": [
-    "ORB-GATE-001"
-  ],
+  "requiredNotRun": [],
   "supportingNotRun": [],
-  "requiredBlocked": [
-    "ORB-AT-001",
-    "ORB-AT-005",
-    "ORB-GATE-002"
-  ]
+  "requiredBlocked": [],
+  "meta": {
+    "notes": "Current QA evidence target SHA includes ORB-AT-001 real LLM threshold PASS, ORB-AT-005 TTS, ORB-GATE-002 packaging, and ORB-GATE-001 strict release audit."
+  }
 }

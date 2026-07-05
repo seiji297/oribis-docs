@@ -1,0 +1,43 @@
+{
+  "test_id": "ORB-AT-001",
+  "result": "PASS",
+  "runId": "20260705-211538",
+  "environment": "WindowsQA Server",
+  "mode": "official",
+  "sourceMode": "git",
+  "requestedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+  "resolvedCommit": "fa003cc6645c88863a8c84a21a966ad6c408c29c",
+  "summary": {
+    "path": "evidence/ORB-AT-001/windowsqa-summary-20260705-211538.json",
+    "sha256": "26942cb9ff2eebcb489722d4938cc6d1ca7291f4e331c1a239856da822af2c97"
+  },
+  "artifactZip": {
+    "path": "evidence/ORB-AT-001/windowsqa-artifacts-20260705-211538.zip",
+    "sha256": "d8ede8d60d425d4e85d057f4e53f987e87aa12587aee878da46767b0505ef658"
+  },
+  "pass": {
+    "passedCount": 8,
+    "total": 10,
+    "minPass": 8,
+    "gpu": {
+      "backend": "ollama",
+      "requestedLibrary": "vulkan",
+      "hasVulkanLog": true,
+      "hasOffloadLog": true
+    },
+    "rawToolBlockVisible": false,
+    "chatInputEmpty": true,
+    "wdioSpec": "e2e/wdio/tests/app-ai-native-real-llm-representative.spec.ts"
+  },
+  "knownLimitations": [
+    {
+      "id": "affinity-off",
+      "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+    },
+    {
+      "id": "model-off",
+      "reason": "Unsupported planner operation; planner operation coverage gap, accepted as follow-up for this threshold gate."
+    }
+  ],
+  "decision": "codex-adviser confirmed PASS is acceptable for Release Gate and the two unsupported planner operation cases should be tracked as known limitations/follow-up, not release blockers."
+}
