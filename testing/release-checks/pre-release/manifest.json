@@ -12,7 +12,32 @@
     "auditToolCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
     "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
     "docsCommit": "de814c727adf41e0e03f6915271ae556b097b10e",
-    "releaseTagPolicy": "v0.1.0 tag must be cut on product/releaseTagCommit c7eb7d39004cdcf968642a56bc31e1738946aa48, not on later audit/docs commits."
+    "releaseTagPolicy": "v0.1.0 tag must be cut on product/releaseTagCommit c7eb7d39004cdcf968642a56bc31e1738946aa48, not on later audit/docs commits.",
+    "releasePublication": {
+      "tag": "v0.1.0",
+      "url": "https://github.com/se-okamoto/oribis/releases/tag/v0.1.0",
+      "repositoryVisibility": "PRIVATE",
+      "publishedAt": "2026-07-06T10:57:09Z",
+      "publishedAtJst": "2026-07-06T19:57:09+09:00",
+      "releaseName": "Oribis v0.1.0 EA",
+      "assets": [
+        {
+          "name": "Oribis_0.1.0_x64_en-US.msi",
+          "size": 580902912,
+          "sha256": "3d83d3698c3dbaf3d6915ad5c63d37a43733214fa7490733e9cb7c5b7d883a7b",
+          "url": "https://github.com/se-okamoto/oribis/releases/download/v0.1.0/Oribis_0.1.0_x64_en-US.msi",
+          "downloadCheck": "HEAD via GitHub release asset API returned 302 then 200 application/octet-stream with content-length 580902912"
+        },
+        {
+          "name": "Oribis_0.1.0_x64-setup.exe",
+          "size": 546961118,
+          "sha256": "e9c1495c7091baaad404b9d9c4ac560824c7a7096b99b94d2ca5c2eab23d828b",
+          "url": "https://github.com/se-okamoto/oribis/releases/download/v0.1.0/Oribis_0.1.0_x64-setup.exe",
+          "downloadCheck": "HEAD via GitHub release asset API returned 302 then 200 application/octet-stream with content-length 546961118"
+        }
+      ],
+      "notes": "Release was published inside the private GitHub repository. Repository visibility was verified as PRIVATE after publish."
+    }
   },
   "policy": {
     "process": "Feature Intake -> Feature Build -> Feature Done Definition -> Risk-based Test Selection -> Release Gate",

@@ -1,8 +1,29 @@
 # Pre-release Execution Report
 
-## Release Gate 現在地
+## Release Publication Record
 
-現時点の判定: **BLOCKED / Release Gate停止**。
+`v0.1.0` EA was published in the private GitHub repository after Release Gate completion.
+
+| Field | Value |
+|---|---|
+| Release URL | https://github.com/se-okamoto/oribis/releases/tag/v0.1.0 |
+| Published at | `2026-07-06T10:57:09Z` / `2026-07-06T19:57:09+09:00` |
+| Repository visibility after publish | `PRIVATE` |
+| Product commit / tag target | `c7eb7d39004cdcf968642a56bc31e1738946aa48` |
+| Release tag | `v0.1.0` |
+
+Asset download checks:
+
+| Asset | Size | SHA-256 | Download check |
+|---|---:|---|---|
+| `Oribis_0.1.0_x64_en-US.msi` | 580902912 | `3d83d3698c3dbaf3d6915ad5c63d37a43733214fa7490733e9cb7c5b7d883a7b` | GitHub release asset API HEAD returned `302` then `200 application/octet-stream` with matching `content-length` |
+| `Oribis_0.1.0_x64-setup.exe` | 546961118 | `e9c1495c7091baaad404b9d9c4ac560824c7a7096b99b94d2ca5c2eab23d828b` | GitHub release asset API HEAD returned `302` then `200 application/octet-stream` with matching `content-length` |
+
+## Release Gate Historical Snapshot
+
+注意: この節以降には、Release Gate完了前に記録した途中経過の履歴が残っている。現在の公開済み状態は上の `Release Publication Record` と `manifest.json` の `target.releasePublication` を正とする。
+
+当時の判定: **BLOCKED / Release Gate停止**。
 
 直接原因: `ORB-PERF-001` が未完了。2026-07-06の旧Codex/7B local構成runはProducer/sysdev-2指示によりdiagnostic参考値へ降格し、Release Gate判定に使わない。現在はKimi統一3レーン（`l1-job` / `l2-opencode-pty` / `l3-opencode-raw`）でA+B+C+R officialを取り直す準備中。
 
