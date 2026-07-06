@@ -126,6 +126,65 @@ Initial official sequencing:
 
 R1 and R2 are required PASS checks but excluded from completion-rate denominator.
 
+### E. Heavy Agentic Coding
+
+E tasks are required for EA release after the 2026-07-06 scope change. They verify that Oribis Internal Worker can handle tasks that structurally require multi-turn exploration, not only small single-shot edits.
+
+E tasks are evaluated in a separate heavy-task run after the bounded exploratory internal agent loop is implemented. They do not replace the A+B+C result; they add a new required gate.
+
+| task_id | Summary | Acceptance | Timeout |
+|---|---|---|---|
+| E1 | Add a multi-file feature to a medium fixture repo with 50-100 files | Acceptance tests pass, expected files are changed, no unrelated broad rewrite | 1200s |
+| E2 | Fix a symptom-only bug where the cause is in a different module | Failing regression test turns green, root-cause file is changed, symptom-only patch is rejected by scorer | 900s |
+| E3 | Iterate on a failing test group until all targeted tests pass | Initial failing tests pass after at least one test command feedback loop; no validation override | 1200s |
+| E4 | Perform a cross-cutting refactor across imports/call sites | Typecheck/tests pass, old API/import path is absent, new API is used consistently | 1500s |
+| E5 | Change an API across package or module boundaries | Consumer and provider tests pass, compatibility shim only if explicitly required | 1500s |
+
+E group thresholds:
+
+- Gate denominator: E1-E5, 5 tasks.
+- L1-job completion count on E must be at least 80% of L3-opencode-raw completion count on the same E tasks.
+- L2-opencode-pty completion count on E must be at least 80% of L3-opencode-raw completion count on the same E tasks.
+- Required completion count uses ceiling rounding. Example: if L3 passes 4/5, each compared lane must pass at least `ceil(4 * 0.8) = 4`.
+- Median time ratio uses only tasks where both compared lanes pass and must be <= 2.0, same as A+B+C.
+- If L3-opencode-raw cannot complete any E task, the E run is `BLOCKED` because the baseline is invalid.
+- If L1 uses single-shot mode for an E task without entering explore mode, that task is a product failure unless the task still satisfies acceptance and loop telemetry shows a valid reason for single-shot selection.
+
+E group evidence must additionally include:
+
+- agent mode per task: `singleShot` or `explore`.
+- mode selection reason and threshold values.
+- escalation events when `singleShot` validation+repair fails and the same job continues in `explore`.
+- turn count, tool call count, command count, and budget exhaustion flag.
+- per-turn action transcript with secret-safe excerpts.
+- workspace hash before/after.
+- failure class if not passed.
+- timeout rate and worst-case duration, in addition to median ratio.
+- unsafe command/path guard bypass count. This must be 0.
+- validation false-positive known cases. This must be 0.
+
+E group fixture scoring must define a task-specific success oracle. Validation PASS alone is not enough when a task can pass through a superficial or symptom-only patch. Each E task must declare:
+
+- required test/typecheck/build command.
+- expected changed area or forbidden broad rewrite area.
+- forbidden shortcut or symptom-only patch when applicable.
+- protected test/validation paths or globs. If the agent changes them, the task is immediate FAIL.
+- rubric only when deterministic scoring is insufficient.
+
+The harness should apply protected test/validation file checks to A-C tasks as well when the task does not explicitly require test edits. This prevents a general cheat path where an agent modifies tests instead of product code.
+
+E workspace reset strategy:
+
+- reset tracked fixture files between attempts.
+- keep dependency cache and `node_modules` warm when safe, and record cache state.
+- record protected file hashes before and after each attempt.
+
+Full EA release gate for ORB-PERF-001 now requires:
+
+- first Kimi unified A+B+C official result accepted.
+- E group official result passes thresholds.
+- D/R waived items remain explicitly recorded until their expiry condition.
+
 ## Fixture Rules
 
 - A dedicated fixed fixture repo is used.
