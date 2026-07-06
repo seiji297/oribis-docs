@@ -1534,13 +1534,13 @@
       "result": "PASS",
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-192341.json",
+          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-194246.json",
           "kind": "strict-release-audit-json",
           "sha256": "ac13d83e6646417919d3de4ee71c6f3c2cbf8623c4d19cc19f09a6b015b09e4f"
         }
       ],
       "lastExecution": {
-        "runId": "20260706-192341",
+        "runId": "20260706-194246",
         "commit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
         "requestedCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
         "productCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
@@ -1550,7 +1550,7 @@
         "environment": "local-linux",
         "mode": "official-evidence-audit",
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-192341.json",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-194246.json",
         "result": "PASS",
         "requiredBlocked": [],
         "requiredNotRun": [],
@@ -1560,7 +1560,7 @@
         "notes": "Strict release audit rerun after ORB-PERF-001 E-group PASS evidence was registered."
       },
       "run": {
-        "runId": "20260706-192341",
+        "runId": "20260706-194246",
         "official": true,
         "sourceMode": "git-evidence-manifest",
         "productCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
@@ -1597,53 +1597,54 @@
       "result": "PASS",
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260706-192554.json",
           "kind": "packaging-summary-json",
-          "sha256": "8f7f8262abafbaeb08993def5709a5c0def69cfdb74738b2b1bd7757445aefc6"
+          "sha256": "3872ddec551b012857e100c395bcb43017bdc51ec0e7e8084b23e04f8512fa53"
         },
         {
-          "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-234741.zip",
+          "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260706-192554.zip",
           "kind": "packaging-artifact-zip",
-          "sha256": "aca549e16208fbab1aa4088367c036c9c0a8b8454f6d2c615fc3f13606c630e2"
+          "sha256": "a0f72966dcc9714da4e5b46da6802907ce64c0437798d155f3fb434699d2b951"
         }
       ],
       "lastExecution": {
-        "runId": "20260705-234741",
+        "runId": "20260706-192554",
         "result": "PASS",
         "status": "pass",
         "environment": "WindowsQA Server",
         "runner": "windows-qa-server + packaging runner",
-        "commit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
-        "requestedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
-        "resolvedCommit": "48ea7fd64c5c59833962d6e1755d0d930d39764e",
+        "commit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
+        "requestedCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
+        "resolvedCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
         "official": true,
         "mode": "official",
-        "executionMode": "official",
         "sourceMode": "git",
         "skippedSteps": [],
-        "summary": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
+        "summary": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260706-192554.json",
         "evidence": [
           {
-            "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260705-234741.json",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-summary-20260706-192554.json",
             "kind": "packaging-summary-json",
-            "sha256": "8f7f8262abafbaeb08993def5709a5c0def69cfdb74738b2b1bd7757445aefc6"
+            "sha256": "3872ddec551b012857e100c395bcb43017bdc51ec0e7e8084b23e04f8512fa53"
           },
           {
-            "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260705-234741.zip",
+            "path": "evidence/ORB-GATE-002/windowsqa-packaging-artifacts-20260706-192554.zip",
             "kind": "packaging-artifact-zip",
-            "sha256": "aca549e16208fbab1aa4088367c036c9c0a8b8454f6d2c615fc3f13606c630e2"
+            "sha256": "a0f72966dcc9714da4e5b46da6802907ce64c0437798d155f3fb434699d2b951"
           }
         ],
         "installerKind": "msi",
-        "releaseBuildStatus": "pass",
+        "installerSha256": "3d83d3698c3dbaf3d6915ad5c63d37a43733214fa7490733e9cb7c5b7d883a7b",
+        "releaseExeSha256": "05fbaaa81540b749387c2cde183b3dde090bb78746bf3b0514507412304d3fa2",
+        "installedExeSha256": "933765ebc30ec7a4fa6f519548223f5d09f320082ad2bdae710907edebb0db7f",
         "installStatus": "pass",
-        "startupStatus": "pass",
+        "installedExeLaunchStatus": "pass",
+        "installedAppStartupScreenshotStatus": "pass",
         "uninstallStatus": "pass",
-        "officialEvidenceValid": true,
-        "officialPassEligible": true,
-        "ttsBundleStatus": "pass"
+        "cleanupStatus": "pass",
+        "warnings": []
       },
-      "notes": "WindowsQA official run 20260705-234741 passed release build, VOICEVOX/Kokoro resource bundle check, MSI/NSIS generation, MSI install, installed app startup screenshot, uninstall, and cleanup on exact commit 48ea7fd64c5c59833962d6e1755d0d930d39764e.",
+      "notes": "WindowsQA official run 20260706-192554 on current RC commit c7eb7d39004cdcf968642a56bc31e1738946aa48 passed release build, VOICEVOX/Kokoro bundle check, MSI install, installed app startup screenshot, uninstall, and cleanup. Installer remains unsigned as approved for EA.",
       "status": "PASS"
     },
     {
