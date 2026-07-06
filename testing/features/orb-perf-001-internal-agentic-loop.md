@@ -237,6 +237,12 @@ E群fixtureは50-100ファイル規模になるため、毎attemptで依存デ�
 - `node_modules` / package manager cache / CLI auth cacheは維持し、warm cache状態をsummaryへ記録する。
 - protected test/validation filesはreset後hashを記録し、attempt後に再照合する。
 
+## Roadmap Candidate: Internal Agent v3
+
+`internal-agent-v3` は、v2再計測と `ORB-PERF-002b` 完了後のFeature Intake候補とする。長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はここでは行わず、v2/002b結果を見て別Feature Intakeで扱う。
+
+記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
+
 ## Out of Scope
 
 - 任意shell実行。
