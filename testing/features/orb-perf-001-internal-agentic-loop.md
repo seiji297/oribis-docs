@@ -243,6 +243,8 @@ E群fixtureは50-100ファイル規模になるため、毎attemptで依存デ�
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
 
+現状は、Anima側に4層記憶と会話/関係性の永続基盤が既にあり、Worker側にはjobs/events/artifacts/write-plan等の実行記録はあるが、repo構造・コード知識・過去タスクパターンを学習する専門記憶は未実装。したがってv3の主開発対象はWorker側専門記憶であり、Anima側はWorker委任結果を案配判断へ使う接続確認を中心に扱う。
+
 ## Out of Scope
 
 - 任意shell実行。
