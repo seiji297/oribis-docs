@@ -1,0 +1,32 @@
+{
+  "manifest": "/home/mnadmin/agent-projects/sysdev/shared/oribis-docs/testing/release-checks/pre-release/manifest.json",
+  "target": {
+    "repository": "oribis",
+    "commit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
+    "worktree": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis",
+    "notes": "Current QA evidence target includes ORB-PERF-001 E-group WindowsQA official PASS on internal Worker Kimi vs opencode Kimi lanes. Release Gate strict audit must be rerun after this manifest update.",
+    "rcCandidate": true,
+    "previousTrackedCommit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
+    "productCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
+    "releaseTagCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
+    "auditToolCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
+    "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
+    "docsCommit": "de814c727adf41e0e03f6915271ae556b097b10e",
+    "releaseTagPolicy": "v0.1.0 tag must be cut on product/releaseTagCommit c7eb7d39004cdcf968642a56bc31e1738946aa48, not on later audit/docs commits."
+  },
+  "auditTool": {
+    "path": "/home/mnadmin/agent-projects/sysdev/sysdev-1/oribis/scripts/qa/audit-release-manifest.mjs",
+    "sha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed"
+  },
+  "tests": 38,
+  "requiredTestIds": 20,
+  "requiredNotRun": [],
+  "requiredBlocked": [],
+  "duplicateTestIds": [],
+  "bugRegressions": 22,
+  "nonVerifiedBlockingBugs": [],
+  "strictBugEvidenceSha": true,
+  "verifyEvidenceFiles": true,
+  "requireReleasePass": true,
+  "failures": []
+}

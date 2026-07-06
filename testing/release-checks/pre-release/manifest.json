@@ -9,9 +9,9 @@
     "previousTrackedCommit": "e366936065ca5a393e69344358047d2f1e1ccf7e",
     "productCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
     "releaseTagCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
-    "auditToolCommit": "59017de",
+    "auditToolCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
     "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
-    "docsCommit": "7cff040e1a7fea3aeb864d90e53e25661a00a8b6",
+    "docsCommit": "de814c727adf41e0e03f6915271ae556b097b10e",
     "releaseTagPolicy": "v0.1.0 tag must be cut on product/releaseTagCommit c7eb7d39004cdcf968642a56bc31e1738946aa48, not on later audit/docs commits."
   },
   "policy": {
@@ -1534,23 +1534,23 @@
       "result": "PASS",
       "evidence": [
         {
-          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-192223.json",
+          "path": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-192341.json",
           "kind": "strict-release-audit-json",
-          "sha256": "66df3c4e2b336747b0e5471f851f446283b5cf60905df1805e075af6747b43cb"
+          "sha256": "ac13d83e6646417919d3de4ee71c6f3c2cbf8623c4d19cc19f09a6b015b09e4f"
         }
       ],
       "lastExecution": {
-        "runId": "20260706-192223",
+        "runId": "20260706-192341",
         "commit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
         "requestedCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
         "productCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
-        "docsCommit": "7cff040e1a7fea3aeb864d90e53e25661a00a8b6",
-        "auditToolCommit": "59017de",
+        "docsCommit": "de814c727adf41e0e03f6915271ae556b097b10e",
+        "auditToolCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
         "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
         "environment": "local-linux",
         "mode": "official-evidence-audit",
         "sourceMode": "git-evidence-manifest",
-        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-192223.json",
+        "summary": "evidence/ORB-GATE-001/release-gate-strict-audit-20260706-192341.json",
         "result": "PASS",
         "requiredBlocked": [],
         "requiredNotRun": [],
@@ -1560,12 +1560,12 @@
         "notes": "Strict release audit rerun after ORB-PERF-001 E-group PASS evidence was registered."
       },
       "run": {
-        "runId": "20260706-192223",
+        "runId": "20260706-192341",
         "official": true,
         "sourceMode": "git-evidence-manifest",
         "productCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
-        "docsCommit": "7cff040e1a7fea3aeb864d90e53e25661a00a8b6",
-        "auditToolCommit": "59017de",
+        "docsCommit": "de814c727adf41e0e03f6915271ae556b097b10e",
+        "auditToolCommit": "c7eb7d39004cdcf968642a56bc31e1738946aa48",
         "auditToolSha256": "8b7472395be37eaaec4058aa90ede5670edcff27fcde7becd54e3f40a125b5ed",
         "skippedSteps": []
       },
