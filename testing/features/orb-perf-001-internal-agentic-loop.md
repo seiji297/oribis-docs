@@ -405,6 +405,17 @@ P6.4実装:
   - F1/F3/F4はいずれも品質FAIL。F1/F3はrelock後もReproduce周辺で収束できず、F4は `answer_only` として探索するが回答品質が足りない。
   - v3.4時点のL1 F群診断は、F2/F5 PASS、F1/F3/F4 FAILの2/5相当。v2.1の0/5からは改善したが、opencode超えには未達。
 
+P6.5実装:
+
+- 実装: `answer_only` のrequired actionを「final answer response」ではなく、validation `presentPaths` の回答ファイル作成へ修正。
+- 実装: `answer_only` で一定量の探索後は追加のlist/search/read/runを拒否し、回答ファイルへの `write_files` を促す。
+- UT: answer_onlyが回答ファイル作成を要求すること、探索予算後にwriteへ誘導されることを確認。
+- UT: `cargo test --manifest-path src-tauri/Cargo.toml --features tauri-backend,web-remote internal_worker_coding_agent -- --nocapture` は42件PASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v36-l1-f4-diagnostic-20260707-132519/orb-perf-002-orb-perf-002-v36-l1-f4-diagnostic-20260707-132519/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F4: attempt-1は品質FAIL、attempt-2はPASS。`answer/F4.md` が生成され、rubricを満たした。
+  - v3.6時点のL1 F群は、F2/F4/F5 PASS、F1/F3 FAILの3/5相当。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
