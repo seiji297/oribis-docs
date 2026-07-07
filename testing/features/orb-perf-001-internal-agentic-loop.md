@@ -395,6 +395,11 @@ P6.4実装:
 - 目的: same target拒否後に、LLMが既存証拠内の別target候補を選びやすくする。F2固有ファイル名・oracle語彙・テスト用分岐は入れない。
 - UT: Relock evidenceに代替仮説が含まれることを確認。
 - UT: `cargo test --manifest-path src-tauri/Cargo.toml --features tauri-backend,web-remote internal_worker_coding_agent -- --nocapture` は40件PASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v34-l1-f2f5-diagnostic-20260707-123633/orb-perf-002-orb-perf-002-v34-l1-f2f5-diagnostic-20260707-123633/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F2: attempt-1は品質FAIL、attempt-2はPASS。retry成功時は `currentExplorePhase=validate` / `runCommandCount=1`。
+  - F5: attempt-1でPASS。`relockCount=1` かつ `deniedRelockReason=same_locked_target` を記録しつつ、最終的にValidate到達。
+  - 備考: L1単独診断のためL3比thresholdは比較不能。品質効果確認として扱う。
 
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
