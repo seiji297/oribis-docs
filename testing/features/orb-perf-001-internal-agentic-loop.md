@@ -462,6 +462,20 @@ P6.9 / v3.9実装・診断:
   - F3: attempt-1/2とも品質FAIL。attempt-2では `externalValidationFeedbackReceived=true` / `workerExternalValidationFeedbackReceived=true` / `workerExternalValidationFeedbackArea=static_file_access` を確認。hypothesis品質telemetryは4項目ともtrue。ただしattempt-2は `currentExplorePhase=investigate` / `patchDraftRequestIssued=false` / `writeFilesPlanProducedAfterDraft=false` / `runCommandCount=0` で、feedbackを受けてもFixへ戻れなかった。
   - 判定: v3.9は外部validation feedbackの配線と仮説品質telemetryの記録としては有効。ただしF1はfeedback後も同じ種類の誤修正に留まり、F3はfeedback後にno-writeで止まった。次課題は、validation失敗後に仮説を実質的に反証・更新させる制御と、feedback受領後のno-write停滞を解消すること。
 
+P6.10 / v3.10実装・診断:
+
+- codex-adviser判断: v3.10は A+B を最小実装する。Aはretry feedbackへ `previousAttemptChangedPaths` など前回attemptの自分の行動履歴を追加し、同じscopeを再採用する場合に `delta` / `falsificationCheck` の更新を要求すること。Bはfeedback後のno-write停滞に、v3.8の `patch_draft_request` を再利用すること。Cのfalsification probeはdiagnostic-onlyに留め、成功条件へ入れない。
+- 実装commit: `895404d`
+- 実装: harness retry feedbackへ `previousPatchFailed`, `previousAttemptChangedPaths`, `previousAttemptPhase`, `previousRunCommandCount`, `previousHadWriteFiles` を追加。これはoracle hintではなく、前回agentが実際に変更したpathの履歴として扱う。
+- 実装: agent側でfeedback後に前回変更pathとlocked targetが重なる場合、`validation_failure_revision_required` observationを1回返し、同じscopeなら `delta` または `falsificationCheck` の差分を要求する。
+- 実装: `can_issue_patch_draft_request` を `previousPatchFailed=true` の外部validation feedbackでも許可し、feedback後no-write停滞時にpatch draftへ進める。ただし `answer_only`、locked hypothesisなし、targetなし、reverse warningありでは従来通り発火しない。
+- UT/静的検証: `patch_draft` 4件PASS、`external_validation` 3件PASS、`internal_worker_coding_agent` 49件PASS。`cargo fmt` と `node --check scripts/qa/orb-perf-002.mjs` はPASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v310-l1-f1f3-diagnostic-20260707-145128/orb-perf-002-orb-perf-002-v310-l1-f1f3-diagnostic-20260707-145128/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1: attempt-1/2とも品質FAIL。attempt-2では `externalValidationPreviousPatchFailed=true` / `workerExternalValidationPreviousPatchFailed=true` / `validationFailureRevisionRequiredIssued=true` / `patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=true` を確認。変更scopeは前回2ファイルから `packages/vite/src/module-runner/createImportMeta.ts` へ変化したが、oracleはまだ通らない。
+  - F3: attempt-1/2とも品質FAIL。attempt-2では `externalValidationPreviousPatchFailed=true` / `workerExternalValidationPreviousPatchFailed=true` / `validationFailureRevisionRequiredIssued=true` / `patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=true` を確認。v3.9のno-write停滞から、`packages/vite/src/node/utils.ts` と `packages/vite/src/node/server/middlewares/static.ts` へのwrite/validate到達へ改善したが、oracleはまだ通らない。
+  - 判定: v3.10はfeedback後の反復・停滞制御として有効。ただし品質PASSには未達。次課題は、feedbackでscope/phaseを動かすだけでなく、外部失敗から仮説の「何が違うか」を検証可能な形へ収束させること。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
