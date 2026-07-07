@@ -308,6 +308,61 @@ P6.1診断:
   - F5 attempt-1: PASS。`redDependencyReadCount=1`, `redDependencyReadLimit=3`, `redReadDenialReason=null`。Red後の限定依存readが実際に発火した。
   - F2 attempt-1/2: FAIL（品質課題継続）。attempt-1は `redReadDenialReason=resolution_failed` を記録。P6.1の目的である許可/拒否telemetryの記録は成立。
 
+### Internal Agent v3.2 Candidate: Red後の仮説relock
+
+P6.1診断のF2では、注入バグが `packages/vite/src/node/publicDir.ts` に残ったまま、Workerは `packages/vite/src/node/server/middlewares/static.ts` をlocked targetとしてFixへ進んだ。これはdirect dependency readの不足というより、誤ったlocked hypothesisがred後に固定され続ける問題である。
+
+v3.2の目的は、red確認後のFix誘導を維持しつつ、限定条件で別仮説へ戻れる脱出路を作ることである。探索を全面再開しない。F2専用のファイル名分岐・語録は禁止する。
+
+codex-adviserレビューにより、通常の `Investigate` へ戻す表現は危険と判断した。v3.2では `RelockHypothesis` 専用phaseとして扱い、通常Investigateのtool policyを継承しない。
+
+方針:
+
+- `reproRedObserved=true` 後も、原則はFix継続。
+- ただし、Red後readが `resolution_failed` / `not_direct_dependency` で詰まり、現在のlocked targetだけではfull replacementが成立しない場合のみ、1回だけ `RelockHypothesis` phaseへ遷移する。
+- relock回数はattemptあたり1回まで。`relockCount` / `relockReason` / `previousLockedHypothesisId` をtelemetryへ記録する。
+- relock入力は、previous locked hypothesis、locked target、既読ファイル、direct dependency map、read denial reason、observed red evidence、現在までの観測に固定する。
+- relock phaseでは `list_files` / `search` / `run_command` / arbitrary readは禁止。LLMには新しいhypothesis 1件と `lockedHypothesisId` だけを要求する。
+- relockで同じhypothesis idまたは同じtarget filesを返した場合は拒否し、`deniedRelockReason=same_locked_hypothesis|same_locked_target` を記録する。
+- proposed writeがlocked target外へ広がっただけではrelock triggerにしない。これはwrite逸脱として扱う。relock triggerにする場合は、既存証拠が別targetを支持していることが必要だが、v3.2最小実装では扱わない。
+- validation/oracle失敗一般やchanged files不一致だけではrelock triggerにしない。これは広すぎるためv3.2最小実装から除外する。
+- telemetryは `relockCount` / `relockReason` / `previousLockedHypothesisId` / `newLockedHypothesisId` / `previousLockedTargetFiles` / `newLockedTargetFiles` / `deniedRelockReason` を持つ。
+- relock後に再度redを確認できた場合のみFixへ進む。redが取れない場合は既存の `reproUnavailable` 経路へ落とす。
+- reverse patch guard、protected paths、write-plan境界は維持する。
+
+P6.2 acceptance候補:
+
+- UT: red後に `resolution_failed` / `not_direct_dependency` が出ても、relock未使用なら1回だけ `RelockHypothesis` phaseへ入る。
+- UT: relockはattemptあたり1回まで。2回目は拒否してFix/stopへ向かう。
+- UT: relock時にprevious/current locked hypothesisをtelemetryへ残す。
+- UT: relockで同じtargetへ戻る場合は拒否する。
+- UT: relock phaseでは list/search/run/read/write_files を拒否し、新hypothesis lockだけを受け付ける。
+- UT: relock後の新hypothesisではred再確認が必須。
+- Diagnostic: `ORB-PERF-002` の `l1-job` `F2,F5` 部分run。F2でrelockが発火するかを確認し、品質PASSは必須にしない。F5が悪化しないことを確認する。
+
+P6.2診断:
+
+- 実装: `RelockHypothesis` phaseを追加。通常 `Investigate` へ戻さず、Red後のread denialから1回だけ限定relockできるようにした。
+- UT: `cargo test --manifest-path src-tauri/Cargo.toml --features web-remote internal_worker_coding_agent::tests` は38件PASS。relock 1回制限、relock後red再確認、同一target拒否を含む。
+- Static: `cargo fmt` / `node --check scripts/qa/orb-perf-002.mjs` / `git diff --check` PASS。
+- Review: codex-adviserで設計レビュー。`Investigate`へ戻さず専用 `RelockHypothesis` phaseにすること、triggerを `resolution_failed` / `not_direct_dependency` 起点へ絞ること、同一target relock拒否を反映。
+- Diagnostic 1: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-orb-perf-002-v32-relock-diagnostic-20260707-110949/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F2: relock発火。ただし新hypothesisが同じ `static.ts` へ戻り、品質FAIL。これを受けて同一target relock拒否を追加。
+  - F5: provider `HTTP error 500` によりagent_error。ロジック判定不能。
+- Diagnostic 2: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-orb-perf-002-v32-relock2-diagnostic-20260707-112830/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F2 attempt-1: 品質FAIL、relock未発火。attempt-2: provider `HTTP error 500` によりagent_error。
+  - F5: provider `HTTP error 500` によりagent_error。
+- Diagnostic 3: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-orb-perf-002-v32-f5-diagnostic-20260707-114440/summary.json`
+  - F5単体再実行もprovider `HTTP error 500` でagent_error。P6.2のF5非劣化診断はprovider障害により未確定。
+
+P6.2時点の判断:
+
+- 制御ロジックのUTは成立。
+- 実LLM診断はKimi provider 500が連続し、品質評価としては不成立。再実行はprovider回復後に行う。
+- F2品質改善はまだ未成立。次候補は、relock候補生成が同じtargetへ戻らないだけでなく、既読/changed/evidenceから別targetを選べる材料をどう渡すかの改善。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
