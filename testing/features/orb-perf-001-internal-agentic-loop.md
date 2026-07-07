@@ -400,6 +400,10 @@ P6.4実装:
   - F2: attempt-1は品質FAIL、attempt-2はPASS。retry成功時は `currentExplorePhase=validate` / `runCommandCount=1`。
   - F5: attempt-1でPASS。`relockCount=1` かつ `deniedRelockReason=same_locked_target` を記録しつつ、最終的にValidate到達。
   - 備考: L1単独診断のためL3比thresholdは比較不能。品質効果確認として扱う。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v34-l1-f1f3f4-diagnostic-20260707-125714/orb-perf-002-orb-perf-002-v34-l1-f1f3f4-diagnostic-20260707-125714/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1/F3/F4はいずれも品質FAIL。F1/F3はrelock後もReproduce周辺で収束できず、F4は `answer_only` として探索するが回答品質が足りない。
+  - v3.4時点のL1 F群診断は、F2/F5 PASS、F1/F3/F4 FAILの2/5相当。v2.1の0/5からは改善したが、opencode超えには未達。
 
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
