@@ -388,6 +388,14 @@ P6.3実装:
 - UT: Relock phase外ではRelock evidenceが無効化されることを確認。
 - UT: `cargo test --manifest-path src-tauri/Cargo.toml --features tauri-backend,web-remote internal_worker_coding_agent -- --nocapture` は40件PASS。
 
+P6.4実装:
+
+- 実装: `Relock evidence` に、既存hypothesis listから前回locked target以外の代替仮説を `alternativeHypothesesFromExistingEvidence` として提示する。
+- 制約: 追加のfilesystem read/list/search/path existence checkは行わず、既存LLM応答と既存observationだけを再構造化する。
+- 目的: same target拒否後に、LLMが既存証拠内の別target候補を選びやすくする。F2固有ファイル名・oracle語彙・テスト用分岐は入れない。
+- UT: Relock evidenceに代替仮説が含まれることを確認。
+- UT: `cargo test --manifest-path src-tauri/Cargo.toml --features tauri-backend,web-remote internal_worker_coding_agent -- --nocapture` は40件PASS。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
