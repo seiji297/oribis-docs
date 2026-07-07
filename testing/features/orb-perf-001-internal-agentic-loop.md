@@ -439,6 +439,16 @@ P6.7 / v3.8実装:
   - F3: attempt-1は探索停滞、attempt-2は品質FAIL。attempt-2は `patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=true` / `currentExplorePhase=validate` で、Fix到達は確認できた。
   - 判定: v3.8はphase収束の改善として有効。ただしF1/F3のoracleはまだ通らず、次課題は「どのファイルをどう直すか」の品質改善であり、単なるFix強制を追加しても解けない。
 
+P6.8 / v3.9設計:
+
+- codex-adviser判断: v3.9は A+C を薄く実装する。Aは外部validation feedbackをagent loopへ戻すこと、Cはlocked hypothesis品質ゲートを強化すること。Bの自律probeはdiagnostic限定から始め、Dのrepo index/test mapはその後に回す。
+- A方針: sealed oracle raw textや正解hintはpromptへ戻さない。PERF harness側で `external_validation_result` として抽象化し、`status=failed`, `failure_area`, `behavior`, `message`, `allowed_use=revise_or_falsify_hypothesis`, `no_solution_hint=true` のような一般信号だけを渡す。これは製品経路でも、ユーザー・CI・外部validatorの失敗結果を次修正へ渡す汎用機構として扱える。
+- C方針: locked hypothesisに `symptom`, `expectedBehavior`, `currentBehavior`, `delta`, `minimalPatchScope`, `falsificationCheck`, `validationPlan` を要求する。特に `delta` と `falsificationCheck` が欠落した仮説はFix強制対象にしない。
+- B限定方針: `.oribis-worker/repro/**` の一時領域だけでprobe生成・実行を許可する。既存source/test/protected pathsは変更不可。目的は正解テストを書くことではなく、仮説が外れているかを確認するfalsification probe。
+- 禁止: `write_files` のさらなる強制、sealed oracle文面の直接注入、F1/F3固有語彙、patch draft複数回発火、test file改変許可、repo index/test mapへの先行逃避。
+- telemetry候補: `externalValidationFeedbackReceived`, `externalValidationFeedbackKind`, `hypothesisRevisedAfterValidationFailure`, `hypothesisRetainedAfterValidationFailure`, `hypothesisFalsificationCheckPresent`, `expectedBehaviorPresent`, `currentVsExpectedDeltaPresent`, `validationPlanPresentBeforeWrite`, `patchScopeMatchesHypothesis`, `writeFilesAfterHypothesisRevision`, `sameFileRewrittenAfterValidationFailure`, `probeGenerated`, `probeRan`, `probeResultUsedInHypothesis`, `validationFailureRepeatedWithoutHypothesisChange`。
+- diagnostic criteria: F1/F3でvalidation failure後にhypothesisが更新されること、expected/current/deltaを含むfix planが出ること、oracle raw textがprompt/log artifactに含まれないこと、同一仮説のblind rewriteを繰り返さないこと。品質PASSしない場合も、仮説修正の証跡があればv3.9の制御改善として扱う。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
