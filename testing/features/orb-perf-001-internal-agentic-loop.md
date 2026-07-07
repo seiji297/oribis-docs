@@ -449,6 +449,19 @@ P6.8 / v3.9設計:
 - telemetry候補: `externalValidationFeedbackReceived`, `externalValidationFeedbackKind`, `hypothesisRevisedAfterValidationFailure`, `hypothesisRetainedAfterValidationFailure`, `hypothesisFalsificationCheckPresent`, `expectedBehaviorPresent`, `currentVsExpectedDeltaPresent`, `validationPlanPresentBeforeWrite`, `patchScopeMatchesHypothesis`, `writeFilesAfterHypothesisRevision`, `sameFileRewrittenAfterValidationFailure`, `probeGenerated`, `probeRan`, `probeResultUsedInHypothesis`, `validationFailureRepeatedWithoutHypothesisChange`。
 - diagnostic criteria: F1/F3でvalidation failure後にhypothesisが更新されること、expected/current/deltaを含むfix planが出ること、oracle raw textがprompt/log artifactに含まれないこと、同一仮説のblind rewriteを繰り返さないこと。品質PASSしない場合も、仮説修正の証跡があればv3.9の制御改善として扱う。
 
+P6.9 / v3.9実装・診断:
+
+- 実装commit: `94e4c5f`
+- 実装: PERF harnessから抽象化した `externalValidationFeedback` をretry時にjob metadataへ渡し、内製agent promptへ `validation_feedback` として注入する。sealed oracle raw textや正解hintは渡さない。
+- 実装: locked hypothesis schemaへ `symptom`, `expectedBehavior`, `currentBehavior`, `delta`, `minimalPatchScope`, `falsificationCheck` を追加し、telemetryで `hypothesisFalsificationCheckPresent`, `expectedBehaviorPresent`, `currentVsExpectedDeltaPresent`, `validationPlanPresentBeforeWrite` を記録する。
+- telemetry: `externalValidationFeedbackReceived`, `externalValidationFeedbackKind`, `externalValidationFeedbackArea`, `externalValidationFeedbackBehavior`, `workerExternalValidationFeedbackReceived`, `workerExternalValidationFeedbackArea` をsummaryへ集約する。
+- UT/静的検証: `external_validation_feedback` 1件PASS、`hypothesis_quality` 1件PASS、`patch_draft` 3件PASS、`answer_only` 3件PASS、`internal_worker_coding_agent` 47件PASS。`cargo fmt`、`node --check scripts/qa/orb-perf-002.mjs`、`jq empty e2e/perf-fixtures/orb-perf-002/tasks.json` はPASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v39-l1-f1f3-diagnostic-20260707-142640/orb-perf-002-orb-perf-002-v39-l1-f1f3-diagnostic-20260707-142640/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1: attempt-1/2とも品質FAIL。attempt-2では `externalValidationFeedbackReceived=true` / `workerExternalValidationFeedbackReceived=true` / `workerExternalValidationFeedbackArea=ssr_module_resolution` を確認。hypothesis品質telemetryは4項目ともtrue、`patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=true` / `runCommandCount=2`。
+  - F3: attempt-1/2とも品質FAIL。attempt-2では `externalValidationFeedbackReceived=true` / `workerExternalValidationFeedbackReceived=true` / `workerExternalValidationFeedbackArea=static_file_access` を確認。hypothesis品質telemetryは4項目ともtrue。ただしattempt-2は `currentExplorePhase=investigate` / `patchDraftRequestIssued=false` / `writeFilesPlanProducedAfterDraft=false` / `runCommandCount=0` で、feedbackを受けてもFixへ戻れなかった。
+  - 判定: v3.9は外部validation feedbackの配線と仮説品質telemetryの記録としては有効。ただしF1はfeedback後も同じ種類の誤修正に留まり、F3はfeedback後にno-writeで止まった。次課題は、validation失敗後に仮説を実質的に反証・更新させる制御と、feedback受領後のno-write停滞を解消すること。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
