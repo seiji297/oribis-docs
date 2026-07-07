@@ -237,9 +237,32 @@ E群fixtureは50-100ファイル規模になるため、毎attemptで依存デ�
 - `node_modules` / package manager cache / CLI auth cacheは維持し、warm cache状態をsummaryへ記録する。
 - protected test/validation filesはreset後hashを記録し、attempt後に再照合する。
 
-## Roadmap Candidate: Internal Agent v3
+## Internal Agent v3 Phase Machine
 
-`internal-agent-v3` は、v2再計測と `ORB-PERF-002b` 完了後のFeature Intake候補とする。長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はここでは行わず、v2/002b結果を見て別Feature Intakeで扱う。
+`internal-agent-v3` の最初の実装スコープは、常駐repo indexやWorker記憶ではなく、大規模タスクでv2.1が失敗した「探索はできるが収束できない」問題に対するphase machineとする。実装済み範囲は、`Investigate -> Reproduce -> Fix -> Validate` の4フェーズ、仮説lock、answer-only脱出、reproUnavailable脱出、reverse patch warning、PERF証跡へのphase/repro/reverse telemetry出力である。
+
+実装commit:
+
+- `db8899d` phase telemetry
+- `beed91e` hypothesis lock
+- `b93065c` Reproduce gate
+- `3090374` reverse patch warning
+- `2e45845` PERF evidence extraction
+- `c99bf50` reproduce gate evidence
+- `ad8ac9b` repro red後のFix誘導
+- `f94f6d5` repro red後のprewrite related test skip
+
+P6診断:
+
+- 証跡: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v3-p6-diagnostic-fix2-20260707-095627/summary.json`
+- lane: `l1-job`
+- tasks: `F2,F5`
+- result: `PASS_WITH_DIAGNOSTIC_ONLY`
+- 判定: v3.0 P6はgating診断として完了。F5はPASSし、F2 attempt-1は`Investigate -> Reproduce -> Fix -> Validate`へ到達した。F2品質FAILとF2 attempt-2のReproduce停滞は、v3.0完了条件ではなく次フェーズの改善対象として扱う。
+
+次の改善候補は、F2/F5個別調整ではなく、`reproRedObserved` 後の遷移条件とロック例外の一般化である。現在はred後に`list/search/run`を拒否し、`read_file`はlocked targetのみ許可する。これはFix誘導には有効だが、locked targetが誤った場合や依存ファイル/型定義が必要な場合に品質を落とすため、v3.1では「理由付きの限定例外」を設計する。
+
+長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
 
