@@ -488,6 +488,50 @@ P6.11 / v3.11実装・診断:
   - F3: attempt-1/2とも品質FAIL。attempt-2は `validationFailureRevisionRequiredIssued=true` / `patchDraftRequestIssued=true` だが `writeFilesPlanProducedAfterDraft=false`。最終phaseは `reproduce`、`reproUnavailable=true`、`stopReason=no_progress_detected`。diffは `static.ts` の1行変更のみで、v3.10の破壊的rewriteは止まった。
   - 判定: v3.11はblast radius抑止として有効で、F1をPASSへ押し上げた。F3の残課題は、破壊的rewriteが止まった後に、`reproUnavailable + patchDraftRequestIssued` 状態から安全なwrite planへ進めないこと。
 
+P6.12 / v3.12実装・診断:
+
+- 背景: sysdev-2判断により、v3.11後の本筋は追加guardやfalsification probeではなく、full-file replacementからtargeted structured editへ寄せることとした。
+- 実装commit: `79126ef`
+- 実装: `edit_files` actionを追加。既存ファイル変更では `oldText` / `newText` / `replaceAll` を受け取り、`oldText` の一意性を検証してから既存 `CodingAgentPlan` へ展開する。展開後は従来のwrite guard、blast radius guard、validationへ流す。
+- 制約: `edit_files` は既存ファイル専用。`oldText` 空、対象fileなし、`oldText` 未一致、複数一致かつ `replaceAll=false` は非fatal observationとして返す。`write_files` はfallbackとして残す。
+- UT/静的検証: `edit_files` 2件PASS、`internal_worker_coding_agent` 53件PASS。`cargo fmt` と `node --check scripts/qa/orb-perf-002.mjs` はPASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v312-l1-f1f3-diagnostic-20260707-153408/orb-perf-002-orb-perf-002-v312-l1-f1f3-diagnostic-20260707-153408/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1: attempt-1/2とも品質FAIL。v3.11では2attempt中1attemptがPASSしていたため劣化疑いはあるが、n=2同士ではLLM非決定性の範囲を排除できず、この時点では退行と断定しない。attempt-2は `validationFailureRevisionRequiredIssued=true` / `patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=true` まで進んだが、`writeDenialReason=missing_reproduce_red_or_unavailable` / `stopReason=no_progress_detected` で完遂しなかった。diffは `createImportMeta.ts` の `resolver(id, parent ?? href)` を `resolver(id, parent)` に変える1行変更。
+  - F3: attempt-1/2とも品質FAIL。attempt-1は `runCommandCount=2` / `writeFilesPlanProducedAfterDraft=true` で `securityUtils.ts` を新規作成したがoracle FAIL。attempt-2は外部validation feedback後に `currentExplorePhase=investigate` / `reproUnavailable=true` / `runCommandCount=0` / `patchDraftRequestIssued=false` / `writeFilesPlanProducedAfterDraft=false` / `stopReason=iteration_limit_exceeded` で停止した。
+  - `edit_files` / `oldText` / `newText` はlane-output/events上に出現せず、v3.12の新actionは実runでは一度も選択されなかった。したがってtargeted edit移行の効果は未検証であり、現時点では「schema追加後もF1/F3の品質未達、F1は劣化疑いあり」と判定する。
+  - 次課題: `edit_files` 選択をtelemetryで明示し、patch draft時の既存ファイル変更では `edit_files` をより強く要求するか、`write_files` を新規ファイル・回答ファイル中心へ制限するかをsysdev-2判断で決める。v3.12単体ではfull diagnostic / officialへ進めない。
+
+P6.13 / v3.13実装・診断:
+
+- 背景: sysdev-2判断により、既存ファイル変更では `write_files` を構造的に拒否し、`edit_files` を優先する方針へ切り替えた。新規ファイル作成と回答ファイルは `write_files` を維持し、`edit_files` denialが続く場合だけfull-file fallbackを許す。
+- 実装commit: `a0ed943`
+- 実装: 既存ファイルを対象にした生の `write_files` を、初期状態では `write_files_existing_target_requires_edit_files` として非fatal observation化する。`edit_files` 展開時は既存planへ流すが、`editFilesActionCount`, `editFilesPlanProducedAfterDraft`, `writeFilesExistingTargetDenialCount` をtelemetryへ記録する。
+- 実装: relock時に `prewrite_test_commands` をclearし、v3.12の「red確認済みなのにmissing red denialへ落ちる」矛盾を防ぐ。
+- UT/静的検証: `raw_write_files_detects_existing_targets`, `relock_clears_repro_command_history` を追加。`internal_worker_coding_agent` 55件PASS。`cargo fmt` と `node --check scripts/qa/orb-perf-002.mjs` はPASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v313-l1-f1f3-diagnostic-20260707-160149/orb-perf-002-orb-perf-002-v313-l1-f1f3-diagnostic-20260707-160149/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1: attempt-1/2とも品質FAIL。attempt-1で `editFilesActionCount=1` / `editFilesPlanProducedAfterDraft=true` を確認し、既存ファイル変更が `edit_files` 経路へ乗ったことは実証できた。ただしdiffは `ssrTransform.ts` のURL decode方向でoracle不合格。attempt-2は `reproRedObserved=true` のまま `iteration_limit_exceeded` で停止し、v3.12の `missing_reproduce_red_or_unavailable` 矛盾は再発しなかった。
+  - F3: attempt-1/2とも品質FAIL。attempt-1は新規 `securityUtils.ts` 作成のため `write_files` 許可となったがoracle不合格。attempt-2は外部validation feedback後に `patchDraftRequestIssued=true` まで進むが、write/edit未到達で `iteration_limit_exceeded`。
+  - 追加F1診断: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v313-l1-f1-extra1-diagnostic-20260707-163533/orb-perf-002-orb-perf-002-v313-l1-f1-extra1-diagnostic-20260707-163533/summary.json`
+    - attempt-1/2とも品質FAIL。どちらも `reproRedObserved=true` / `patchDraftRequestIssued=true` だが `writeFilesPlanProducedAfterDraft=false` / `editFilesActionCount=0` で、write/editへ到達しなかった。
+    - v3.13時点のF1は合計0/4。v3.11は1/2であり、非決定性だけでは説明しにくくなったが、F1特化修正は過学習リスクがあるため、原因は一般化して扱う。
+  - v3.11 PASS差分: v3.11のF1 PASS attemptは `createImportMeta.ts` を書いたが、最終 `workspace.diff` は空だった。注入済みの `resolver(id, parent)` を元の `resolver(id, parent ?? href)` へ戻す、実質的な最小revert方向でoracleが通ったと見られる。
+  - 判定: v3.13は「編集形式の基盤」とv3.12矛盾修正としては有効。ただしF1/F3とも品質未達。F1では、external validation後に前回patchの失敗を踏まえて最小revert候補を評価できるかが次の一般課題。structured edit強制だけでは品質向上に直結していない。
+
+P6.14 / v3.14実装・診断:
+
+- 背景: sysdev-2判断により、v3.13で支配的だったF1失敗は品質以前の `invalid_response_detected` と `patchDraftRequest` 後のwrite/edit未到達であり、追加guardではなくschema/応答形式の負荷軽減を優先することにした。
+- 実装: `patch_draft_request` / `fix` / `fix-with-low-evidence` のprompt文を、bare actionではなく「top-level JSON object with actions」と明示した。
+- 実装: `parse_explore_response` が `{ "type": "edit_files", ... }` のようなbare action JSONを返された場合でも、`CodingAgentExploreResponse.actions` へwrapして受理するfallbackを追加した。
+- UT/静的検証: `parse_explore_response_accepts_bare_edit_files_action` を追加。`cargo fmt`、対象UT、`internal_worker_coding_agent` 56件PASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v314-l1-f1-diagnostic-20260707-170919/orb-perf-002-orb-perf-002-v314-l1-f1-diagnostic-20260707-170919/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1 attempt-1: 品質FAIL。`reproRedObserved=true` / `patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=false` / `editFilesActionCount=0` / `runCommandCount=2` / `stopReason=iteration_limit_exceeded`。`invalid_response_detected` は発生しなかった。
+  - F1 attempt-2: 品質FAIL。`reproUnavailable=true` / `patchDraftRequestIssued=false` / `writeFilesPlanProducedAfterDraft=false` / `editFilesActionCount=0` / `runCommandCount=1` / `stopReason=iteration_limit_exceeded`。`invalid_response_detected` は発生しなかった。
+  - diffは両attemptとも `packages/vite/src/module-runner/createImportMeta.ts` の注入差分が残る形で、agent telemetry上は `filesWritten=[]` / `editFilesActionCount=0`。実書込には到達していない。
+  - 判定: v3.14は `invalid_response_detected` の抑制として有効。ただしFix action到達はまだ安定していない。現行証跡にはLLM raw responseが保存されておらず、`patchDraftRequest` 後にモデルが観測action・relock・説明文のどれへ逃げたかは直接確認できない。次は `patchDraftRequest` 局面だけの縮小schemaと、secretを含まない応答分類telemetryでFix局面の出力空間をさらに狭める。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
