@@ -433,6 +433,11 @@ P6.7 / v3.8実装:
 - telemetry: `patchDraftRequestIssued`, `patchDraftInputs`, `writeFilesPlanProducedAfterDraft`, `fixForcedAfterRelockLimit`, `noProgressExitPrevented`, `fixForcedAfterRed` を追加。
 - UT: `patch_draft` 3件PASS、`answer_only` 3件PASS、`internal_worker_coding_agent` 45件PASS。
 - 次: F1/F3 narrow diagnosticで品質効果を確認する。v3.8は制御改善であり、品質PASSを保証するものではないため、失敗時は証跡をそのままv3.9/v4設計材料にする。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v38-l1-f1f3-diagnostic-20260707-140120/orb-perf-002-orb-perf-002-v38-l1-f1f3-diagnostic-20260707-140120/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1: attempt-1/2とも品質FAIL。attempt-2は `patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=true` / `currentExplorePhase=validate` で、停滞からFixへ進む効果は確認できた。
+  - F3: attempt-1は探索停滞、attempt-2は品質FAIL。attempt-2は `patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=true` / `currentExplorePhase=validate` で、Fix到達は確認できた。
+  - 判定: v3.8はphase収束の改善として有効。ただしF1/F3のoracleはまだ通らず、次課題は「どのファイルをどう直すか」の品質改善であり、単なるFix強制を追加しても解けない。
 
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
