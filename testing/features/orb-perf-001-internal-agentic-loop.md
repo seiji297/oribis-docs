@@ -364,6 +364,29 @@ P6.2時点の判断:
 - Provider分類確認: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-orb-perf-002-provider-classifier-check-20260707-115252/summary.json` でF5 attempt-1が `failureClass=provider_unavailable` となり、retryせず停止することを確認。
 - F2品質改善はまだ未成立。次候補は、relock候補生成が同じtargetへ戻らないだけでなく、既読/changed/evidenceから別targetを選べる材料をどう渡すかの改善。
 
+### Internal Agent v3.3 Candidate: evidence-aware relock
+
+v3.3の目的は、v3.2で追加した `RelockHypothesis` phaseを探索再開にせず、既存証拠の再解釈として強化することである。Kimi依存の実LLM評価はprovider状態に左右されるため、まず静的実装とUTでphase境界を固定する。
+
+codex-adviserレビューでは、v3.3のevidence-aware relockは妥当と判断された。推奨は、same target後に再プロンプトしないこと、deterministic candidate hintsを既存observationだけから生成すること、relockを「探索」ではなく「既存証拠の構造化」に限定することである。
+
+方針:
+
+- `RelockHypothesis` promptに、previous locked hypothesis、previous locked target、read denial、red evidence、既読ファイルから抽出した相対import hintを明示する。
+- hint生成は既存observation文字列だけを入力にし、filesystem read/list/search/path existence checkは行わない。
+- repo-wide search、追加read、追加run、再プロンプトは行わない。
+- 同一hypothesis id / 同一target files拒否は維持する。
+- F2固有のファイル名、oracle固有の語彙、テスト用分岐は入れない。
+
+P6.3実装:
+
+- 実装: `Relock evidence` blockをexplore promptへ追加。`phase=relockHypothesis` 以外では無効。
+- 実装: `read_file path=...` の既存observation本文から `import/export/require/import()` の相対specifierを抽出し、candidate hintとして提示する。
+- 実装: read denialとred command outputのexcerptをRelock evidenceへ含める。
+- UT: Relock evidenceが既存read/import、read denial、red evidenceを含むことを確認。
+- UT: Relock phase外ではRelock evidenceが無効化されることを確認。
+- UT: `cargo test --manifest-path src-tauri/Cargo.toml --features tauri-backend,web-remote internal_worker_coding_agent -- --nocapture` は40件PASS。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
