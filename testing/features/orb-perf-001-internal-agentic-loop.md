@@ -262,6 +262,52 @@ P6診断:
 
 次の改善候補は、F2/F5個別調整ではなく、`reproRedObserved` 後の遷移条件とロック例外の一般化である。現在はred後に`list/search/run`を拒否し、`read_file`はlocked targetのみ許可する。これはFix誘導には有効だが、locked targetが誤った場合や依存ファイル/型定義が必要な場合に品質を落とすため、v3.1では「理由付きの限定例外」を設計する。
 
+### Internal Agent v3.1 Candidate: Red後の限定読取例外
+
+v3.1の目的は、v3.0で確認したFix誘導を崩さず、red後の修正品質だけを上げることである。F2/F5専用の語録・ファイル名分岐・oracle専用処理は入れない。
+
+方針:
+
+- `reproRedObserved=true` 後も、`list_files` / `search` / `run_command` は原則拒否を維持する。
+- `read_file` はlocked targetに加えて、locked targetから1-hopの静的相対依存ファイルだけを限定許可する。
+- 1-hop静的相対依存は、locked target本文中の `import ... from "./x"` / `export ... from "./x"` / `require("./x")` / `import("./x")` から抽出する。package import、alias import、tsconfig pathsはv3.1対象外。
+- 許可対象はcanonicalize後にworkspace root配下へ残る実ファイルに限定する。symlinkや `../` によりroot外へ出る場合は拒否する。
+- 許可対象の拡張子は `.ts` / `.tsx` / `.js` / `.jsx` / `.mjs` / `.cjs` / `.json` / `.d.ts` とする。extensionless importは候補順に解決する。
+- 許可数はattemptあたり小さく制限する（例: `redDependencyReadCount <= 3`）。無制限な探索へ戻さない。
+- locked target自体の再読取は上限カウント対象外。1-hop依存読取だけをattempt単位でカウントする。
+- 許可/拒否はtelemetryに `redDependencyReadCount` / `redDependencyReadLimit` / `redReadDenialReason` として残す。denial reasonは安定enumとし、`not_direct_dependency` / `unsupported_extension` / `outside_workspace` / `symlink_escape` / `limit_exceeded` / `resolution_failed` / `tool_denied_after_red` を使う。
+- telemetryにファイル内容は残さない。必要ならpath/reason/countだけ記録する。
+- locked targetが誤っているケースは、v3.1では完全解決しない。別仮説への戻りはv3.2以降の「hypothesis relock」候補に分離する。
+
+期待効果:
+
+- red後にFixへ進む流れは維持する。
+- Fixに必要な近接helper/type情報を読む余地ができ、局所的に壊れたfull replacementを減らす。
+- F2/F5のような個別タスクへの過学習ではなく、TS/JS repo全般で使える小さい例外になる。
+
+P6.1 acceptance:
+
+- UT: red後のlocked target readは許可。
+- UT: red後の直接import dependency readは上限内で許可。
+- UT: extensionless importと`./foo/index.ts`を解決できる。
+- UT: `../`またはsymlinkでworkspace外へ出る依存は拒否。
+- UT: direct importでない同一ディレクトリファイルは拒否。
+- UT: red後の非依存read/list/search/runは拒否。
+- UT: red dependency read上限超過は拒否し、telemetryに理由を残す。
+- Static: `cargo fmt` / targeted Rust UT / `git diff --check` PASS。
+- Diagnostic: `ORB-PERF-002` の `l1-job` `F2,F5` 部分runで、telemetryにred後の許可/拒否が記録されること。品質PASSはP6.1の必須条件にしない。
+
+P6.1診断:
+
+- 実装: `src-tauri/src/internal_worker_coding_agent.rs` にRed後のdirect relative dependency read例外、`scripts/qa/orb-perf-002.mjs` にtelemetry集約を追加。
+- UT: `cargo test --manifest-path src-tauri/Cargo.toml --features web-remote internal_worker_coding_agent::tests` は35件PASS。locked target/direct dependency/index/root escape/2-hop拒否/symlink escape/上限拒否を含む。
+- Static: `cargo fmt` / `node --check scripts/qa/orb-perf-002.mjs` / `git diff --check` PASS。
+- Review: codex-adviserで実装レビュー。方針は妥当、コミット前確認として2-hop拒否・canonical/symlink escape・attempt上限の明示テストが推奨されたため、UTへ反映済み。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-orb-perf-002-v31-p6-diagnostic-20260707-104100/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F5 attempt-1: PASS。`redDependencyReadCount=1`, `redDependencyReadLimit=3`, `redReadDenialReason=null`。Red後の限定依存readが実際に発火した。
+  - F2 attempt-1/2: FAIL（品質課題継続）。attempt-1は `redReadDenialReason=resolution_failed` を記録。P6.1の目的である許可/拒否telemetryの記録は成立。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
