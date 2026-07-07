@@ -476,6 +476,18 @@ P6.10 / v3.10実装・診断:
   - F3: attempt-1/2とも品質FAIL。attempt-2では `externalValidationPreviousPatchFailed=true` / `workerExternalValidationPreviousPatchFailed=true` / `validationFailureRevisionRequiredIssued=true` / `patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=true` を確認。v3.9のno-write停滞から、`packages/vite/src/node/utils.ts` と `packages/vite/src/node/server/middlewares/static.ts` へのwrite/validate到達へ改善したが、oracleはまだ通らない。
   - 判定: v3.10はfeedback後の反復・停滞制御として有効。ただし品質PASSには未達。次課題は、feedbackでscope/phaseを動かすだけでなく、外部失敗から仮説の「何が違うか」を検証可能な形へ収束させること。
 
+P6.11 / v3.11実装・診断:
+
+- 背景: v3.10 attempt diffを確認した結果、F1/F3ともfull-file replacementが既存APIや既存実装を大きく壊していた。次の最小改善は品質推論ではなく、破壊的writeをapply前に拒否して小さいtargeted replacementへ戻すblast radius guardとした。
+- 実装commit: `70ca951`
+- 実装: 既存ファイルへの `write_files` 適用前に、export削除と低類似大規模置換を拒否する。拒否はfatalではなく既存のplan denial経路でobservationとして返し、LLMへ小さい差分を再提案させる。
+- UT/静的検証: `blast_radius` 2件PASS、`internal_worker_coding_agent` 51件PASS。`cargo fmt` と `node --check scripts/qa/orb-perf-002.mjs` はPASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v311-l1-f1f3-diagnostic-20260707-151257/orb-perf-002-orb-perf-002-v311-l1-f1f3-diagnostic-20260707-151257/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1: attempt-1は品質FAIL、attempt-2はPASS。attempt-2では `validationFailureRevisionRequiredIssued=true` / `patchDraftRequestIssued=true` / `writeFilesPlanProducedAfterDraft=true` で、`packages/vite/src/module-runner/createImportMeta.ts` 単独修正に収束した。
+  - F3: attempt-1/2とも品質FAIL。attempt-2は `validationFailureRevisionRequiredIssued=true` / `patchDraftRequestIssued=true` だが `writeFilesPlanProducedAfterDraft=false`。最終phaseは `reproduce`、`reproUnavailable=true`、`stopReason=no_progress_detected`。diffは `static.ts` の1行変更のみで、v3.10の破壊的rewriteは止まった。
+  - 判定: v3.11はblast radius抑止として有効で、F1をPASSへ押し上げた。F3の残課題は、破壊的rewriteが止まった後に、`reproUnavailable + patchDraftRequestIssued` 状態から安全なwrite planへ進めないこと。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
