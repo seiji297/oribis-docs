@@ -416,6 +416,15 @@ P6.5実装:
   - F4: attempt-1は品質FAIL、attempt-2はPASS。`answer/F4.md` が生成され、rubricを満たした。
   - v3.6時点のL1 F群は、F2/F4/F5 PASS、F1/F3 FAILの3/5相当。
 
+P6.6 / v3.7設計:
+
+- 対象: v3.6後も残るF1/F3の「red/repro確認後、十分な証拠があるのに `write_files` へ進まずReproduce周辺で停滞する」問題。
+- codex-adviser判断: red後に即 `write_files` を強制する案は危険。主方針は、locked hypothesisと既存observationを材料にした one-time `patch draft request` を挟み、LLMへ「これ以上探索せずpatch planを出す」ことを明示する。relock上限到達時のFix強制は、locked hypothesis・候補path・red観測が揃う場合だけの限定fallbackにする。
+- 入れないもの: F1/F3固有ファイル名、oracle語彙、タスク別語録、red後の無条件write強制、reverse warning発生中の強制Fix。
+- 必須telemetry: `patchDraftRequestIssued`, `patchDraftInputs`, `writeFilesPlanProducedAfterDraft`, `fixForcedAfterRelockLimit`, `noProgressExitPrevented`, `fixForcedAfterRed`, `relockDeniedReason`。
+- UT観点: red観測済みかつlocked hypothesisありで `patch draft request` が1回だけ発火すること、発火後は追加探索ではなくFix/write_filesへ進むこと、locked hypothesisや候補pathが無い場合は強制しないこと、`answer_only` にはコードwrite誘導を適用しないこと、reverse warning中は強制Fixを抑止すること、F2/F5の既存PASS経路を壊さないこと。
+- 実装方針: v3.7は設計固定まで。v3.8で小さく実装し、F1/F3 narrow diagnosticで効果を確認する。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
