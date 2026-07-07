@@ -544,6 +544,18 @@ P6.15 / v3.15実装・診断:
   - F1 attempt-2: 品質FAIL。`externalValidationPreviousPatchFailed=true` / `editFilesActionCount=1` / `reversePatchWarningCount=1` / `writeDenialReason=reverse_patch_without_repro` / `stopReason=iteration_limit_exceeded`。`createImportMeta.ts` の提案がgit HEADと一致する復元patch候補だったが、`reproUnavailable=true` のためreverse guardに止められた。
   - 判定: v3.15は逃げ先分類として有効で、patch draft局面のobservation逃げを確認できた。一方で品質PASSには至らず、正しそうなupstream復元patch候補をreverse guardが低証拠として止める問題が見えた。次はv3.16として、注入バグ型fixtureにおける「upstream原型への復元」をどの条件でsealed oracleへ渡すかを設計する。v3.15単体ではfull diagnostic / officialへ進めない。
 
+P6.16 / v3.16実装・診断:
+
+- 背景: v3.15 attempt-2で、external validation retry中にgit HEAD一致の復元patch候補が `reverse_patch_without_repro` で拒否された。sysdev-2の設計原則どおり、注入バグ型fixtureではupstream原型への復元が正解になる場合があるため、無条件ブロックではなく狭い例外を設けることにした。
+- 実装: `externalValidationFeedbackReceived=true`、`externalValidationPreviousPatchFailed=true`、かつreverse pathが `externalValidationPreviousAttemptChangedPaths` と一致する場合だけ、HEAD復元patchを `reverse_patch_without_repro` で止めずsealed oracleへ渡す。通常の `reproUnavailable` + reverse patchは従来どおり拒否する。
+- 実装: `reversePatchAllowedAfterValidationFeedback` をtelemetryとPERF harness summaryへ追加した。
+- UT/静的検証: `reverse_restore_can_be_allowed_after_failed_external_validation_on_same_path` / `reverse_restore_stays_blocked_without_matching_failed_external_validation` を追加。`internal_worker_coding_agent` 61件PASS。`node --check scripts/qa/orb-perf-002.mjs` PASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v316-l1-f1-diagnostic-20260707-175343/orb-perf-002-orb-perf-002-v316-l1-f1-diagnostic-20260707-175343/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1 attempt-1: 品質FAIL。`patchDraftResponseKind=hypothesis` / `stopReason=invalid_response_detected`。patch draft後にhypothesis出力へ逃げた。
+  - F1 attempt-2: 品質FAIL。`currentExplorePhase=validate` / `editFilesActionCount=2` / `filesWritten=packages/vite/src/module-runner/importMetaResolver.ts`。Fix/Validateへ到達したが、`decodeURIComponent(parsedImporter)` 方向の修正でoracle不合格。`reversePatchWarningCount=0` / `reversePatchAllowedAfterValidationFeedback=false` のため、v3.16例外はこのrunでは未行使。
+  - 判定: v3.16の安全条件はUTで成立したが、F1実測では発火しなかった。F1/F3だけを見た追加チューニングは過学習リスクが高いため、次はF群5タスクfull diagnosticで広い信号を取る。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
