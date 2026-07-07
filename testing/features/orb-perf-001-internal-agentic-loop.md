@@ -532,6 +532,18 @@ P6.14 / v3.14実装・診断:
   - diffは両attemptとも `packages/vite/src/module-runner/createImportMeta.ts` の注入差分が残る形で、agent telemetry上は `filesWritten=[]` / `editFilesActionCount=0`。実書込には到達していない。
   - 判定: v3.14は `invalid_response_detected` の抑制として有効。ただしFix action到達はまだ安定していない。現行証跡にはLLM raw responseが保存されておらず、`patchDraftRequest` 後にモデルが観測action・relock・説明文のどれへ逃げたかは直接確認できない。次は `patchDraftRequest` 局面だけの縮小schemaと、secretを含まない応答分類telemetryでFix局面の出力空間をさらに狭める。
 
+P6.15 / v3.15実装・診断:
+
+- 背景: v3.14のC-liteではLLM raw responseが保存されておらず、`patchDraftRequest` 後の逃げ先を直接確認できなかった。sysdev-2判断により、patch draft局面だけ通常の探索schemaから切り離し、edit/write専用schemaへ縮小することにした。
+- 実装: `patchDraftRequestIssued=true` のturnでは `parse_patch_draft_response` を使い、`edit_files` / `write_files` 以外をnonfatal parse denialとして扱う。`hypothesis` / `observation` / `empty` / `multiple_actions` / `unknown_action` / `parse_error` を `patchDraftResponseKind` としてtelemetryへ記録する。
+- 実装: PERF harness summaryへ `patchDraftResponseKind`, `editFilesPlanProducedAfterDraft`, `editFilesActionCount`, `writeFilesExistingTargetDenialCount` を集約する。
+- UT/静的検証: `parse_patch_draft_response_*` 3件を追加。`internal_worker_coding_agent` 59件PASS。`node --check scripts/qa/orb-perf-002.mjs` / `git diff --check` PASS。
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v315-l1-f1-diagnostic-20260707-173543/orb-perf-002-orb-perf-002-v315-l1-f1-diagnostic-20260707-173543/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - F1 attempt-1: 品質FAIL。`reproRedObserved=true` / `patchDraftRequestIssued=true` / event payload上 `patchDraftResponseKind=observation` / `stopReason=invalid_response_detected`。patch draft後、モデルがsearch/read/run系の観測actionへ逃げていたことを分類telemetryで確認した。
+  - F1 attempt-2: 品質FAIL。`externalValidationPreviousPatchFailed=true` / `editFilesActionCount=1` / `reversePatchWarningCount=1` / `writeDenialReason=reverse_patch_without_repro` / `stopReason=iteration_limit_exceeded`。`createImportMeta.ts` の提案がgit HEADと一致する復元patch候補だったが、`reproUnavailable=true` のためreverse guardに止められた。
+  - 判定: v3.15は逃げ先分類として有効で、patch draft局面のobservation逃げを確認できた。一方で品質PASSには至らず、正しそうなupstream復元patch候補をreverse guardが低証拠として止める問題が見えた。次はv3.16として、注入バグ型fixtureにおける「upstream原型への復元」をどの条件でsealed oracleへ渡すかを設計する。v3.15単体ではfull diagnostic / officialへ進めない。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
