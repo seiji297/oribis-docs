@@ -361,6 +361,7 @@ P6.2時点の判断:
 
 - 制御ロジックのUTは成立。
 - 実LLM診断はKimi provider 500が連続し、品質評価としては不成立。再実行はprovider回復後に行う。以後、PERF harnessではHTTP 500 / provider api_errorを `provider_unavailable` として分類し、agent品質FAILと分離する。
+- Provider分類確認: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-orb-perf-002-provider-classifier-check-20260707-115252/summary.json` でF5 attempt-1が `failureClass=provider_unavailable` となり、retryせず停止することを確認。
 - F2品質改善はまだ未成立。次候補は、relock候補生成が同じtargetへ戻らないだけでなく、既読/changed/evidenceから別targetを選べる材料をどう渡すかの改善。
 
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
