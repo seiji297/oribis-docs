@@ -556,6 +556,22 @@ P6.16 / v3.16実装・診断:
   - F1 attempt-2: 品質FAIL。`currentExplorePhase=validate` / `editFilesActionCount=2` / `filesWritten=packages/vite/src/module-runner/importMetaResolver.ts`。Fix/Validateへ到達したが、`decodeURIComponent(parsedImporter)` 方向の修正でoracle不合格。`reversePatchWarningCount=0` / `reversePatchAllowedAfterValidationFeedback=false` のため、v3.16例外はこのrunでは未行使。
   - 判定: v3.16の安全条件はUTで成立したが、F1実測では発火しなかった。F1/F3だけを見た追加チューニングは過学習リスクが高いため、次はF群5タスクfull diagnosticで広い信号を取る。
 
+P6.17 / v3.16 F群full diagnostic:
+
+- Diagnostic: `/home/mnadmin/agent-projects/sysdev/qa-artifacts/orb-perf-002-v316-l1-f-full-diagnostic-20260707-180706/orb-perf-002-orb-perf-002-v316-l1-f-full-diagnostic-20260707-180706/summary.json`
+  - status: `PASS_WITH_DIAGNOSTIC_ONLY`
+  - thresholdResult: `fail`
+  - task pass: 3/5。`F2`, `F4`, `F5` が少なくとも1attemptでPASS。`F1`, `F3` はFAIL。
+  - attempt pass: 3/9。
+  - Fix到達率: 4/9 attempts。`F1#2`, `F2#1`, `F4#2`, `F5#2` が `edit_files` または `write_files` 到達。
+  - `patchDraftResponseKind` 分布: `hypothesis=2`, `observation=1`, `none=6`。
+  - `failureClass` 分布: `wrong_output=5`, `agent_error=1`, `none=3`。
+  - `stopReason` 分布: `none=9`。
+- 重要所見: v2.1のF群0/5から、v3.16では3/5まで改善した。phase machine / structured edit / guard群により、収束機構は動き始めている。
+- 残課題: `F1` はFix/Validateへ到達しても誤方向修正で不合格。`F3#1` は `agent_error` で、stderrは `IO error: No such file or directory`、stdoutはpnpmが `packages/vite/src/node/__tests__` をcommand扱いした失敗だった。コマンド組み立て/実行指定の不具合として次に調査する。
+- 残課題: `patchDraftResponseKind=observation/hypothesis` がまだ残り、patch draft後の逃げは完全には抑制できていない。次はF3 command errorを切り分けたうえで、F1/F3個別過学習ではなくfull-run信号に基づいてv3.17以降を設計する。
+- 注意: このrunのsummaryではharness metadata定数更新漏れによりlane `cliVersion` が `internal-agent-v2.1` と記録された。実行commitはv3.16で、直後に定数を `internal-agent-v3.16` へ修正したため、次run以降のmetadataは正しくなる。
+
 長期目標はopencode同水準の模倣ではなく、常駐アプリ構造の優位でopencodeを超えること。候補要素は、タスク到着前に構築済みの常駐repoインデックス（symbol/import graph/test map）、1ターン複数actionの一括探索による往復数圧縮、Anima記憶基盤を使ったdispatch経験の蓄積、複数Workerによる並列仮説探索。詳細設計はv3.1以降で扱う。
 
 記憶の責務は分離する。Anima記憶は案配層に限定し、Worker実績（誰に何を頼んで結果がどうだったか）、ユーザー好み、dispatch判断の学習を扱う。repo内部知識はAnima記憶へ保存しない。Worker記憶は専門層として、repoインデックス、コード知識、workspaceごとの過去タスクパターン、テスト対応表をworkspaceスコープに紐付けて保持し、ユーザー/会話文脈は保存しない。AnimaはWorker記憶の要約だけを参照できる。実装候補はworkspace内store（`.oribis-worker-store` 系の既存パターン）の延長にWorker側永続記憶として置く。
